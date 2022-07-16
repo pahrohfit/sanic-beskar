@@ -1,22 +1,19 @@
-import flask_praetorian
-import flask_praetorian.exceptions
+import sanic_praetorian
+import sanic_praetorian.exceptions
 import pytest
 
 
-class TestSQLAlchemyUserMixin:
-    def test_basic(self, app, db, mixin_user_class, user_class, default_guard):
-        mixin_guard = flask_praetorian.Praetorian(app, mixin_user_class)
-        the_dude = mixin_user_class(
-            username="TheDude",
-            password=mixin_guard.hash_password("abides"),
-        )
-        db.session.add(the_dude)
-        db.session.commit()
-        assert mixin_guard.authenticate("TheDude", "abides") == the_dude
-        with pytest.raises(flask_praetorian.exceptions.AuthenticationError):
-            mixin_guard.authenticate("TheBro", "abides")
-        with pytest.raises(flask_praetorian.exceptions.AuthenticationError):
-            mixin_guard.authenticate("TheDude", "is_undudelike")
-        db.session.delete(the_dude)
-        db.session.commit()
+class TestUserMixin:
+    async def test_basic(self, app, mixin_user_class, user_class, default_guard, mock_users):
+        mixin_guard = sanic_praetorian.Praetorian(app, mixin_user_class)
+
+        the_dude = await mock_users(username="the_dude", password="abides", guard_name=mixin_guard, class_name=mixin_user_class)
+
+        assert await mixin_guard.authenticate("the_dude", "abides") == the_dude
+        with pytest.raises(sanic_praetorian.exceptions.AuthenticationError):
+            await mixin_guard.authenticate("the_bro", "abides")
+        with pytest.raises(sanic_praetorian.exceptions.AuthenticationError):
+            await mixin_guard.authenticate("the_dude", "is_undudelike")
+        await the_dude.delete()
+
         default_guard.init_app(app, user_class)

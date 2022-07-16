@@ -3,11 +3,12 @@ import inspect
 import re
 import warnings
 
-import flask
+from sanic import Sanic
+from sanic.log import logger
 import pendulum
 
-from flask_praetorian.constants import RESERVED_CLAIMS
-from flask_praetorian.exceptions import (PraetorianError, ConfigurationError)
+from sanic_praetorian.constants import RESERVED_CLAIMS
+from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
 
 
 def duration_from_string(text):
@@ -50,10 +51,10 @@ def duration_from_string(text):
 
 def current_guard():
     """
-    Fetches the current instance of flask-praetorian that is attached to the
-    current flask app
+    Fetches the current instance of sanic-praetorian that is attached to the
+    current sanic app
     """
-    guard = flask.current_app.extensions.get('praetorian', None)
+    guard = Sanic.get_app().ctx.extensions.get('praetorian', None)
     PraetorianError.require_condition(
         guard is not None,
         "No current guard found; Praetorian must be initialized first",
@@ -65,23 +66,23 @@ def app_context_has_jwt_data():
     """
     Checks if there is already jwt_data added to the app context
     """
-    return hasattr(flask._app_ctx_stack.top, 'jwt_data')
+    return hasattr(Sanic.get_app().ctx, 'jwt_data')
 
 
 def add_jwt_data_to_app_context(jwt_data):
     """
     Adds a dictionary of jwt data (presumably unpacked from a token) to the
-    top of the flask app's context
+    top of the sanic app's context
     """
-    ctx = flask._app_ctx_stack.top
+    ctx = Sanic.get_app().ctx
     ctx.jwt_data = jwt_data
 
 
 def get_jwt_data_from_app_context():
     """
-    Fetches a dict of jwt token data from the top of the flask app's context
+    Fetches a dict of jwt token data from the top of the sanic app's context
     """
-    ctx = flask._app_ctx_stack.top
+    ctx = Sanic.get_app().ctx
     jwt_data = getattr(ctx, 'jwt_data', None)
     PraetorianError.require_condition(
         jwt_data is not None,
@@ -95,9 +96,9 @@ def get_jwt_data_from_app_context():
 
 def remove_jwt_data_from_app_context():
     """
-    Removes the dict of jwt token data from the top of the flask app's context
+    Removes the dict of jwt token data from the top of the sanic app's context
     """
-    ctx = flask._app_ctx_stack.top
+    ctx = Sanic.get_app().ctx
     if app_context_has_jwt_data():
         del ctx.jwt_data
 
@@ -105,10 +106,10 @@ def remove_jwt_data_from_app_context():
 def current_user_id():
     """
     This method returns the user id retrieved from jwt token data attached to
-    the current flask app's context
+    the current sanic app's context
     """
     jwt_data = get_jwt_data_from_app_context()
-    user_id = jwt_data.get('id')
+    user_id = jwt_data.get('id', None)
     PraetorianError.require_condition(
         user_id is not None,
         "Could not fetch an id for the current user",
@@ -116,14 +117,14 @@ def current_user_id():
     return user_id
 
 
-def current_user():
+async def current_user():
     """
     This method returns a user instance for jwt token data attached to the
-    current flask app's context
+    current sanic app's context
     """
     user_id = current_user_id()
     guard = current_guard()
-    user = guard.user_class.identify(user_id)
+    user = await guard.user_class.identify(user_id)
     PraetorianError.require_condition(
         user is not None,
         "Could not identify the current user from the current id",

@@ -1,13 +1,13 @@
 import functools
 
-from flask_praetorian.exceptions import (
+from sanic_praetorian.exceptions import (
     PraetorianError,
     MissingRoleError,
     MissingToken,
 )
 
 
-from flask_praetorian.utilities import (
+from sanic_praetorian.utilities import (
     current_guard,
     add_jwt_data_to_app_context,
     app_context_has_jwt_data,
@@ -15,8 +15,10 @@ from flask_praetorian.utilities import (
     current_rolenames,
 )
 
+from sanic.log import logger
 
-def _verify_and_add_jwt(optional=False):
+
+async def _verify_and_add_jwt(request, optional=False):
     """
     This helper method just checks and adds jwt data to the app context.
     If optional is False and the header is missing the token, just returns.
@@ -28,27 +30,27 @@ def _verify_and_add_jwt(optional=False):
     if not app_context_has_jwt_data():
         guard = current_guard()
         try:
-            token = guard.read_token()
+            token = guard.read_token(request=request)
         except MissingToken as err:
             if optional:
                 return
             raise err
-        jwt_data = guard.extract_jwt_token(token)
+        jwt_data = await guard.extract_jwt_token(token)
         add_jwt_data_to_app_context(jwt_data)
 
 
 def auth_required(method):
     """
     This decorator is used to ensure that a user is authenticated before
-    being able to access a flask route. It also adds the current user to the
-    current flask context.
+    being able to access a sanic route. It also adds the current user to the
+    current sanic context.
     """
 
     @functools.wraps(method)
-    def wrapper(*args, **kwargs):
-        _verify_and_add_jwt()
+    async def wrapper(request, *args, **kwargs):
+        await _verify_and_add_jwt(request)
         try:
-            return method(*args, **kwargs)
+            return await method(request, *args, **kwargs)
         finally:
             remove_jwt_data_from_app_context()
 
@@ -58,14 +60,14 @@ def auth_required(method):
 def auth_accepted(method):
     """
     This decorator is used to allow an authenticated user to be identified
-    while being able to access a flask route, and adds the current user to the
-    current flask context.
+    while being able to access a sanic route, and adds the current user to the
+    current sanic context.
     """
     @functools.wraps(method)
-    def wrapper(*args, **kwargs):
-        _verify_and_add_jwt(optional=True)
+    async def wrapper(request, *args, **kwargs):
         try:
-            return method(*args, **kwargs)
+            await _verify_and_add_jwt(request, optional=True)
+            return await method(request, *args, **kwargs)
         finally:
             remove_jwt_data_from_app_context()
     return wrapper
@@ -80,20 +82,20 @@ def roles_required(*required_rolenames):
 
     def decorator(method):
         @functools.wraps(method)
-        def wrapper(*args, **kwargs):
+        async def wrapper(request, *args, **kwargs):
             PraetorianError.require_condition(
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",
             )
             role_set = set([str(n) for n in required_rolenames])
-            _verify_and_add_jwt()
+            await _verify_and_add_jwt(request)
             try:
                 MissingRoleError.require_condition(
                     current_rolenames().issuperset(role_set),
                     "This endpoint requires all the following roles: "
                     "{}".format([", ".join(role_set)]),
                 )
-                return method(*args, **kwargs)
+                return await method(request, *args, **kwargs)
             finally:
                 remove_jwt_data_from_app_context()
 
@@ -111,20 +113,20 @@ def roles_accepted(*accepted_rolenames):
 
     def decorator(method):
         @functools.wraps(method)
-        def wrapper(*args, **kwargs):
+        async def wrapper(request, *args, **kwargs):
             PraetorianError.require_condition(
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",
             )
             role_set = set([str(n) for n in accepted_rolenames])
-            _verify_and_add_jwt()
+            await _verify_and_add_jwt(request)
             try:
                 MissingRoleError.require_condition(
                     not current_rolenames().isdisjoint(role_set),
                     "This endpoint requires one of the following roles: "
                     "{}".format([", ".join(role_set)]),
                 )
-                return method(*args, **kwargs)
+                return await method(request, *args, **kwargs)
             finally:
                 remove_jwt_data_from_app_context()
 
