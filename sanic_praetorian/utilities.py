@@ -2,13 +2,23 @@ import functools
 import inspect
 import re
 import warnings
+import json
 
 from sanic import Sanic
-from sanic.log import logger
 import pendulum
 
 from sanic_praetorian.constants import RESERVED_CLAIMS
 from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
+
+
+def is_valid_json(data):
+    """
+    Simple helper to validate if a value is valid json data
+    """
+    try:
+        return json.loads(data)
+    except ValueError:
+        return False
 
 
 def duration_from_string(text):

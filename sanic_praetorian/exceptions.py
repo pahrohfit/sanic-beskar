@@ -1,8 +1,5 @@
 from buzz import Buzz
 
-from sanic.log import logger
-
-from sanic.handlers import ErrorHandler
 from sanic.exceptions import SanicException
 from sanic import json
 
@@ -32,7 +29,7 @@ class PraetorianError(SanicException, Buzz):
 
     def __str__(self):
         return f"{super().__str__()} ({self.status})"
-    
+
 
 class MissingClaimError(PraetorianError):
     """
@@ -156,5 +153,13 @@ class MisusedResetToken(PraetorianError):
 class ConfigurationError(PraetorianError):
     """
     There was a problem with the configuration
+    """
+    pass
+
+
+class TOTPRequired(AuthenticationError):
+    """
+    The user requires TOTP authentication, which was not
+        performed yet
     """
     pass
