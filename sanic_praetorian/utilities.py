@@ -131,7 +131,7 @@ def current_user_id() -> str:
 
 def generate_totp_qr(user_totp: json) -> segno:
     """
-    This is a helper utility to generate a :py:module:`segno`
+    This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.
     """
     return segno.make(user_totp)
