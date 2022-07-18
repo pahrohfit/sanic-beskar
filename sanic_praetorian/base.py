@@ -75,7 +75,7 @@ from sanic_praetorian.constants import (
 
 class Praetorian():
     """
-    Comprises the implementation for the sanic-praetorian sanic extension.
+    Comprises the implementation for the :py:mod:`sanic-praetorian` sanic extension.
     Provides a tool that allows password authentication and token provision
     for applications and designated endpoints
     """
@@ -114,7 +114,7 @@ class Praetorian():
         refresh_jwt_token_hook: Callable = None,
     ):
         """
-        Initializes the Praetorian extension
+        Initializes the :py:class:`Praetorian` extension
 
         :param: app:                    The sanic app to bind this
                                         extension to
@@ -373,7 +373,7 @@ class Praetorian():
     async def _verify_totp(self, token: str, user: object):
         """
         Verifies that a plaintext password matches the hashed version of that
-        password using the stored passlib password context
+        password using the stored :py:mod:`passlib` password context
         """
         PraetorianError.require_condition(
             self.totp_ctx is not None,
@@ -382,8 +382,8 @@ class Praetorian():
         totp_factory = self.totp_ctx.new()
 
         """
-        Optionally, if a User model has a `get_cache_verify` function,
-            call it, and use that response as the `last_counter` value.
+        Optionally, if a User model has a :py:meth:`get_cache_verify` method,
+        call it, and use that response as the `last_counter` value.
         """
         _last_counter = None
         if hasattr(user, 'get_cache_verify') and callable(user.get_cache_verify):
@@ -463,7 +463,7 @@ class Praetorian():
                   
                   This means either you will need to call it again, providing
                   the `token` value from the user, or seperately call 
-                  :py:func:`sanic_praetorian:base:Praetorian.authenticate_totp`,
+                  :py:func:`authenticate_totp`,
                   which only performs validation of the `token` value,
                   and not the users password.
 
@@ -519,7 +519,7 @@ class Praetorian():
     def _verify_password(self, raw_password: str, hashed_password: str):
         """
         Verifies that a plaintext password matches the hashed version of that
-        password using the stored passlib password context
+        password using the stored :py:mod:`passlib` password context
         """
         PraetorianError.require_condition(
             self.pwd_ctx is not None,
@@ -555,7 +555,7 @@ class Praetorian():
         is not None. If this check fails, a MissingUserError is raised. Next,
         checks if the user has a validation method. If the method does not
         exist, the check passes. If the method exists, it is called. If the
-        result of the call is not truthy, an InvalidUserError is raised
+        result of the call is not truthy, an :py:exc:`InvalidUserError` is raised
         """
         MissingUserError.require_condition(
             user is not None,
@@ -671,7 +671,7 @@ class Praetorian():
             **custom_claims
         )
 
-    async def refresh_jwt_token(self, token, override_access_lifespan=None):
+    async def refresh_jwt_token(self, token:str, override_access_lifespan=None):
         """
         Creates a new token for a user if and only if the old token's access
         permission is expired but its refresh permission is not yet expired.
@@ -724,7 +724,7 @@ class Praetorian():
             self.encode_algorithm,
         )
 
-    async def extract_jwt_token(self, token, access_type=AccessType.access):
+    async def extract_jwt_token(self, token:str, access_type=AccessType.access):
         """
         Extracts a data dictionary from a jwt token
         """
@@ -966,7 +966,8 @@ class Praetorian():
         Sends a registration email to a new user, containing a time expiring
             token usable for validation.  This requires your application
             is initialized with a `mail` extension, which supports
-            async-mail's `Message()` object and a `send_message()` method.
+            sanic-mailing's :py:class:`Message` object and a
+            :py:meth:`send_message` method.
 
         Returns a dict containing the information sent, along with the
             `result` from mail send.
@@ -1039,7 +1040,8 @@ class Praetorian():
         Sends a password reset email to a user, containing a time expiring
             token usable for validation.  This requires your application
             is initialized with a `mail` extension, which supports
-            async-mail's `Message()` object and a `send_message()` method.
+            sanic-mailing's :py:class:`Message` object and a 
+            :py:meth:`send_message()` method.
 
         Returns a dict containing the information sent, along with the
             `result` from mail send.
@@ -1120,8 +1122,8 @@ class Praetorian():
         Sends an email to a user, containing a time expiring
             token usable for several actions.  This requires
             your application is initialized with a `mail` extension,
-            which supports async-mail's `Message()` object and
-            a `send_message()` method.
+            which supports sanic-mailing's :py:class:`Message` object and
+            a :py:meth:`send_message` method.
 
         Returns a dict containing the information sent, along with the
             `result` from mail send.
@@ -1193,7 +1195,7 @@ class Praetorian():
 
         return notification
 
-    async def get_user_from_registration_token(self, token):
+    async def get_user_from_registration_token(self, token:str):
         """
         Gets a user based on the registration token that is supplied. Verifies
         that the token is a regisration token and that the user can be properly
@@ -1212,7 +1214,7 @@ class Praetorian():
         )
         return user
 
-    async def validate_reset_token(self, token):
+    async def validate_reset_token(self, token:str):
         """
         Validates a password reset request based on the reset token
         that is supplied. Verifies that the token is a reset token
@@ -1231,7 +1233,7 @@ class Praetorian():
         )
         return user
 
-    def hash_password(self, raw_password):
+    def hash_password(self, raw_password:str):
         """
         Hashes a plaintext password using the stored passlib password context
         """
@@ -1246,12 +1248,12 @@ class Praetorian():
         """
         return self.pwd_ctx.hash(raw_password)
 
-    async def verify_and_update(self, user=None, password=None):
+    async def verify_and_update(self, user:object=None, password:str=None):
         """
         Validate a password hash contained in the user object is
         hashed with the defined hash scheme (PRAETORIAN_HASH_SCHEME).
 
-        If not, raise an Exception of `LegacySchema`, unless the
+        If not, raise an Exception of :py:exc:`LegacySchema`, unless the
         `password` arguement is provided, in which case an attempt
         to call `user.save()` will be made, updating the hashed
         password to the currently desired hash scheme
