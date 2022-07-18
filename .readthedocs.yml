@@ -6,7 +6,8 @@ python:
     #- requirements: requirements.txt
     - method: pip
       path: .
+  system_packages: true
+build:
   commands:
     - pip install poetry
     - poetry install
-  system_packages: true
