@@ -21,8 +21,6 @@ import datetime
 import toml
 import os
 
-import sphinx_bootstrap_theme
-
 
 project_root = os.path.dirname(os.path.dirname(__file__))
 project_metadata = toml.load(
@@ -93,7 +91,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = 'bootstrap'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -142,6 +140,3 @@ for (root, dirs, files) in os.walk(docs_root):
 
 # -- Options for HTMLHelp output ------------------------------------------
 
-# Output file base name for HTML help builder.
-htmlhelp_basename = project_metadata['name'] + 'doc'
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
