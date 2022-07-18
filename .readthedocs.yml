@@ -15,8 +15,7 @@ build:
         . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate"
         && cd sanic_praetorian
         && poetry install --no-interaction --no-root
-        && cd ..
 
 sphinx:
-  configuration: sanic_praetorian/docs/conf.py
+  configuration: docs/conf.py
   fail_on_warning: true
