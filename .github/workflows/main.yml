@@ -66,7 +66,7 @@ jobs:
           poetry run flake8 sanic_praetorian --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: lint-tests
         run: |
-          poetry run flake8 tests --exit-zero --max-line-length=127 --statistics
+          poetry run flake8 tests --exit-zero --count --max-line-length=127 --statistics
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
