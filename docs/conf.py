@@ -19,14 +19,14 @@
 
 import datetime
 import toml
-import os
+from sys import path as sys_path
+from os import path as os_path
+sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
 
-import sphinx_bootstrap_theme
 
-
-project_root = os.path.dirname(os.path.dirname(__file__))
+project_root = os_path.dirname(os_path.dirname(__file__))
 project_metadata = toml.load(
-    os.path.join(project_root, 'pyproject.toml')
+    os_path.join(project_root, 'pyproject.toml')
 )['tool']['poetry']
 
 # -- General configuration ------------------------------------------------
@@ -40,6 +40,13 @@ project_metadata = toml.load(
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
+    'sphinx_autodoc_typehints',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -93,13 +100,13 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = 'bootstrap'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 
-#html_theme_options = {}
+# html_theme_options = {}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -142,6 +149,3 @@ for (root, dirs, files) in os.walk(docs_root):
 
 # -- Options for HTMLHelp output ------------------------------------------
 
-# Output file base name for HTML help builder.
-htmlhelp_basename = project_metadata['name'] + 'doc'
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()

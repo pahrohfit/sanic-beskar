@@ -2,9 +2,12 @@ from sanic import Sanic
 import pendulum
 import pytest
 
+from io import StringIO, BytesIO
+
 from sanic_praetorian.utilities import (
     add_jwt_data_to_app_context,
     app_context_has_jwt_data,
+    generate_totp_qr,
     remove_jwt_data_from_app_context,
     current_user,
     current_user_id,
@@ -147,3 +150,26 @@ class TestPraetorianUtilities:
             duration_from_string('12x1y1z')
         with pytest.raises(ConfigurationError):
             duration_from_string('')
+
+    def test_segno_qr_generation(self, default_guard):
+        """
+        This test just verifies we can obtain a segno object
+        for rendering QR codes for TOTP usage.
+        """
+
+        png_out = BytesIO()
+        txt_out = StringIO()
+        totp = default_guard.totp_ctx.new()
+        qrcode = generate_totp_qr(totp.to_json())
+        assert qrcode
+
+        qrcode.save(kind='png', out=png_out)
+        qrcode.save(kind='txt', out=txt_out)
+
+        assert png_out != BytesIO()
+        assert type(png_out) == BytesIO
+        assert txt_out != StringIO()
+        assert type(txt_out) == StringIO
+
+        with pytest.raises(TypeError):
+            generate_totp_qr(None)

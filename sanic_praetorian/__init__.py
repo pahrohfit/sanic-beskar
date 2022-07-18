@@ -11,6 +11,7 @@ from sanic_praetorian.utilities import (
     current_user_id,
     current_rolenames,
     current_custom_claims,
+    generate_totp_qr,
 )
 
 from sanic_praetorian.user_mixins import TortoiseUserMixin

@@ -1,4 +1,4 @@
-name: dusky-python-cd
+name: pahrohfit-python-cd
 
 on:
   push:
@@ -11,14 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
       with:
         python-version: 3.8.9
     - name: get-poetry
-      run: pip install poetry==1.1.6
+      run: pip install poetry
     - name: login
-      run: poetry config http-basic.pypi dusktreader ${{ secrets.PYPI_PASSWORD }}
+      run: poetry config http-basic.pypi pahrohfit ${{ secrets.PYPI_PASSWORD }}
     - name: build
       run: poetry build
     - name: publish

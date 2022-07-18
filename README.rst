@@ -2,8 +2,8 @@
    :target: https://badge.fury.io/py/sanic-praetorian
    :alt:    Latest Published Version
 
-.. image::  https://travis-ci.org/dusktreader/sanic-praetorian.svg?branch=master
-   :target: https://travis-ci.org/dusktreader/sanic-praetorian
+.. image::  https://travis-ci.org/pahrohfit/sanic-praetorian.svg?branch=master
+   :target: https://travis-ci.org/pahrohfit/sanic-praetorian
    :alt:    Build Status
 
 .. image::  https://readthedocs.org/projects/sanic-praetorian/badge/?version=latest

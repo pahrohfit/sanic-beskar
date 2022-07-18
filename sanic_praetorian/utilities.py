@@ -1,8 +1,11 @@
 import functools
 import inspect
 import re
+from typing import NoReturn
 import warnings
 import json
+
+import segno
 
 from sanic import Sanic
 import pendulum
@@ -11,7 +14,7 @@ from sanic_praetorian.constants import RESERVED_CLAIMS
 from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
 
 
-def is_valid_json(data):
+def is_valid_json(data: str) -> json:
     """
     Simple helper to validate if a value is valid json data
     """
@@ -21,7 +24,7 @@ def is_valid_json(data):
         return False
 
 
-def duration_from_string(text):
+def duration_from_string(text: str) -> pendulum:
     """
     Parses a duration from a string. String may look like these patterns:
     * 1 Hour
@@ -61,8 +64,8 @@ def duration_from_string(text):
 
 def current_guard():
     """
-    Fetches the current instance of sanic-praetorian that is attached to the
-    current sanic app
+    Fetches the current instance of :py:class:`Praetorian`
+    that is attached to the current sanic app
     """
     guard = Sanic.get_app().ctx.extensions.get('praetorian', None)
     PraetorianError.require_condition(
@@ -72,14 +75,14 @@ def current_guard():
     return guard
 
 
-def app_context_has_jwt_data():
+def app_context_has_jwt_data() -> bool:
     """
     Checks if there is already jwt_data added to the app context
     """
     return hasattr(Sanic.get_app().ctx, 'jwt_data')
 
 
-def add_jwt_data_to_app_context(jwt_data):
+def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
     """
     Adds a dictionary of jwt data (presumably unpacked from a token) to the
     top of the sanic app's context
@@ -88,7 +91,7 @@ def add_jwt_data_to_app_context(jwt_data):
     ctx.jwt_data = jwt_data
 
 
-def get_jwt_data_from_app_context():
+def get_jwt_data_from_app_context() -> str:
     """
     Fetches a dict of jwt token data from the top of the sanic app's context
     """
@@ -104,7 +107,7 @@ def get_jwt_data_from_app_context():
     return jwt_data
 
 
-def remove_jwt_data_from_app_context():
+def remove_jwt_data_from_app_context() -> NoReturn:
     """
     Removes the dict of jwt token data from the top of the sanic app's context
     """
@@ -113,7 +116,7 @@ def remove_jwt_data_from_app_context():
         del ctx.jwt_data
 
 
-def current_user_id():
+def current_user_id() -> str:
     """
     This method returns the user id retrieved from jwt token data attached to
     the current sanic app's context
@@ -126,8 +129,14 @@ def current_user_id():
     )
     return user_id
 
+def generate_totp_qr(user_totp: json) -> segno:
+    """
+    This is a helper utility to generate a :py:mod:`segno`
+    QR code renderer, based upon a supplied `User` TOTP value.
+    """
+    return segno.make(user_totp)
 
-async def current_user():
+async def current_user() -> object:
     """
     This method returns a user instance for jwt token data attached to the
     current sanic app's context
@@ -142,7 +151,7 @@ async def current_user():
     return user
 
 
-def current_rolenames():
+def current_rolenames() -> set:
     """
     This method returns the names of all roles associated with the current user
     """
@@ -154,7 +163,7 @@ def current_rolenames():
         return set(r.strip() for r in jwt_data['rls'].split(','))
 
 
-def current_custom_claims():
+def current_custom_claims() -> dict:
     """
     This method returns any custom claims in the current jwt
     """

@@ -11,7 +11,6 @@ docs/build/*
 docs/_build/*
 !docs/build/.gitignore
 .cache/*
-.flake8
 .pytest_cache/*
 .vscode
 .coverage
@@ -28,3 +27,4 @@ coverage.xml
 auto-save-list
 tramp
 .\#*
+*.swp
