@@ -9,7 +9,7 @@ build:
       - asdf plugin add poetry
       - asdf install poetry latest
       - asdf global poetry latest
-      - poetry config virualenvs.create false
+      - poetry config virtualenvs.create false
     post_install:
       - |
         . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate"
