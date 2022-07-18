@@ -20,6 +20,8 @@
 import datetime
 import toml
 import os
+import sys
+sys.path.insert(0, os.path.abspath('../sanic_praetorian'))
 
 
 project_root = os.path.dirname(os.path.dirname(__file__))
