@@ -20,9 +20,6 @@ sanic-ext = "^22.6.2"
 simple-settings = "^1.2.0"
 Jinja2 = "^3.1.2"
 sanic-mailing = {git = "https://github.com/pahrohfit/sanic-mailing.git", rev = "development"}
-toml = {version = "^0.10.2", extras = ["docs"]}
-sphinx-rtd-theme = {version = "^1.0.0", extras = ["docs"]}
-sphinx = {version = "^5", extras = ["docs"]}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -36,6 +33,9 @@ pytest-asyncio = "^0.18.3"
 tortoise-orm = "^0.19.2"
 nest-asyncio = "^1.5.5"
 pytest-cov = "^3.0.0"
+toml  "^0.10.2"
+sphinx-rtd-theme = "^1.0.0"
+sphinx = "^5"
 
 [build-system]
 requires = ["poetry-core>=1.1"]

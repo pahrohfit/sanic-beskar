@@ -14,7 +14,7 @@ build:
       - |
         . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate"
         && cd sanic_praetorian
-        && poetry install -E docs
+        && poetry install
 
 sphinx:
   configuration: sanic_praetorian/docs/conf.py
