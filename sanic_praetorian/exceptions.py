@@ -24,7 +24,10 @@ class PraetorianError(SanicException, Buzz):
         self.message = f'{self.__class__.__name__}: {message}'
         self.extra_args = args
         self.extra_kwargs = kwargs
-        self.json_response = json({"error": message, "data": self.__class__.__name__, "status": self.status}, status=self.status)
+        self.json_response = json({"error": message,
+                                   "data": self.__class__.__name__,
+                                   "status": self.status},
+                                  status=self.status)
         super().__init__(self.message, self.status)
 
     def __str__(self):
