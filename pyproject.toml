@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-praetorian"
-version = "2.0.0_pre1"
+version = "2.0.0_rc2"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs (using jwt)"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -9,6 +9,9 @@ homepage = "https://sanic-praetorian.readthedocs.io/en/latest/"
 documentation = "https://sanic-praetorian.readthedocs.io/en/latest/"
 repository = "https://github.com/pahrohfit/sanic-praetorian"
 
+[project.urls]
+"Homepage" = "https://sanic-praetorian.readthedocs.io/en/latest/"
+"Bug Tracker" = "https://github.com/pahrohfit/sanic-praetorian/issues"
 
 [tool.poetry.dependencies]
 python = "^3.7"
