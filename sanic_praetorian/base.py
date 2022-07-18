@@ -458,7 +458,7 @@ class Praetorian():
         .. note:: If PRAETORIAN_TOTP_ENFORCE is set to `True`
                   (default), and a user has a TOTP configuration, this call
                   must include the `token` value, or it will raise a
-                  :py:exc:`TOTPRequired` Exception
+                  :py:exc:`sanic_praetorian.exceptions.TOTPRequired` exception
                   and not return the user.
                   
                   This means either you will need to call it again, providing
@@ -488,7 +488,7 @@ class Praetorian():
             or if the user is required to use TOTP, instead of
             as a seperate call to `authenticate_totp`, then lets do it here.
         Failure to provide a TOTP token, when the user is required to use
-            TOTP, results in a `TOTPRequired` Exception, and the calling
+            TOTP, results in a `TOTPRequired` exception, and the calling
             application will be required to either re-call `authenticate`
             with all 3 arugements, or call `authenticate_otp` directly.
         """
@@ -555,7 +555,8 @@ class Praetorian():
         is not None. If this check fails, a MissingUserError is raised. Next,
         checks if the user has a validation method. If the method does not
         exist, the check passes. If the method exists, it is called. If the
-        result of the call is not truthy, an :py:exc:`InvalidUserError` is raised
+        result of the call is not truthy, a
+        :py:exc:`sanic_praetorian.exceptions.InvalidUserError` is raised.
         """
         MissingUserError.require_condition(
             user is not None,
@@ -1253,11 +1254,10 @@ class Praetorian():
         Validate a password hash contained in the user object is
         hashed with the defined hash scheme (PRAETORIAN_HASH_SCHEME).
 
-        If not, raise an Exception of :py:exc:`LegacySchema`, unless the
-        `password` arguement is provided, in which case an attempt
-        to call `user.save()` will be made, updating the hashed
-        password to the currently desired hash scheme
-        (PRAETORIAN_HASH_SCHEME).
+        If not, raise an Exception of :py:exc:`sanic_praetorian.exceptions.LegacySchema`,
+        unless the `password` arguement is provided, in which case an attempt
+        to call `user.save()` will be made, updating the hashed password to the
+        currently desired hash scheme (PRAETORIAN_HASH_SCHEME).
 
         :param: user:     The user object to tie claim to
                               (username, id, email, etc). *MUST*
