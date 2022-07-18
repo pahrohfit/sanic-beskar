@@ -1,0 +1,4 @@
+[flake8]
+per-file-ignores =
+    tests/conftest.py: E402
+    tests/server.py: E402
