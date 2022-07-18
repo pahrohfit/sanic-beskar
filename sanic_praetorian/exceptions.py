@@ -3,13 +3,6 @@ from buzz import Buzz
 from sanic.exceptions import SanicException
 from sanic import json
 
-"""
-class PraetorianErrorHandler(ErrorHandler):
-    def default(self, request, exception):
-        exception = PraetorianError(exception)
-        return super().default(request, exception)
-"""
-
 
 class PraetorianError(SanicException, Buzz):
     """
@@ -162,7 +155,11 @@ class ConfigurationError(PraetorianError):
 
 class TOTPRequired(AuthenticationError):
     """
-    The user requires TOTP authentication, which was not
-        performed yet
+    The user requires TOTP authentication, per configuation
+    `PRAETORIAN_TOTP_ENFORCE` which was not performed
+    by this call to `authenticate()`. A call to
+    `authenticate_totp()` should be performed seperately,
+    or a call to `authenticate()` again, but providing the
+    users `token` value should be done.
     """
     pass

@@ -7,6 +7,8 @@ import textwrap
 import uuid
 import warnings
 
+from collections.abc import Callable
+
 from sanic import Sanic, Request
 from sanic.log import logger
 
@@ -79,11 +81,11 @@ class Praetorian():
 
     def __init__(
         self,
-        app=None,
-        user_class=None,
-        is_blacklisted=None,
-        encode_jwt_token_hook=None,
-        refresh_jwt_token_hook=None,
+        app: Sanic = None,
+        user_class: object = None,
+        is_blacklisted: Callable = None,
+        encode_jwt_token_hook: Callable = None,
+        refresh_jwt_token_hook: Callable = None,
     ):
         self.pwd_ctx = None
         self.totp_ctx = None
@@ -104,11 +106,11 @@ class Praetorian():
 
     def init_app(
         self,
-        app=None,
-        user_class=None,
-        is_blacklisted=None,
-        encode_jwt_token_hook=None,
-        refresh_jwt_token_hook=None,
+        app: Sanic = None,
+        user_class: object = None,
+        is_blacklisted: Callable = None,
+        encode_jwt_token_hook: Callable = None,
+        refresh_jwt_token_hook: Callable = None,
     ):
         """
         Initializes the Praetorian extension
@@ -403,12 +405,15 @@ class Praetorian():
 
         return verify
 
-    async def authenticate_totp(self, username, token):
+    async def authenticate_totp(self, username, token: str):
         """
-        Verifies that a TOTP validates agains the stored
-        TOTP for that username.
+        Verifies that a TOTP validates agains the stored TOTP for that
+        username.
 
-        If verification passes, the matching user instance is returned
+        If verification passes, the matching user instance is returned.
+
+        If automatically called by :py:func:`sanic_praetorian.base.Praetorian.authenticate`,
+        it accepts a `User` object and skips the `lookup` call.
         """
         PraetorianError.require_condition(
             self.user_class is not None,
@@ -447,6 +452,20 @@ class Praetorian():
         """
         Verifies that a password matches the stored password for that username.
         If verification passes, the matching user instance is returned
+
+        .. note:: If PRAETORIAN_TOTP_ENFORCE is set to `True`
+                  (default), and a user has a TOTP configuration, this call
+                  must include the `token` value, or it will raise a
+                  :py:func:`sanic_praetorian:base:exceptions.TOTPRequired` Exception
+                  and not return the user.
+                  
+                  This means either you will need to call it again, providing
+                  the `token` value from the user, or seperately call 
+                  :py:func:`sanic_praetorian:base:Praetorian.authenticate_totp`,
+                  which only performs validation of the `token` value,
+                  and not the users password.
+
+                  **Choose your own adventure.**
         """
         PraetorianError.require_condition(
             self.user_class is not None,
