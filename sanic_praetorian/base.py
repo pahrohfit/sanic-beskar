@@ -370,6 +370,14 @@ class Praetorian():
 
         return user_class
 
+    async def generate_user_totp(self) -> object:
+        """
+        Generates a :py:mod:`passlib` TOTP for a user. This must be manually saved/updated to the
+        `User` object.
+        """
+
+        return self.totp_ctx.new()
+    
     async def _verify_totp(self, token: str, user: object):
         """
         Verifies that a plaintext password matches the hashed version of that

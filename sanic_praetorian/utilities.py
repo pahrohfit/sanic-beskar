@@ -5,6 +5,8 @@ from typing import NoReturn
 import warnings
 import json
 
+import segno
+
 from sanic import Sanic
 import pendulum
 
@@ -127,6 +129,12 @@ def current_user_id() -> str:
     )
     return user_id
 
+def generate_totp_qr(user_totp: json) -> segno:
+    """
+    This is a helper utility to generate a :py:module:`segno`
+    QR code renderer, based upon a supplied `User` TOTP value.
+    """
+    return segno.make(user_totp)
 
 async def current_user() -> object:
     """

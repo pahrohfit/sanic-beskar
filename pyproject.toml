@@ -23,6 +23,7 @@ sanic-ext = "^22.6.2"
 simple-settings = "^1.2.0"
 Jinja2 = "^3.1.2"
 sanic-mailing = {git = "https://github.com/pahrohfit/sanic-mailing.git", rev = "development"}
+segno = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
