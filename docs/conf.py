@@ -19,14 +19,14 @@
 
 import datetime
 import toml
-import os
-# import sys
-# sys.path.insert(0, os.path.abspath('../sanic_praetorian'))
+from sys import path as sys_path
+from os import path as os_path
+sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
 
 
-project_root = os.path.dirname(os.path.dirname(__file__))
+project_root = os_path.dirname(os_path.dirname(__file__))
 project_metadata = toml.load(
-    os.path.join(project_root, 'pyproject.toml')
+    os_path.join(project_root, 'pyproject.toml')
 )['tool']['poetry']
 
 # -- General configuration ------------------------------------------------
@@ -142,4 +142,3 @@ for (root, dirs, files) in os.walk(docs_root):
 """
 
 # -- Options for HTMLHelp output ------------------------------------------
-
