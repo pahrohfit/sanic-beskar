@@ -52,10 +52,3 @@ sanic\_praetorian.utilities module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: sanic_praetorian
-   :members:
-   :undoc-members:
-   :show-inheritance:
