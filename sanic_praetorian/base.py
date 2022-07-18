@@ -70,7 +70,7 @@ from sanic_praetorian.constants import (
 )
 
 
-class Praetorian:
+class Praetorian():
     """
     Comprises the implementation for the sanic-praetorian sanic extension.
     Provides a tool that allows password authentication and token provision
