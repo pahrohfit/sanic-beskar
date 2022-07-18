@@ -24,4 +24,4 @@ Table of Contents
    Developer Guide <developer_guide>
    Contribution Guide <contributing>
    Code of Conduct <conduct>
-   API <sanic_praetorian>
+   API <source/modules>

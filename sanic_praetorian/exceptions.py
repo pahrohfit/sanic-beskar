@@ -19,9 +19,9 @@ class PraetorianError(SanicException, Buzz):
     status: int = 401
     json_response: dict = dict({})
 
-    def __init__(self, message, *args, **kwargs):
-        self.status = self.status
-        self.message = f'{self.__class__.__name__}: {message}'
+    def __init__(self, message: str, *args, **kwargs):
+        self.status: int = self.status
+        self.message: str = f'{self.__class__.__name__}: {message}'
         self.extra_args = args
         self.extra_kwargs = kwargs
         self.json_response = json({"error": message,
