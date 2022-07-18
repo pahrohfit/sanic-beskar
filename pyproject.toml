@@ -36,6 +36,7 @@ tortoise-orm = "^0.19.2"
 nest-asyncio = "^1.5.5"
 sphinx = "^4"
 sphinx-bootstrap-theme = "^0.8.1"
+pytest-cov = "^3.0.0"
 
 [build-system]
 requires = ["poetry>=0.12"]

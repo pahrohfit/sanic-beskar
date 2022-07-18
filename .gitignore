@@ -14,6 +14,8 @@ docs/_build/*
 .flake8
 .pytest_cache/*
 .vscode
+.coverage
+coverage.xml
 
 ### Emacs template
 # -*- mode: gitignore; -*-
