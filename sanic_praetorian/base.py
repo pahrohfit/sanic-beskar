@@ -8,7 +8,7 @@ import uuid
 import warnings
 
 from collections.abc import Callable
-from typing import Any
+from typing import Union
 
 from sanic import Sanic, Request
 from sanic.log import logger
@@ -406,7 +406,7 @@ class Praetorian():
 
         return verify
 
-    async def authenticate_totp(self, username:Any, token: str):
+    async def authenticate_totp(self, username:Union[str, object], token: str):
         """
         Verifies that a TOTP validates agains the stored TOTP for that
         username.
