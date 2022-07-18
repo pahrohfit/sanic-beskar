@@ -8,6 +8,7 @@ import uuid
 import warnings
 
 from collections.abc import Callable
+from typing import Any
 
 from sanic import Sanic, Request
 from sanic.log import logger
@@ -369,7 +370,7 @@ class Praetorian():
 
         return user_class
 
-    async def _verify_totp(self, token, user):
+    async def _verify_totp(self, token: str, user: object):
         """
         Verifies that a plaintext password matches the hashed version of that
         password using the stored passlib password context
@@ -405,15 +406,16 @@ class Praetorian():
 
         return verify
 
-    async def authenticate_totp(self, username, token: str):
+    async def authenticate_totp(self, username:Any, token: str):
         """
         Verifies that a TOTP validates agains the stored TOTP for that
         username.
 
         If verification passes, the matching user instance is returned.
 
-        If automatically called by :py:func:`sanic_praetorian.base.Praetorian.authenticate`,
-        it accepts a `User` object and skips the `lookup` call.
+        If automatically called by :py:func:`authenticate`,
+        it accepts a `User` object instead of `username` and skips
+        the `lookup` call.
         """
         PraetorianError.require_condition(
             self.user_class is not None,
@@ -448,7 +450,7 @@ class Praetorian():
 
         return user
 
-    async def authenticate(self, username, password, token=None):
+    async def authenticate(self, username: str, password: str, token: str = None):
         """
         Verifies that a password matches the stored password for that username.
         If verification passes, the matching user instance is returned
@@ -456,7 +458,7 @@ class Praetorian():
         .. note:: If PRAETORIAN_TOTP_ENFORCE is set to `True`
                   (default), and a user has a TOTP configuration, this call
                   must include the `token` value, or it will raise a
-                  :py:func:`sanic_praetorian:base:exceptions.TOTPRequired` Exception
+                  :py:exc:`TOTPRequired` Exception
                   and not return the user.
                   
                   This means either you will need to call it again, providing
@@ -514,7 +516,7 @@ class Praetorian():
 
         return user
 
-    def _verify_password(self, raw_password, hashed_password):
+    def _verify_password(self, raw_password: str, hashed_password: str):
         """
         Verifies that a plaintext password matches the hashed version of that
         password using the stored passlib password context
@@ -526,14 +528,14 @@ class Praetorian():
         return self.pwd_ctx.verify(raw_password, hashed_password)
 
     @deprecated("Use `hash_password` instead.")
-    def encrypt_password(self, raw_password):
+    def encrypt_password(self, raw_password: str):
         """
         *NOTE* This should be deprecated as its an incorrect definition for
             what is actually being done -- we are hashing, not encrypting
         """
         return self.hash_password(raw_password)
 
-    def error_handler(self, error):
+    def error_handler(self, error: PraetorianError):
         """
         Provides a sanic error handler that is used for PraetorianErrors
         (and derived exceptions).
@@ -547,7 +549,7 @@ class Praetorian():
         )
         return error.jsonify(), error.status_code, error.headers
 
-    def _check_user(self, user):
+    def _check_user(self, user: object):
         """
         Checks to make sure that a user is valid. First, checks that the user
         is not None. If this check fails, a MissingUserError is raised. Next,
