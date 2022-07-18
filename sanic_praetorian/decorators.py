@@ -74,8 +74,9 @@ def auth_accepted(method):
 def roles_required(*required_rolenames):
     """
     This decorator ensures that any uses accessing the decorated route have all
-    the needed roles to access it. If an @auth_required decorator is not
-    supplied already, this decorator will implicitly check @auth_required first
+    the needed roles to access it. If an :py:func:`@auth_required` decorator is not
+    supplied already, this decorator will implicitly check :py:func:`@auth_required`
+    first
     """
 
     def decorator(method):
@@ -105,8 +106,9 @@ def roles_required(*required_rolenames):
 def roles_accepted(*accepted_rolenames):
     """
     This decorator ensures that any uses accessing the decorated route have one
-    of the needed roles to access it. If an @auth_required decorator is not
-    supplied already, this decorator will implicitly check @auth_required first
+    of the needed roles to access it. If an :py:func:`@auth_required` decorator is not
+    supplied already, this decorator will implicitly check :py:func:`@auth_required`
+    first
     """
 
     def decorator(method):
