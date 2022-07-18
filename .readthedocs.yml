@@ -1,18 +1,21 @@
 version: 2
 
-python:
-  install:
-    - requirements: docs/requirements.txt
-    #- requirements: requirements.txt
-    - method: pip
-      path: .
-  system_packages: true
-
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.7"
-  commands:
-    - pip install poetry
-    - poetry install
-    - cd docs && poetry run python -m sphinx -T -E -b html -d _build/doctrees -D language=en . _build/html
+    python: '3.7'
+  jobs:
+    pre_create_environment:
+      - asdf plugin add poetry
+      - asdf install poetry latest
+      - asdf global poetry latest
+      - poetry config virualenvs.create false
+    post_install:
+      - |
+        . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate"
+        && cd sanic_praetorian
+        && poetry install -E docs
+
+sphinx:
+  configuration: sanic_praetorian/docs/conf.py
+  fail_on_warning: true

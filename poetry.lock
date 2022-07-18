@@ -48,7 +48,7 @@ typing_extensions = ">=3.7.2"
 name = "alabaster"
 version = "0.7.12"
 description = "A configurable sidebar-enabled Sphinx theme"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -129,7 +129,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 name = "babel"
 version = "2.10.3"
 description = "Internationalization utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -190,7 +190,7 @@ pycparser = "*"
 name = "charset-normalizer"
 version = "2.1.0"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6.0"
 
@@ -201,7 +201,7 @@ unicode_backport = ["unicodedata2"]
 name = "colorama"
 version = "0.4.5"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -247,7 +247,7 @@ wmi = ["wmi (>=1.5.1,<2.0.0)"]
 name = "docutils"
 version = "0.17.1"
 description = "Docutils -- Python Documentation Utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -346,7 +346,7 @@ python-versions = ">=3.5"
 name = "imagesize"
 version = "1.4.1"
 description = "Getting image size from png/jpeg/jpeg2000/gif file"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -354,7 +354,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 name = "importlib-metadata"
 version = "4.12.0"
 description = "Read metadata from Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -502,7 +502,7 @@ python-versions = ">=3.5"
 name = "packaging"
 version = "21.3"
 description = "Core utilities for Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -675,7 +675,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 name = "pygments"
 version = "2.12.0"
 description = "Pygments is a syntax highlighting package written in Python."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -697,7 +697,7 @@ tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 name = "pyparsing"
 version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6.8"
 
@@ -779,7 +779,7 @@ six = ">=1.5"
 name = "pytz"
 version = "2022.1"
 description = "World timezone definitions, modern and historical"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -803,7 +803,7 @@ python-versions = ">=3.6"
 name = "requests"
 version = "2.28.1"
 description = "Python HTTP for Humans."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7, <4"
 
@@ -957,15 +957,15 @@ python-versions = ">=3.5"
 name = "snowballstemmer"
 version = "2.2.0"
 description = "This package provides 29 stemmers for 28 languages generated from Snowball algorithms."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
 [[package]]
 name = "sphinx"
-version = "4.5.0"
+version = "5.0.2"
 description = "Python documentation generator"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -973,7 +973,7 @@ python-versions = ">=3.6"
 alabaster = ">=0.7,<0.8"
 babel = ">=1.3"
 colorama = {version = ">=0.3.5", markers = "sys_platform == \"win32\""}
-docutils = ">=0.14,<0.18"
+docutils = ">=0.14,<0.19"
 imagesize = "*"
 importlib-metadata = {version = ">=4.4", markers = "python_version < \"3.10\""}
 Jinja2 = ">=2.3"
@@ -987,17 +987,18 @@ sphinxcontrib-htmlhelp = ">=2.0.0"
 sphinxcontrib-jsmath = "*"
 sphinxcontrib-qthelp = "*"
 sphinxcontrib-serializinghtml = ">=1.1.5"
+sphinxcontrib-websupport = {version = "*", optional = true, markers = "extra == \"docs\""}
 
 [package.extras]
 docs = ["sphinxcontrib-websupport"]
-lint = ["flake8 (>=3.5.0)", "isort", "mypy (>=0.931)", "docutils-stubs", "types-typed-ast", "types-requests"]
-test = ["pytest", "pytest-cov", "html5lib", "cython", "typed-ast"]
+lint = ["flake8 (>=3.5.0)", "isort", "mypy (>=0.950)", "docutils-stubs", "types-typed-ast", "types-requests"]
+test = ["pytest (>=4.6)", "html5lib", "cython", "typed-ast"]
 
 [[package]]
 name = "sphinx-rtd-theme"
 version = "1.0.0"
 description = "Read the Docs theme for Sphinx"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 
@@ -1012,7 +1013,7 @@ dev = ["transifex-client", "sphinxcontrib-httpdomain", "bump2version"]
 name = "sphinxcontrib-applehelp"
 version = "1.0.2"
 description = "sphinxcontrib-applehelp is a sphinx extension which outputs Apple help books"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -1024,7 +1025,7 @@ test = ["pytest"]
 name = "sphinxcontrib-devhelp"
 version = "1.0.2"
 description = "sphinxcontrib-devhelp is a sphinx extension which outputs Devhelp document."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -1036,7 +1037,7 @@ test = ["pytest"]
 name = "sphinxcontrib-htmlhelp"
 version = "2.0.0"
 description = "sphinxcontrib-htmlhelp is a sphinx extension which renders HTML help files"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -1048,7 +1049,7 @@ test = ["pytest", "html5lib"]
 name = "sphinxcontrib-jsmath"
 version = "1.0.1"
 description = "A sphinx extension which renders display math in HTML via JavaScript"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -1059,7 +1060,7 @@ test = ["pytest", "flake8", "mypy"]
 name = "sphinxcontrib-qthelp"
 version = "1.0.3"
 description = "sphinxcontrib-qthelp is a sphinx extension which outputs QtHelp document."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -1071,13 +1072,28 @@ test = ["pytest"]
 name = "sphinxcontrib-serializinghtml"
 version = "1.1.5"
 description = "sphinxcontrib-serializinghtml is a sphinx extension which outputs \"serialized\" HTML files (json and pickle)."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
 [package.extras]
 lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
+
+[[package]]
+name = "sphinxcontrib-websupport"
+version = "1.2.4"
+description = "Sphinx API for Web Apps"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+sphinxcontrib-serializinghtml = "*"
+
+[package.extras]
+lint = ["flake8"]
+test = ["pytest", "sqlalchemy", "whoosh", "sphinx"]
 
 [[package]]
 name = "time-machine"
@@ -1094,7 +1110,7 @@ python-dateutil = "*"
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -1159,7 +1175,7 @@ python-versions = ">=3.7"
 name = "urllib3"
 version = "1.26.10"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4"
 
@@ -1212,7 +1228,7 @@ watchdog = ["watchdog"]
 name = "zipp"
 version = "3.8.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -1223,7 +1239,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "5492fe68ad6e61f340947bc6030ac244ef30e37d2260a0acce0a368665b5cba4"
+content-hash = "3787b4aebcbc827944f4738f3020db49122109a7c69e1077451b6718d3453ab9"
 
 [metadata.files]
 aiofiles = [
@@ -1867,8 +1883,8 @@ snowballstemmer = [
     {file = "snowballstemmer-2.2.0.tar.gz", hash = "sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1"},
 ]
 sphinx = [
-    {file = "Sphinx-4.5.0-py3-none-any.whl", hash = "sha256:ebf612653238bcc8f4359627a9b7ce44ede6fdd75d9d30f68255c7383d3a6226"},
-    {file = "Sphinx-4.5.0.tar.gz", hash = "sha256:7bf8ca9637a4ee15af412d1a1d9689fec70523a68ca9bb9127c2f3eeb344e2e6"},
+    {file = "Sphinx-5.0.2-py3-none-any.whl", hash = "sha256:d3e57663eed1d7c5c50895d191fdeda0b54ded6f44d5621b50709466c338d1e8"},
+    {file = "Sphinx-5.0.2.tar.gz", hash = "sha256:b18e978ea7565720f26019c702cd85c84376e948370f1cd43d60265010e1c7b0"},
 ]
 sphinx-rtd-theme = [
     {file = "sphinx_rtd_theme-1.0.0-py2.py3-none-any.whl", hash = "sha256:4d35a56f4508cfee4c4fb604373ede6feae2a306731d533f409ef5c3496fdbd8"},
@@ -1897,6 +1913,10 @@ sphinxcontrib-qthelp = [
 sphinxcontrib-serializinghtml = [
     {file = "sphinxcontrib-serializinghtml-1.1.5.tar.gz", hash = "sha256:aa5f6de5dfdf809ef505c4895e51ef5c9eac17d0f287933eb49ec495280b6952"},
     {file = "sphinxcontrib_serializinghtml-1.1.5-py2.py3-none-any.whl", hash = "sha256:352a9a00ae864471d3a7ead8d7d79f5fc0b57e8b3f95e9867eb9eb28999b92fd"},
+]
+sphinxcontrib-websupport = [
+    {file = "sphinxcontrib-websupport-1.2.4.tar.gz", hash = "sha256:4edf0223a0685a7c485ae5a156b6f529ba1ee481a1417817935b20bde1956232"},
+    {file = "sphinxcontrib_websupport-1.2.4-py2.py3-none-any.whl", hash = "sha256:6fc9287dfc823fe9aa432463edd6cea47fa9ebbf488d7f289b322ffcfca075c7"},
 ]
 time-machine = [
     {file = "time-machine-2.7.1.tar.gz", hash = "sha256:be6c1f0421a77a046db8fae00886fb364f683a86612b71dd5c74b22891590042"},
