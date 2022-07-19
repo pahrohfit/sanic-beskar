@@ -1,5 +1,3 @@
-import tempfile
-
 from tortoise.contrib.sanic import register_tortoise
 from tortoise.models import Model
 from tortoise import fields
@@ -9,7 +7,6 @@ from sanic import Sanic, json
 
 import sanic_praetorian
 from sanic_praetorian import Praetorian
-from sanic_praetorian.exceptions import PraetorianError
 from sanic_mailing import Mail
 
 
@@ -138,25 +135,23 @@ def create_app(db_path=None):
     async def populate_db(sanic):
         await User.create(username="the_dude",
                           email="the_dude@praetorian.test.io",
-                          password=_guard.hash_password("abides"),
-                         )
+                          password=_guard.hash_password("abides"),)
 
         await User.create(username="Walter",
                           email="walter@praetorian.test.io",
                           password=_guard.hash_password("calmerthanyouare"),
-                          roles="admin",
-                         )
+                          roles="admin",)
+
         await User.create(username="Donnie",
                           email="donnie@praetorian.test.io",
                           password=_guard.hash_password("iamthewalrus"),
-                          roles="operator",
-                         )
+                          roles="operator",)
+
         await User.create(username="Maude",
                           password=_guard.hash_password("andthorough"),
                           email="maude@praetorian.test.io",
-                          roles="operator,admin",
-                         )
-    
+                          roles="operator,admin",)
+
     # Set up some routes for the example
     @sanic_app.route("/login", methods=["POST"])
     async def login(request):
@@ -174,7 +169,6 @@ def create_app(db_path=None):
         ret = {"access_token": await _guard.encode_jwt_token(user)}
         return json(ret, status=200)
 
-
     @sanic_app.route("/protected")
     @sanic_praetorian.auth_required
     async def protected(request):
@@ -188,7 +182,6 @@ def create_app(db_path=None):
         user = await sanic_praetorian.current_user()
         return json({"message": f"protected endpoint (allowed user {user.username})"})
 
-
     @sanic_app.route("/protected_admin_required")
     @sanic_praetorian.roles_required("admin")
     async def protected_admin_required(request):
@@ -201,8 +194,7 @@ def create_app(db_path=None):
         """
         user = await sanic_praetorian.current_user()
         return json({"message": f"protected_admin_required endpoint (allowed user {user.username})"})
-    
-    
+
     @sanic_app.route("/protected_operator_accepted")
     @sanic_praetorian.roles_accepted("operator", "admin")
     async def protected_operator_accepted(request):
@@ -217,9 +209,8 @@ def create_app(db_path=None):
         user = await sanic_praetorian.current_user()
         return json({"message": f"protected_operator_accepted endpoint (allowed usr {user.username}"})
 
-    
     return sanic_app
-    
+
 
 # Run the example
 if __name__ == "__main__":
