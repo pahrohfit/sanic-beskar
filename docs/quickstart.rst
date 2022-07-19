@@ -52,7 +52,7 @@ $ poetry install
 Example
 -------
 
-A minimal example of how to use the flask-praetorian decorators is included:
+A minimal example of how to use the sanic-praetorian decorators is included:
 
 .. literalinclude:: ../example/basic.py
    :language: python
