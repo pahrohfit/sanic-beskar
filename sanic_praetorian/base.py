@@ -535,28 +535,6 @@ class Praetorian():
         )
         return self.pwd_ctx.verify(raw_password, hashed_password)
 
-    @deprecated("Use `hash_password` instead.")
-    def encrypt_password(self, raw_password: str):
-        """
-        *NOTE* This should be deprecated as its an incorrect definition for
-            what is actually being done -- we are hashing, not encrypting
-        """
-        return self.hash_password(raw_password)
-
-    def error_handler(self, error: PraetorianError):
-        """
-        Provides a sanic error handler that is used for PraetorianErrors
-        (and derived exceptions).
-        """
-        warnings.warn(
-            """
-            error_handler is deprecated.
-            Use Buzz.build_error_handler instead
-            """,
-            warnings.DeprecationWarning,
-        )
-        return error.jsonify(), error.status_code, error.headers
-
     def _check_user(self, user: object):
         """
         Checks to make sure that a user is valid. First, checks that the user
