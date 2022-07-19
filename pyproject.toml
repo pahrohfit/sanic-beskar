@@ -40,7 +40,6 @@ pytest-cov = "^3.0.0"
 toml = "^0.10.2"
 sphinx-rtd-theme = "^1.0.0"
 sphinx = "^5"
-sphinx-autodoc-typehints = "^1.18.3"
 
 [build-system]
 requires = ["poetry-core>=1.1"]
