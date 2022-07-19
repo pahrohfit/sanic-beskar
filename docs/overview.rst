@@ -14,14 +14,14 @@ to supply only essential functionality. Instead of trying to anticipate the
 needs of all users, *flask-praetorian* will provide a simple and secure mechanism
 to provide security for APIs specifically.
 
-This fork was based on `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>` 
+This fork was based on `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_
 v.1.3.0, and has been ported to Sanic, because we all want to *go fast*. In 
 addition to all of the `flask-praetorian` goodness, we've added asyncronous 
 support, as well as dual factor authentication. All intentions and efforts will 
 be spared to backport anything from the main `flask-praetorian` code into this fork.
 
 This extesion offers a batteries-included approach to security for your API.
-For essential security concerns for Sanic-based APIs,
+For essential security concerns for `Sanic <https://sanic.dev>`_-based APIs,
 `sanic-praetorian <https://github.com/pahrohfit/sanic-praetorian>`_ should
 supply everything you need.
 
@@ -38,7 +38,7 @@ The *sanic-praetorian* package can be used to:
 * Register new users using email verification
 * Support optional two factor authentication
 
-All of this is provided in a very simple to confiure and initialize Sanic
+All of this is provided in a very simple to confiure and initialize `Sanic <https://sanic.dev>`_
 extension. Though simple, the security provided by *sanic-praetorian* is strong
 due to the usage of the proven security technology of JWT
 and python's `PassLib <http://pythonhosted.org/passlib/>`_ package.

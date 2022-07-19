@@ -5,14 +5,17 @@ Requirements
 ------------
 
 * Python 3.7+
+* Sanic 22.6+
+* Sanic-Ext 22.6+ `provides CORS`
+* Any `async` Mail plugin, providing :py:func:`mail()` and :py:class:`Mailer()`, 
+  similiar to `Sanic-Mailing <https://github.com/pahrohfit/sanic-mailing>`_
 
 Note on Requirements
 ....................
+Older versions of `Sanic <https://sanic.dev>`_ may work, but are not supported. Stay current.
 
-I do not currently plan to support older versions of python. Python 2 support
-is very unlikely to arrive as the original author is a die-hard believer in
-python 3. As for older versions of python 3, my test harnesses depend on some
-features only available in python 3.7 and up.
+The examples utilize `Tortoise-ORM <https://tortoise.github.io>`_, but it is not required, or even installed
+by default (except if you install from poetry with the `-D` flag). Any `async` ORM can be utilized.
 
 Installation
 ------------
@@ -20,11 +23,11 @@ Installation
 .. note::
 
     sanic-praetorian does not support distutils or setuptools because the
-    author has very strong feelings about python packaging and the role pip
-    plays in taking us into a bright new future of standardized and usable
-    python packaging
+    origional author, as well as this maintainer, have very strong feelings
+    about python packaging and the role pip plays in taking us into a bright
+    new future of standardized and usable python packaging
 
-Install from pypi (**not yet available**)
+Install from pypi (**coming soon**)
 .........................................
 This will install the latest release of sanic-praetorian from pypi via pip::
 
@@ -40,9 +43,9 @@ $ git clone https://github.com/pahrohfit/sanic-praetorian.git
 Next, checkout the branch or tag that you wish to use::
 
 $ cd sanic-praetorian
-$ git checkout sanic
+$ git checkout master
 
-Finally, use poetry to install from the local directory::
+Finally, use `poetry <https://python-poetry.org>`_ to install from the local directory::
 
 $ poetry install
 
