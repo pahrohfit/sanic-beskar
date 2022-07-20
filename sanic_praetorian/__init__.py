@@ -14,7 +14,7 @@ from sanic_praetorian.utilities import (
     generate_totp_qr,
 )
 
-from sanic_praetorian.user_mixins import TortoiseUserMixin
+from sanic_praetorian.orm.tortoise_user_mixins import TortoiseUserMixin
 
 
 __all__ = [
