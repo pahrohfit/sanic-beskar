@@ -68,7 +68,7 @@ jobs:
         run: |
           poetry run flake8 tests --exit-zero --count --max-line-length=127 --statistics
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           flags: pytest # optional
