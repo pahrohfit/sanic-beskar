@@ -15,6 +15,7 @@ from sanic_praetorian.utilities import (
 )
 
 from sanic_praetorian.orm.tortoise_user_mixins import TortoiseUserMixin
+from sanic_praetorian.orm.umongo_user_mixins import UmongoUserMixin
 
 
 __all__ = [
@@ -26,7 +27,9 @@ __all__ = [
     "roles_accepted",
     "current_user",
     "current_user_id",
+    "generate_totp_qr",
     "current_rolenames",
     "current_custom_claims",
     "TortoiseUserMixin",
+    "UmongoUserMixin",
 ]
