@@ -75,9 +75,10 @@ from sanic_praetorian.constants import (
 
 class Praetorian():
     """
-    Comprises the implementation for the :py:mod:`sanic-praetorian` sanic extension.
-    Provides a tool that allows password authentication and token provision
-    for applications and designated endpoints
+    Comprises the implementation for the :py:mod:`sanic-praetorian`
+    :py:mod:`sanic` extension.  Provides a tool that allows password
+    authentication and token provision for applications and designated
+    endpoints
     """
 
     def __init__(
@@ -116,7 +117,7 @@ class Praetorian():
         """
         Initializes the :py:class:`Praetorian` extension
 
-        :param: app:                    The sanic app to bind this
+        :param: app:                    The :py:mod:`sanic` app to bind this
                                         extension to
         :param: user_class:             The class used to interact with
                                         user data
@@ -299,18 +300,18 @@ class Praetorian():
 
     def _validate_user_class(self, user_class):
         """
-        Validates the supplied user_class to make sure that it has the
+        Validates the supplied :py:data:`user_class` to make sure that it has the
         class methods and attributes necessary to function correctly.
         After validating class methods, will attempt to instantiate a dummy
         instance of the user class to test for the requisite attributes
 
         Requirements:
 
-        - ``lookup`` method. Accepts a string parameter, returns instance
-        - ``identify`` method. Accepts an identity parameter, returns instance
-        - ``identity`` attribute. Provides unique id for the instance
-        - ``rolenames`` attribute. Provides list of roles attached to instance
-        - ``password`` attribute. Provides hashed password for instance
+        - :py:meth:`lookup` method. Accepts a string parameter, returns instance
+        - :py:meth:`identify` method. Accepts an identity parameter, returns instance
+        - :py:attribue:`identity` attribute. Provides unique id for the instance
+        - :py:attribute:`rolenames` attribute. Provides list of roles attached to instance
+        - :py:attribute:`password` attribute. Provides hashed password for instance
         """
         PraetorianError.require_condition(
             getattr(user_class, "lookup", None) is not None,
@@ -373,7 +374,7 @@ class Praetorian():
     async def generate_user_totp(self) -> object:
         """
         Generates a :py:mod:`passlib` TOTP for a user. This must be manually saved/updated to the
-        `User` object.
+        :py:class:`User` object.
         """
 
         return self.totp_ctx.new()
@@ -390,8 +391,8 @@ class Praetorian():
         totp_factory = self.totp_ctx.new()
 
         """
-        Optionally, if a User model has a :py:meth:`get_cache_verify` method,
-        call it, and use that response as the `last_counter` value.
+        Optionally, if a :py:class:`User` model has a :py:meth:`get_cache_verify` method,
+        call it, and use that response as the :py:data:`last_counter` value.
         """
         _last_counter = None
         if hasattr(user, 'get_cache_verify') and callable(user.get_cache_verify):
@@ -400,9 +401,9 @@ class Praetorian():
                                      last_counter=_last_counter)
 
         """
-        Optionally, if our User model has a `cache_verify` function,
-        call it, providing the good verification `counter` and `cache_seconds`
-        to be stored by `cache_verify` function.
+        Optionally, if our User model has a :py:func:`cache_verify` function,
+        call it, providing the good verification :py:data:`counter` and
+        :py:data:`cache_seconds` to be stored by :py:func:`cache_verify` function.
 
         This is for security against replay attacks, and should ideally be kept
         in a cache, but can be stored in the db
@@ -422,8 +423,8 @@ class Praetorian():
         If verification passes, the matching user instance is returned.
 
         If automatically called by :py:func:`authenticate`,
-        it accepts a `User` object instead of `username` and skips
-        the `lookup` call.
+        it accepts a :py:class:`User` object instead of :py:data:`username`
+        and skips the :py:func:`lookup` call.
         """
         PraetorianError.require_condition(
             self.user_class is not None,
@@ -463,10 +464,10 @@ class Praetorian():
         Verifies that a password matches the stored password for that username.
         If verification passes, the matching user instance is returned
 
-        .. note:: If PRAETORIAN_TOTP_ENFORCE is set to `True`
+        .. note:: If :py:data:`PRAETORIAN_TOTP_ENFORCE` is set to `True`
                   (default), and a user has a TOTP configuration, this call
                   must include the `token` value, or it will raise a
-                  :py:exc:`sanic_praetorian.exceptions.TOTPRequired` exception
+                  :py:exc:`~sanic_praetorian.exceptions.TOTPRequired` exception
                   and not return the user.
                   
                   This means either you will need to call it again, providing
@@ -542,7 +543,7 @@ class Praetorian():
         checks if the user has a validation method. If the method does not
         exist, the check passes. If the method exists, it is called. If the
         result of the call is not truthy, a
-        :py:exc:`sanic_praetorian.exceptions.InvalidUserError` is raised.
+        :py:exc:`~sanic_praetorian.exceptions.InvalidUserError` is raised.
         """
         MissingUserError.require_condition(
             user is not None,
@@ -576,7 +577,7 @@ class Praetorian():
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
-                                           exceed the refresh_lifespan
+                                           exceed the :py:data:`refresh_lifespan`
         :param: override_refresh_lifespan: Override's the instance's refresh
                                            lifespan to set a custom duration
                                            after which the new token's
@@ -590,7 +591,7 @@ class Praetorian():
         :param: custom_claims:             Additional claims that should
                                            be packed in the payload. Note that
                                            any claims supplied here must be
-                                           JSON compatible types
+                                           :py:mod:`json` compatible types
         """
         ClaimCollisionError.require_condition(
             set(custom_claims.keys()).isdisjoint(RESERVED_CLAIMS),
@@ -672,7 +673,7 @@ class Praetorian():
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
-                                           exceed the refresh lifespan
+                                           exceed the :py:data:`refresh_lifespan`
         """
         moment = pendulum.now("UTC")
         data = await self.extract_jwt_token(token, access_type=AccessType.refresh)
@@ -867,8 +868,8 @@ class Praetorian():
     def read_token(self, request=None):
         """
         Tries to unpack the token from the current sanic request
-        in the locations configured by JWT_PLACES.
-        Check-Order is defined by the value order in JWT_PLACES.
+        in the locations configured by :py:data:`JWT_PLACES`.
+        Check-Order is defined by the value order in :py:data:`JWT_PLACES`.
         """
         try:
             if not request:
@@ -921,7 +922,7 @@ class Praetorian():
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
-                                           exceed the refresh_lifespan
+                                           exceed the :py:data:`refresh_lifespan`
         :param: override_refresh_lifespan: Override's the instance's refresh
                                            lifespan to set a custom duration
                                            after which the new token's
@@ -929,7 +930,7 @@ class Praetorian():
         :param: custom_claims:             Additional claims that should
                                            be packed in the payload. Note that
                                            any claims supplied here must be
-                                           JSON compatible types
+                                           :py:mod:`json` compatible types
         """
         token = await self.encode_jwt_token(
             user,
@@ -966,7 +967,7 @@ class Praetorian():
                                           used
         :param: confirmation_sender:      The sender that shoudl be attached
                                           to the confirmation email. Overrides
-                                          the PRAETORIAN_CONFIRMATION_SENDER
+                                          the :py:data:`PRAETORIAN_CONFIRMATION_SENDER`
                                           config setting
         :param: confirmation_uri:         The uri that should be visited to
                                           complete email registration. Should
@@ -974,13 +975,13 @@ class Praetorian():
                                           external service that calls a
                                           'finalize' method in the api to
                                           complete registration. Will override
-                                          the PRAETORIAN_CONFIRMATION_URI
+                                          the :py:data:`PRAETORIAN_CONFIRMATION_URI`
                                           config setting
         :param: subject:                  The registration email subject.
                                           Will override the
-                                          PRAETORIAN_CONFIRMATION_SUBJECT
+                                          :py:data:`PRAETORIAN_CONFIRMATION_SUBJECT`
                                           config setting.
-        :param: override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
+        :param: override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         """
@@ -1026,7 +1027,7 @@ class Praetorian():
         """
         Sends a password reset email to a user, containing a time expiring
             token usable for validation.  This requires your application
-            is initialized with a `mail` extension, which supports
+            is initialized with a :py:mod:`mail` extension, which supports
             sanic-mailing's :py:class:`Message` object and a 
             :py:meth:`send_message()` method.
 
@@ -1040,7 +1041,7 @@ class Praetorian():
                                           used
         :param: confirmation_sender:      The sender that shoudl be attached
                                           to the reset email. Overrides
-                                          the PRAETORIAN_RESET_SENDER
+                                          the :py:data:`PRAETORIAN_RESET_SENDER`
                                           config setting
         :param: confirmation_uri:         The uri that should be visited to
                                           complete password reset. Should
@@ -1048,13 +1049,13 @@ class Praetorian():
                                           external service that calls the
                                           'validate_reset_token()' method in
                                           the api to complete reset. Will
-                                          override the PRAETORIAN_RESET_URI
+                                          override the :py:data:`PRAETORIAN_RESET_URI`
                                           config setting
         :param: subject:                  The reset email subject.
                                           Will override the
-                                          PRAETORIAN_RESET_SUBJECT
+                                          :py:data:`PRAETORIAN_RESET_SUBJECT`
                                           config setting.
-        :param: override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
+        :param: override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         """
