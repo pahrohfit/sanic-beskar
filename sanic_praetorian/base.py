@@ -5,7 +5,6 @@ import pendulum
 import re
 import textwrap
 import uuid
-import warnings
 
 from collections.abc import Callable
 from typing import Union
@@ -117,11 +116,11 @@ class Praetorian():
         """
         Initializes the :py:class:`Praetorian` extension
 
-        :param: app:                    The :py:mod:`sanic` app to bind this
+        :param app:                    The :py:mod:`Sanic` app to bind this
                                         extension to
-        :param: user_class:             The class used to interact with
+        :param user_class:             The class used to interact with
                                         user data
-        :param: is_blacklisted:         A method that may optionally be
+        :param is_blacklisted:         A method that may optionally be
                                         used to check the token against
                                         a blacklist when access or refresh
                                         is requested should take the jti
@@ -573,22 +572,22 @@ class Praetorian():
         Encodes user data into a jwt token that can be used for authorization
         at protected endpoints
 
-        :param: override_access_lifespan:  Override's the instance's access
+        :param override_access_lifespan:  Override's the instance's access
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
                                            exceed the :py:data:`refresh_lifespan`
-        :param: override_refresh_lifespan: Override's the instance's refresh
+        :param override_refresh_lifespan: Override's the instance's refresh
                                            lifespan to set a custom duration
                                            after which the new token's
                                            refreshability will expire.
-        :param: bypass_user_check:         Override checking the user for
+        :param bypass_user_check:         Override checking the user for
                                            being real/active.  Used for
                                            registration token generation.
-        :param: is_registration_token:     Indicates that the token will be
+        :param is_registration_token:     Indicates that the token will be
                                            used only for email-based
                                            registration
-        :param: custom_claims:             Additional claims that should
+        :param custom_claims:             Additional claims that should
                                            be packed in the payload. Note that
                                            any claims supplied here must be
                                            :py:mod:`json` compatible types
@@ -666,10 +665,10 @@ class Praetorian():
         The new token's refresh expiration moment is the same as the old
         token's, but the new token's access expiration is refreshed
 
-        :param: token:                     The existing jwt token that needs to
+        :param token:                     The existing jwt token that needs to
                                            be replaced with a new, refreshed
                                            token
-        :param: override_access_lifespan:  Override's the instance's access
+        :param override_access_lifespan:  Override's the instance's access
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
@@ -917,17 +916,17 @@ class Praetorian():
         """
         Encodes a jwt token and packages it into a header dict for a given user
 
-        :param: user:                      The user to package the header for
-        :param: override_access_lifespan:  Override's the instance's access
+        :param user:                      The user to package the header for
+        :param override_access_lifespan:  Override's the instance's access
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
                                            exceed the :py:data:`refresh_lifespan`
-        :param: override_refresh_lifespan: Override's the instance's refresh
+        :param override_refresh_lifespan: Override's the instance's refresh
                                            lifespan to set a custom duration
                                            after which the new token's
                                            refreshability will expire.
-        :param: custom_claims:             Additional claims that should
+        :param custom_claims:             Additional claims that should
                                            be packed in the payload. Note that
                                            any claims supplied here must be
                                            :py:mod:`json` compatible types
@@ -960,16 +959,16 @@ class Praetorian():
         Returns a dict containing the information sent, along with the
             `result` from mail send.
 
-        :param: user:                     The user object to tie claim to
+        :param user:                     The user object to tie claim to
                                           (username, id, email, etc)
-        :param: template:                 HTML Template for confirmation email.
+        :param template:                 HTML Template for confirmation email.
                                           If not provided, a stock entry is
                                           used
-        :param: confirmation_sender:      The sender that shoudl be attached
+        :param confirmation_sender:      The sender that shoudl be attached
                                           to the confirmation email. Overrides
                                           the :py:data:`PRAETORIAN_CONFIRMATION_SENDER`
                                           config setting
-        :param: confirmation_uri:         The uri that should be visited to
+        :param confirmation_uri:         The uri that should be visited to
                                           complete email registration. Should
                                           usually be a uri to a frontend or
                                           external service that calls a
@@ -977,11 +976,11 @@ class Praetorian():
                                           complete registration. Will override
                                           the :py:data:`PRAETORIAN_CONFIRMATION_URI`
                                           config setting
-        :param: subject:                  The registration email subject.
+        :param subject:                  The registration email subject.
                                           Will override the
                                           :py:data:`PRAETORIAN_CONFIRMATION_SUBJECT`
                                           config setting.
-        :param: override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
+        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         """
@@ -1034,16 +1033,16 @@ class Praetorian():
         Returns a dict containing the information sent, along with the
             `result` from mail send.
 
-        :param: email:                    The email address to attempt to
+        :param email:                    The email address to attempt to
                                           send to
-        :param: template:                 HTML Template for reset email.
+        :param template:                 HTML Template for reset email.
                                           If not provided, a stock entry is
                                           used
-        :param: confirmation_sender:      The sender that shoudl be attached
+        :param confirmation_sender:      The sender that shoudl be attached
                                           to the reset email. Overrides
                                           the :py:data:`PRAETORIAN_RESET_SENDER`
                                           config setting
-        :param: confirmation_uri:         The uri that should be visited to
+        :param confirmation_uri:         The uri that should be visited to
                                           complete password reset. Should
                                           usually be a uri to a frontend or
                                           external service that calls the
@@ -1051,11 +1050,11 @@ class Praetorian():
                                           the api to complete reset. Will
                                           override the :py:data:`PRAETORIAN_RESET_URI`
                                           config setting
-        :param: subject:                  The reset email subject.
+        :param subject:                  The reset email subject.
                                           Will override the
                                           :py:data:`PRAETORIAN_RESET_SUBJECT`
                                           config setting.
-        :param: override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
+        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         """
@@ -1116,22 +1115,22 @@ class Praetorian():
         Returns a dict containing the information sent, along with the
             `result` from mail send.
 
-        :param: email:                    The email address to use
+        :param email:                    The email address to use
                                           (username, id, email, etc)
-        :param: user:                     The user object to tie claim to
+        :param user:                     The user object to tie claim to
                                           (username, id, email, etc)
-        :param: template:                 HTML Template for confirmation email.
+        :param template:                 HTML Template for confirmation email.
                                           If not provided, a stock entry is
                                           used
-        :param: action_sender:            The sender that should be attached
+        :param action_sender:            The sender that should be attached
                                           to the confirmation email.
-        :param: action_uri:               The uri that should be visited to
+        :param action_uri:               The uri that should be visited to
                                           complete the token action.
-        :param: subject:                  The email subject.
-        :param: override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
+        :param subject:                  The email subject.
+        :param override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
                                           to set an access lifespan for the
                                           registration token.
-        :param: custom_token:             The token to be carried as the
+        :param custom_token:             The token to be carried as the
                                           email's payload
         """
         notification = {
@@ -1246,11 +1245,11 @@ class Praetorian():
         to call `user.save()` will be made, updating the hashed password to the
         currently desired hash scheme (PRAETORIAN_HASH_SCHEME).
 
-        :param: user:     The user object to tie claim to
+        :param user:     The user object to tie claim to
                               (username, id, email, etc). *MUST*
                               include the hashed password field,
                               defined as `user.password`
-        :param: password: The user's provide password from login.
+        :param password: The user's provide password from login.
                               If present, this is used to validate
                               and then attempt to update with the
                               new PRAETORIAN_HASH_SCHEME scheme.

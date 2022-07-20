@@ -1,14 +1,6 @@
 sanic\_praetorian package
 =========================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   sanic_praetorian.orm
-
 Submodules
 ----------
 
@@ -48,6 +40,22 @@ sanic\_praetorian.utilities module
 ----------------------------------
 
 .. automodule:: sanic_praetorian.utilities
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sanic\_praetorian.orm.tortoise\_user\_mixins module
+---------------------------------------------------
+
+.. automodule:: sanic_praetorian.orm.tortoise_user_mixins
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+sanic\_praetorian.orm.umongo\_user\_mixins module
+-------------------------------------------------
+
+.. automodule:: sanic_praetorian.orm.umongo_user_mixins
    :members:
    :undoc-members:
    :show-inheritance:
