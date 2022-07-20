@@ -146,5 +146,8 @@ for (root, dirs, files) in os.walk(docs_root):
             ]
 """
 
+def setup(app):
+    app.add_css_file('theme_overrides.css')
+
 # -- Options for HTMLHelp output ------------------------------------------
 

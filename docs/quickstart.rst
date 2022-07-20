@@ -14,8 +14,10 @@ Note on Requirements
 ....................
 Older versions of `Sanic <https://sanic.dev>`_ may work, but are not supported. Stay current.
 
-The examples utilize `Tortoise-ORM <https://tortoise.github.io>`_, but it is not required, or even installed
-by default (except if you install from poetry with the `-D` flag). Any `async` ORM can be utilized.
+The examples mainly utilize `Tortoise-ORM <https://tortoise.github.io>`_, a couple also show support
+`uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_, but neither are
+required, or even installed by default (except if you install from poetry with the `-D` flag).
+Any `async` ORM can be utilized.
 
 Installation
 ------------
@@ -52,10 +54,42 @@ $ poetry install
 Example
 -------
 
-A minimal example of how to use the sanic-praetorian decorators is included:
+Several simple examples of :py:mod:`sanic_praetorian` doing various aspects of the software
+can be found in the `example/ <https://github.com/pahrohfit/sanic-praetorian/tree/master/example>`_
+directory:
+
+.. list-table:: Sanic-Praetorian Examples
+   :widths: auto
+   :header-rows: 1
+
+   * - File Name
+     - Description
+   * - `examples/basic.py 
+       <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/basic.py>`_
+     - Simple example of most basic usage (see below)
+   * - `examples/basic_with_tortoise_mixin.py
+       <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/basic_with_tortoise_mixin.py>`_
+     - Same simple example, using the provided
+       :py:mod:`~sanic_praetorian.orm.umongo_user_mixins`
+   * - `examples/basic_with_umongo_mixin.py
+       <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/basic_with_umongo_mixin.py>`_
+     - Same simple example, using the provided 
+       :py:mod:`~sanic_praetorian.orm.tortoise_user_mixins`
+   * - `examples/blacklist.py 
+       <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/blacklist.py>`_
+     - Simple example utilizing the blacklist functionality   
+   * - `examples/custom_claims.py 
+       <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/custom_claims.py>`_
+     - Simple example utilizing custom claims in the JWT
+   * - `examples/refresh.py
+       <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/refresh.py>`_
+     - Simple example showing token expirataion and refresh   
+   * - `examples/register.py
+       <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/register.py>`_
+     - Simple example showing email based registration validation                                              
+
+
+The most basic utilization of the :py:mod:`sanic_praetorian` decorators is included:
 
 .. literalinclude:: ../example/basic.py
    :language: python
-
-The above code can be found in `example/basic.py
-<https://github.com/pahrohfit/sanic-praetorian/blob/master/example/basic.py>`_.
