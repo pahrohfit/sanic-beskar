@@ -869,6 +869,15 @@ class Praetorian():
         Tries to unpack the token from the current sanic request
         in the locations configured by :py:data:`JWT_PLACES`.
         Check-Order is defined by the value order in :py:data:`JWT_PLACES`.
+
+        :param request: Sanic ``request`` object
+        :type request: :py:func:`~sanic.request`
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.MissingToken` if token
+                  is not found in any :py:data:`~sanic_praetorian.constants.JWT_PLACES`
+        
+        :returns: function to read the token based upon where the token was found
+        :rtype: function
         """
         try:
             if not request:
@@ -917,19 +926,26 @@ class Praetorian():
         Encodes a jwt token and packages it into a header dict for a given user
 
         :param user:                      The user to package the header for
+        :type user: :py:class:`User`
         :param override_access_lifespan:  Override's the instance's access
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
                                            exceed the :py:data:`refresh_lifespan`
+        :type override_access_lifespan: :py:data:`pendulum`
         :param override_refresh_lifespan: Override's the instance's refresh
                                            lifespan to set a custom duration
                                            after which the new token's
                                            refreshability will expire.
+        :type override_refresh_lifespan: :py:data:`pendulum`
         :param custom_claims:             Additional claims that should
                                            be packed in the payload. Note that
                                            any claims supplied here must be
                                            :py:mod:`json` compatible types
+        :type custom_claims: json
+
+        :returns: updated header, including token
+        :rtype: json
         """
         token = await self.encode_jwt_token(
             user,
@@ -951,23 +967,26 @@ class Praetorian():
     ):
         """
         Sends a registration email to a new user, containing a time expiring
-            token usable for validation.  This requires your application
-            is initialized with a `mail` extension, which supports
-            sanic-mailing's :py:class:`Message` object and a
-            :py:meth:`send_message` method.
+        token usable for validation.  This requires your application
+        is initialized with a `mail` extension, which supports
+        sanic-mailing's :py:class:`Message` object and a
+        :py:meth:`send_message` method.
 
         Returns a dict containing the information sent, along with the
             `result` from mail send.
 
         :param user:                     The user object to tie claim to
                                           (username, id, email, etc)
+        :type user: :py:class:`User`
         :param template:                 HTML Template for confirmation email.
                                           If not provided, a stock entry is
                                           used
+        :type template: :py:data:`filehandle`
         :param confirmation_sender:      The sender that shoudl be attached
                                           to the confirmation email. Overrides
                                           the :py:data:`PRAETORIAN_CONFIRMATION_SENDER`
                                           config setting
+        :type confirmation_sender: str
         :param confirmation_uri:         The uri that should be visited to
                                           complete email registration. Should
                                           usually be a uri to a frontend or
@@ -976,13 +995,16 @@ class Praetorian():
                                           complete registration. Will override
                                           the :py:data:`PRAETORIAN_CONFIRMATION_URI`
                                           config setting
+        :type confirmation_uri: str
         :param subject:                  The registration email subject.
                                           Will override the
                                           :py:data:`PRAETORIAN_CONFIRMATION_SUBJECT`
                                           config setting.
+        :type subject: str
         :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
+        :type override_access_lifespan: :py:data:`pendulum`
         """
         if subject is None:
             subject = self.confirmation_subject
@@ -1039,7 +1061,7 @@ class Praetorian():
         :param template:                 HTML Template for reset email.
                                           If not provided, a stock entry is
                                           used
-        :type template: :py:data:`filehandle` of template to use
+        :type template: :py:data:`filehandle`
         :param confirmation_sender:      The sender that shoudl be attached
                                           to the reset email. Overrides
                                           the :py:data:`PRAETORIAN_RESET_SENDER`
@@ -1128,7 +1150,7 @@ class Praetorian():
         :type user: :py:class:`User`
         :param template: HTML Template for confirmation email.
                           If not provided, a stock entry is used
-        :type template: :py:data:`filehandle` of template to use
+        :type template: :py:data:`filehandle`
         :param action_sender: The sender that should be attached
                                to the confirmation email.
         :type action_sender: str
@@ -1136,7 +1158,7 @@ class Praetorian():
         :type action_uri: str
         :param subject: The email subject.
         :type subject: str
-        :param override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
+        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         :type override_access_lifespan: :py:data:`pendulum`
