@@ -1187,6 +1187,14 @@ class Praetorian():
         Gets a user based on the registration token that is supplied. Verifies
         that the token is a regisration token and that the user can be properly
         retrieved
+
+        :param token: Registration token to validate
+        :type token: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+                   required parameters
+        :returns: :py:class:`User` object of looked up user after token validation
+        :rtype: :py:class:`User`
         """
         data = await self.extract_jwt_token(token, access_type=AccessType.register)
         user_id = data.get("id")
@@ -1206,6 +1214,14 @@ class Praetorian():
         Validates a password reset request based on the reset token
         that is supplied. Verifies that the token is a reset token
         and that the user can be properly retrieved
+
+        :param token: Reset token to validate
+        :type token: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+                   required parameters
+        :returns: :py:class:`User` object of looked up user after token validation
+        :rtype: :py:class:`User`
         """
         data = await self.extract_jwt_token(token, access_type=AccessType.reset)
         user_id = data.get("id")
@@ -1223,6 +1239,14 @@ class Praetorian():
     def hash_password(self, raw_password:str):
         """
         Hashes a plaintext password using the stored passlib password context
+
+        :param raw_password: cleartext password for the user
+        :type raw_password: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if
+                    no password is provided
+        :returns: Properly hashed ciphertext of supplied :py:data:`raw_password`
+        :rtype: str
         """
         PraetorianError.require_condition(
             self.pwd_ctx is not None,
@@ -1238,21 +1262,27 @@ class Praetorian():
     async def verify_and_update(self, user:object=None, password:str=None):
         """
         Validate a password hash contained in the user object is
-        hashed with the defined hash scheme (PRAETORIAN_HASH_SCHEME).
+        hashed with the defined hash scheme (:py:data:`PRAETORIAN_HASH_SCHEME`).
 
-        If not, raise an Exception of :py:exc:`sanic_praetorian.exceptions.LegacySchema`,
-        unless the `password` arguement is provided, in which case an attempt
-        to call `user.save()` will be made, updating the hashed password to the
-        currently desired hash scheme (PRAETORIAN_HASH_SCHEME).
+        If not, raise an Exception of :py:exc:`~sanic_praetorian.exceptions.LegacySchema`,
+        unless the :py:data:`password` arguement is provided, in which case an updated 
+        :py:class:`User` will be returned, and must be saved by the calling app. The
+        updated :py:class:`User` will contain the users current password updated to the
+        currently desired hash scheme (:py:exc:`~PRAETORIAN_HASH_SCHEME`).
 
         :param user:     The user object to tie claim to
                               (username, id, email, etc). *MUST*
-                              include the hashed password field,
-                              defined as `user.password`
+                              include the password field,
+                              defined as :py:attr:`password`
+        :type user: object
         :param password: The user's provide password from login.
                               If present, this is used to validate
                               and then attempt to update with the
-                              new PRAETORIAN_HASH_SCHEME scheme.
+                              new :py:data:`PRAETORIAN_HASH_SCHEME` scheme.
+        :type password: str
+
+        :returns: Authenticated :py:class:`User`
+        :raises: :py:exc:`~sanic_praetorian.exceptions.AuthenticationError` upon authentication failure
         """
         if self.pwd_ctx.needs_update(user.password):
             if password:
