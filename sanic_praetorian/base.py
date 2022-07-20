@@ -1025,23 +1025,26 @@ class Praetorian():
     ):
         """
         Sends a password reset email to a user, containing a time expiring
-            token usable for validation.  This requires your application
-            is initialized with a :py:mod:`mail` extension, which supports
-            sanic-mailing's :py:class:`Message` object and a 
-            :py:meth:`send_message()` method.
+        token usable for validation.  This requires your application
+        is initialized with a :py:mod:`mail` extension, which supports
+        sanic-mailing's :py:class:`Message` object and a 
+        :py:meth:`send_message()` method.
 
-        Returns a dict containing the information sent, along with the
-            `result` from mail send.
+        :returns: a :py:data:`dict` containing the information sent, along with the
+                  ``result`` from mail send.
 
         :param email:                    The email address to attempt to
                                           send to
+        :type email: str
         :param template:                 HTML Template for reset email.
                                           If not provided, a stock entry is
                                           used
+        :type template: :py:data:`filehandle` of template to use
         :param confirmation_sender:      The sender that shoudl be attached
                                           to the reset email. Overrides
                                           the :py:data:`PRAETORIAN_RESET_SENDER`
                                           config setting
+        :type confirmation_sender: str
         :param confirmation_uri:         The uri that should be visited to
                                           complete password reset. Should
                                           usually be a uri to a frontend or
@@ -1050,13 +1053,16 @@ class Praetorian():
                                           the api to complete reset. Will
                                           override the :py:data:`PRAETORIAN_RESET_URI`
                                           config setting
+        :type confirmation_uri: str
         :param subject:                  The reset email subject.
                                           Will override the
                                           :py:data:`PRAETORIAN_RESET_SUBJECT`
                                           config setting.
+        :type subject: str
         :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
+        :type override_access_lifespan: :py:data:`pendulum`
         """
         if subject is None:
             subject = self.reset_subject
@@ -1107,31 +1113,38 @@ class Praetorian():
     ):
         """
         Sends an email to a user, containing a time expiring
-            token usable for several actions.  This requires
-            your application is initialized with a `mail` extension,
-            which supports sanic-mailing's :py:class:`Message` object and
-            a :py:meth:`send_message` method.
+        token usable for several actions.  This requires
+        your application is initialized with a `mail` extension,
+        which supports sanic-mailing's :py:class:`Message` object and
+        a :py:meth:`send_message` method.
 
-        Returns a dict containing the information sent, along with the
-            `result` from mail send.
+        :returns: a :py:data:`dict` containing the information sent, along
+                  with the ``result`` from mail send.
+        :rtype: :py:data:`dict`
 
-        :param email:                    The email address to use
-                                          (username, id, email, etc)
-        :param user:                     The user object to tie claim to
-                                          (username, id, email, etc)
-        :param template:                 HTML Template for confirmation email.
-                                          If not provided, a stock entry is
-                                          used
-        :param action_sender:            The sender that should be attached
-                                          to the confirmation email.
-        :param action_uri:               The uri that should be visited to
-                                          complete the token action.
-        :param subject:                  The email subject.
+        :param email: The email address to use (username, id, email, etc)
+        :type email: str
+        :param user:  The user object to tie claim to (username, id, email, etc)
+        :type user: :py:class:`User`
+        :param template: HTML Template for confirmation email.
+                          If not provided, a stock entry is used
+        :type template: :py:data:`filehandle` of template to use
+        :param action_sender: The sender that should be attached
+                               to the confirmation email.
+        :type action_sender: str
+        :param action_uri: The uri that should be visited to complete the token action.
+        :type action_uri: str
+        :param subject: The email subject.
+        :type subject: str
         :param override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
                                           to set an access lifespan for the
                                           registration token.
-        :param custom_token:             The token to be carried as the
-                                          email's payload
+        :type override_access_lifespan: :py:data:`pendulum`
+        :param custom_token: The token to be carried as the email's payload
+        :type custom_token: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+                   required parameters
         """
         notification = {
             "result": None,
