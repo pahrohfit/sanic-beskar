@@ -97,9 +97,9 @@ def create_app(db_path=None):
             """
             try:
                 if username:
-                    return await User.find_one({'username': username})
+                    return await cls.find_one({'username': username})
                 elif email:
-                    return await User.find_one({'email': email})
+                    return await cls.find_one({'email': email})
                 else:
                     return None
             except NotCreatedError:
