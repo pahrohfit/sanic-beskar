@@ -5,13 +5,11 @@ from bson.objectid import ObjectId
 import sanic_praetorian
 from sanic_praetorian import Praetorian
 from sanic_mailing import Mail
-from sanic.log import logger
 
-from umongo import Document, EmbeddedDocument, fields, validate, post_load
+from umongo import Document, fields, validate
 from umongo.exceptions import NotCreatedError
 
 from umongo.frameworks.motor_asyncio import MotorAsyncIOInstance
-#from umongo.frameworks import MongoMockInstance
 from mongomock_motor import AsyncMongoMockClient
 
 
@@ -119,7 +117,6 @@ def create_app(db_path=None):
             try:
                 return await cls.find_one({'id': ObjectId(id)})
             except NotCreatedError:
-                logger.critical(f'Could not find by id: {id}')
                 return None
     
         @property
@@ -141,7 +138,6 @@ def create_app(db_path=None):
     # Add users for the example
     @sanic_app.listener('before_server_start')
     async def setup_example_db(sanic, loop):
-        logger.critical(f'User: {User}')
         await User.ensure_indexes()
 
         await User(username="the_dude",
