@@ -1284,7 +1284,6 @@ class TestPraetorian:
                                               guard_name=totp_protected_guard,
                                               totp=totp_protected.to_json())
 
-
         # ensure we can load the output as json
         the_protected_dude_totp = json.loads(the_protected_dude.totp)
         # ensure the key is encrypted

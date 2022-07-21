@@ -162,6 +162,7 @@ def current_user_id() -> str:
     )
     return user_id
 
+
 def generate_totp_qr(user_totp: json) -> segno:
     """
     This is a helper utility to generate a :py:mod:`segno`
@@ -174,6 +175,7 @@ def generate_totp_qr(user_totp: json) -> segno:
     :rtype: :py:class:`Segno`
     """
     return segno.make(user_totp)
+
 
 async def current_user() -> object:
     """

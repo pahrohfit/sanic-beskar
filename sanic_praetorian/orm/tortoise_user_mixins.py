@@ -27,8 +27,8 @@ class TortoiseUserMixin:
         sanic-praetorian requires that the user class has an :py:meth:`identity`
         instance attribute or property that provides the unique id of the user
         instance
-        
-        :returns: Provided :py:class:`User` ``id``
+
+        :returns: Provided :py:class:`User.id`
         :rtype: str
         """
         return self.id
@@ -62,8 +62,8 @@ class TortoiseUserMixin:
         *Required Method*
 
         sanic-praetorian requires that the user class implements a :py:meth:`lookup()`
-        class method that takes a single :py:data:`username` or :py:data:`email` 
-        argument and returns a user instance if there is one that matches or 
+        class method that takes a single :py:data:`username` or :py:data:`email`
+        argument and returns a user instance if there is one that matches or
         ``None`` if there is not.
 
         :param username: `username` of the user to lookup
