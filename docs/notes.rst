@@ -48,68 +48,6 @@ For example, you may wish to have the error handler log messages about failures
 prior to returning an error response. In this case, you can still take
 advantage of py-buzz's features to do so:
 
-Configuration Settings
-----------------------
-
-.. list-table:: Configuration Settings
-   :header-rows: 1
-
-   * - Flag
-     - Description
-     - Default Value
-   * - ``SECRET_KEY``
-     - A secret string value used to salt encryptions and hashes for the app.
-
-       ABSOLUTELY MUST BE SET TO SOMETHING OTHER THAN DEFAULT IN PRODUCTION.
-     - DO NOT USE THE DEFAULT IN PRODUCTION
-   * - ``PRAETORIAN_HASH_SCHEME``
-     - The hash scheme used to hash passwords in the database. If unset,
-       passlib will use the default scheme which is ``pbkdf2_sha512``
-     - ``'pbkdf2_sha512'``
-   * - ``JWT_ALLOWED_ALGORITHMS``
-     - A list of allowed algorithms that may be used to hash the JWT. See `the
-       PyJWT docs #algorithms <https://pyjwt.readthedocs.io/en/latest/algorithms.html>`_
-       for more details.
-     - ``['HS256']``
-   * - ``JWT_ALGORITHM``
-     - The jwt hashing algorithm to be used to encode tokens
-     - ``'HS256'``
-   * - ``JWT_ACCESS_LIFESPAN``
-     - The default length of time that a JWT may be used to access a protected
-       endpoint. See `the PyJWT docs #usage
-       <https://pyjwt.readthedocs.io/en/latest/usage.html#expiration-time-claim-exp>`_
-       for more details.
-     - ``{'minutes': 15}``
-   * - ``JWT_REFRESH_LIFESPAN``
-     - The default length of time that a JWT may be refreshed. JWT may also not
-       be refreshed if its access lifespan is not expired.
-     - ``{'days': 30}``
-   * - ``JWT_PLACES``
-     - A list of places where JWT will be checked
-     - ``['header', 'cookie']``
-   * - ``JWT_COOKIE_NAME``
-     - The name of the cookie in HTTP requests where the JWT will be found
-     - ``'access_token'``
-   * - ``JWT_HEADER_NAME``
-     - The name of the header in HTTP requests where the JWT will be found
-     - ``'Authorization'``
-   * - ``JWT_HEADER_TYPE``
-     - A string describing the type of the header. Usually 'Bearer' but may be
-       customized by the user
-     - ``'Bearer'``
-   * - ``USER_CLASS_VALIDATION_METHOD``
-     - The name of the method on a user instance that should be used to
-       validate that the user is active in the system.
-     - ``'is_valid'``
-   * - ``DISABLE_PRAETORIAN_ERROR_HANDLER``
-     - Do not register the Sanic error handler automatically. The user may wish
-       to configure the error handler themselves
-     - ``None``
-   * - ``PRAETORIAN_ROLES_DISABLED``
-     - If set, role decorators will not work but rolenames will not be a required field
-     - ``None``
-
-
 .. _user-class-requirements:
 
 Requirements for the user_class

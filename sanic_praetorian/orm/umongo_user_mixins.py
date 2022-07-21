@@ -43,13 +43,13 @@ class UmongoUserMixin():
             return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str]=None, email: Optional[str]=None):
+    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
         """
         *Required Method*
 
         sanic-praetorian requires that the user class implements a :py:meth:`lookup()`
-        class method that takes a single :py:data:`username` or :py:data:`email` 
-        argument and returns a user instance if there is one that matches or 
+        class method that takes a single :py:data:`username` or :py:data:`email`
+        argument and returns a user instance if there is one that matches or
         ``None`` if there is not.
 
         :param username: `username` of the user to lookup
@@ -99,7 +99,7 @@ class UmongoUserMixin():
         sanic-praetorian requires that the user class has an :py:meth:`identity`
         instance attribute or property that provides the unique id of the user
         instance
-        
+
         Mongo's :py:data:`id`, by default, is an :py:func:`~bson.objectid.ObjectId()`,
         which cannot be serialized by default -- so return as as a
         string value instead!
