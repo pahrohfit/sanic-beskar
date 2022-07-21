@@ -410,7 +410,7 @@ class Praetorian():
 
         . ..note:: The application secret(s) should be stored in a secure location, and each
          secret should contain a large amount of entropy (to prevent brute-force attacks
-         if the encrypted keys are leaked).  :py:function:`passlib.generate_secret()` is
+         if the encrypted keys are leaked).  :py:func:`passlib.generate_secret()` is
          provided as a convenience helper to generate a new application secret of suitable size.
          Best practice is to load these values from a file via secrets_path, pulled in value, or
          utilizing a `passlib wallet`, and then have your application give up permission

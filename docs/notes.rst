@@ -51,8 +51,9 @@ advantage of py-buzz's features to do so:
 Configuration Settings
 ----------------------
 
-.. list-table:: Configuration Settings
+.. list-table:: Core Configuration Settings
    :header-rows: 1
+   :widths: auto
 
    * - Flag
      - Description
@@ -109,6 +110,76 @@ Configuration Settings
      - If set, role decorators will not work but rolenames will not be a required field
      - ``None``
 
+.. list-table:: OTP Configuration Settings
+   :header-rows: 1
+   :widths: auto
+
+   * - Flag
+     - Description
+     - Default Value
+   * - ``PRAETORIAN_TOTP_ENFORCE``
+     - When supporting OTP, if a user is configured with TOTP information,
+       should password authentication *require* TOTP validation before a
+       successful response is provided, or leave it up to the application
+       code to check and enforce.
+     - ``True``
+   * - ``PRAETORIAN_TOTP_SECRETS_TYPE``
+     - The type of `secrets` protection for the TOTP implimentation. The
+       available options are:
+
+       * ``None`` (default) indicates **no** encryption protection of stored
+         TOTP configuration for each user (data will be stored, in clear, in
+         your datastore). This is most likely a terrible idea for PRODUCTION
+         applications.
+       * ``file`` indicates encryption secret material is stored in a file,
+         available on the filesystem, at the time of app initialization.
+       * ``wallet`` indicates a `passlib.TOTP.AppWallet()
+         <https://passlib.readthedocs.io/en/stable/lib/passlib.totp.html#passlib.totp.AppWallet>`_
+         is being used.
+       * ``string`` indicates the secret material will be provided as a
+         JSON string, as defined by `passlib.TOTP.AppWallet()
+         <https://passlib.readthedocs.io/en/stable/lib/passlib.totp.html#passlib.totp.AppWallet>`_
+
+       ABSOLUTELY MUST BE SET TO SOMETHING OTHER THAN DEFAULT IN PRODUCTION.
+     - DO NOT USE THE DEFAULT ``None`` IN PRODUCTION
+   * - ``PRAETORIAN_TOTP_SECRETS_DATA``
+     - The string, wallet, or file path, as defined by the
+       ``PRAETORIAN_SECRETS_TYPE`` value.
+
+       If anything other than ``None`` is specified for ``PRAETORIAN_SECRETS_TYPE``,
+       a ``None`` or invalid value for this will cause a fault in application
+       initialization.
+     - ``None``
+
+.. list-table:: Mailer Configuration Settings
+   :header-rows: 1
+   :widths: auto
+
+   * - Flag
+     - Description
+     - Default Value
+   * - ``PRAETORIAN_RESET_SENDER``
+     - Default `From:` address for password reset emails.
+     - ``you@whatever.com"``
+   * - ``PRAETORIAN_RESET_SUBJECT``
+     - Default `Subject:` line for password reset emails.
+     - ``"Please confirm your registration"``
+   * - ``PRAETORIAN_RESET_TEMPLATE``
+     - A `Jinja2 <https://github.com/pallets/jinja>`_ template to
+       use for password reset emails. The default value is pointing
+       to an included basic template file.
+     - ``templates/reset_email.html``
+   * - ``PRAETORIAN_CONFIRMATION_SENDER``
+     - Default `From:` address for new account confirmation emails.
+     - ``you@whatever.com"``
+   * - ``PRAETORIAN_CONFIRMATION_SUBJECT``
+     - Default `Subject:` line for new account confirmation emails.
+     - ``"Password Reset Requested"``
+   * - ``PRAETORIAN_CONFIRMATION_TEMPLATE``
+     - A `Jinja2 <https://github.com/pallets/jinja>`_ template to
+       use for new account confirmation emails. The default value is pointing
+       to an included basic template file.
+     - ``templates/registration_email.html``
 
 .. _user-class-requirements:
 
