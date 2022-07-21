@@ -17,6 +17,12 @@ from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
 def is_valid_json(data: str) -> json:
     """
     Simple helper to validate if a value is valid json data
+
+    :param data: Data to validate for valid JSON
+    :type data: str
+
+    :returns: ``True``, ``False``
+    :rtype: bool
     """
     try:
         return json.loads(data)
@@ -32,6 +38,14 @@ def duration_from_string(text: str) -> pendulum:
     * 1y11d20m
 
     An exception will be raised if the text cannot be parsed
+
+    :param text: String to parse for duration detail
+    :type text: str
+
+    :returns: Time Object
+    :rtype: :py:mod:`pendulum`
+
+    :raises: :py:exc:`~sanic_praetorian.ConfigurationError` on bad strings
     """
     text = text.replace(' ', '')
     text = text.replace(',', '')
@@ -66,6 +80,11 @@ def current_guard():
     """
     Fetches the current instance of :py:class:`Praetorian`
     that is attached to the current sanic app
+
+    :returns: Current Praetorian Guard object for this app context
+    :rtype: :py:class:`~sanic_praetorian.Praetorian`
+
+    :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no guard found
     """
     guard = Sanic.get_app().ctx.extensions.get('praetorian', None)
     PraetorianError.require_condition(
@@ -78,6 +97,9 @@ def current_guard():
 def app_context_has_jwt_data() -> bool:
     """
     Checks if there is already jwt_data added to the app context
+
+    :returns: ``True``, ``False``
+    :rtype: bool
     """
     return hasattr(Sanic.get_app().ctx, 'jwt_data')
 
@@ -86,6 +108,9 @@ def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
     """
     Adds a dictionary of jwt data (presumably unpacked from a token) to the
     top of the sanic app's context
+
+    :param jwt_data: ``dict`` of JWT data to add
+    :type jwt_data: dict
     """
     ctx = Sanic.get_app().ctx
     ctx.jwt_data = jwt_data
@@ -94,6 +119,10 @@ def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
 def get_jwt_data_from_app_context() -> str:
     """
     Fetches a dict of jwt token data from the top of the sanic app's context
+
+    :returns: JWT Token ``dict`` found in current app context
+    :rtype: dict
+    :raises: :py:exc:`~sanic_praetorian.PraetorianError` on missing token
     """
     ctx = Sanic.get_app().ctx
     jwt_data = getattr(ctx, 'jwt_data', None)
@@ -120,6 +149,10 @@ def current_user_id() -> str:
     """
     This method returns the user id retrieved from jwt token data attached to
     the current sanic app's context
+
+    :returns: ``id`` of current :py:class:`User`, if any
+    :rtype: str
+    :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no user/token found
     """
     jwt_data = get_jwt_data_from_app_context()
     user_id = jwt_data.get('id', None)
@@ -133,6 +166,12 @@ def generate_totp_qr(user_totp: json) -> segno:
     """
     This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.
+
+    :param user_totp: TOTP configuration of the user
+    :type user_totp: json
+
+    :returns: ``Segno`` object based upon user's stored TOTP configuration
+    :rtype: :py:class:`Segno`
     """
     return segno.make(user_totp)
 
@@ -140,6 +179,10 @@ async def current_user() -> object:
     """
     This method returns a user instance for jwt token data attached to the
     current sanic app's context
+
+    :returns: Current logged in ``User`` object
+    :rtype: ``User``
+    :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no user identified
     """
     user_id = current_user_id()
     guard = current_guard()
@@ -154,6 +197,9 @@ async def current_user() -> object:
 def current_rolenames() -> set:
     """
     This method returns the names of all roles associated with the current user
+
+    :returns: Set of roles for currently logged in users
+    :rtype: set
     """
     jwt_data = get_jwt_data_from_app_context()
     if 'rls' not in jwt_data:
@@ -166,6 +212,9 @@ def current_rolenames() -> set:
 def current_custom_claims() -> dict:
     """
     This method returns any custom claims in the current jwt
+
+    :returns: Custom claims for currently logged in user
+    :rtype: dict
     """
     jwt_data = get_jwt_data_from_app_context()
     return {k: v for (k, v) in jwt_data.items() if k not in RESERVED_CLAIMS}
