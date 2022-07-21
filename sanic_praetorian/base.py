@@ -180,34 +180,6 @@ class Praetorian():
             ),
         )
 
-        # TODO: add 'issuser', at the very least
-        totp_type = app.config.get(
-            "PRAETORIAN_TOTP_SECRETS_TYPE",
-            DEFAULT_TOTP_SECRETS_TYPE
-        )
-        if totp_type:
-            """
-            If we are saying we are using a TOTP secret protection type,
-            we need to ensure the type is something supported (file, string, wallet),
-            and that the PRAETORIAN_TOTP_SECRETS_DATA is populated.
-            """
-            PraetorianError.require_condition(
-                totp_type.lower() in ["file", "string", "wallet"]
-                and app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"),
-                "If {} is set, it must be one of the following schemes: {}".format(
-                    "PRAETORIAN_TOTP_SECRETS_TYPE",
-                    ["file", "string"],
-                ),
-            )
-            if totp_type.lower == 'file':
-                self.totp_ctx = TOTP.using(secrets_path=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
-            elif totp_type.lower == 'string':
-                self.totp_ctx = TOTP.using(secrets=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
-            elif totp_type.lower == 'wallet':
-                self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
-        else:
-            self.totp_ctx = TOTP.using()
-
         valid_schemes = self.pwd_ctx.schemes()
         PraetorianError.require_condition(
             self.hash_scheme in valid_schemes or self.hash_scheme is None,
@@ -297,6 +269,14 @@ class Praetorian():
             "PRAETORIAN_TOTP_ENFORCE",
             DEFAULT_TOTP_ENFORCE,
         )
+        self.totp_secrets_type = app.config.get(
+            "PRAETORIAN_TOTP_SECRETS_TYPE",
+            DEFAULT_TOTP_SECRETS_TYPE,
+        )
+        self.totp_secrets_data = app.config.get(
+            "PRAETORIAN_TOTP_SECRETS_DATA",
+            DEFAULT_TOTP_SECRETS_DATA,
+        )
 
         if isinstance(self.access_lifespan, dict):
             self.access_lifespan = pendulum.duration(**self.access_lifespan)
@@ -315,6 +295,32 @@ class Praetorian():
             isinstance(self.refresh_lifespan, datetime.timedelta),
             "refresh lifespan was not configured",
         )
+
+        # TODO: add 'issuser', at the very least
+        if self.totp_secrets_type:
+            """
+            If we are saying we are using a TOTP secret protection type,
+            we need to ensure the type is something supported (file, string, wallet),
+            and that the PRAETORIAN_TOTP_SECRETS_DATA is populated.
+            """
+            self.totp_secrets_type = self.totp_secrets_type.lower()
+
+            PraetorianError.require_condition(
+                self.totp_secrets_type in ["file", "string", "wallet"]
+                and self.totp_secrets_data,
+                "If {} is set, it must be one of the following schemes: {}".format(
+                    "PRAETORIAN_TOTP_SECRETS_TYPE",
+                    ["file", "string", "wallet"],
+                ),
+            )
+            if self.totp_secrets_type == 'file':
+                self.totp_ctx = TOTP.using(secrets_path=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+            elif self.totp_secrets_type == 'string':
+                self.totp_ctx = TOTP.using(secrets=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+            elif self.totp_secrets_type == 'wallet':
+                self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+        else:
+            self.totp_ctx = TOTP.using()
 
         self.is_testing = app.config.get("TESTING", False)
 
