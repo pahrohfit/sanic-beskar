@@ -68,6 +68,8 @@ from sanic_praetorian.constants import (
     RESERVED_CLAIMS,
     VITAM_AETERNUM,
     DEFAULT_TOTP_ENFORCE,
+    DEFAULT_TOTP_SECRETS_TYPE,
+    DEFAULT_TOTP_SECRETS_DATA,
     AccessType,
 )
 
@@ -179,7 +181,32 @@ class Praetorian():
         )
 
         # TODO: add 'issuser', at the very least
-        self.totp_ctx = TOTP.using()
+        totp_type = app.config.get(
+            "PRAETORIAN_TOTP_SECRETS_TYPE",
+            DEFAULT_TOTP_SECRETS_TYPE
+        )
+        if totp_type:
+            """
+            If we are saying we are using a TOTP secret protection type,
+            we need to ensure the type is something supported (file, string, wallet),
+            and that the PRAETORIAN_TOTP_SECRETS_DATA is populated.
+            """
+            PraetorianError.require_condition(
+                totp_type.lower() in ["file", "string", "wallet"]
+                and app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"),
+                "If {} is set, it must be one of the following schemes: {}".format(
+                    "PRAETORIAN_TOTP_SECRETS_TYPE",
+                    ["file", "string"],
+                ),
+            )
+            if totp_type.lower == 'file':
+                self.totp_ctx = TOTP.using(secrets_path=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+            elif totp_type.lower == 'string':
+                self.totp_ctx = TOTP.using(secrets=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+            elif totp_type.lower == 'wallet':
+                self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+        else:
+            self.totp_ctx = TOTP.using()
 
         valid_schemes = self.pwd_ctx.schemes()
         PraetorianError.require_condition(
@@ -374,7 +401,28 @@ class Praetorian():
         """
         Generates a :py:mod:`passlib` TOTP for a user. This must be manually saved/updated to the
         :py:class:`User` object.
+
+        . ..note:: The application secret(s) should be stored in a secure location, and each
+         secret should contain a large amount of entropy (to prevent brute-force attacks
+         if the encrypted keys are leaked).  :py:function:`passlib.generate_secret()` is
+         provided as a convenience helper to generate a new application secret of suitable size.
+         Best practice is to load these values from a file via secrets_path, pulled in value, or
+         utilizing a `passlib wallet`, and then have your application give up permission
+         to read this file once it's running.
+        
+        :returns: New :py:mod:`passlib` TOTP secret object
         """
+        if not self.app.config.get("PRAETORIAN_TOTP_SECRETS_TYPE"):
+            logger.warning(
+                textwrap.dedent(
+                    f"""
+                    Sanic_Praetorian is attempting to generate a new TOTP
+                    for a user, but you haven't configured a PRAETORIAN_TOTP_SECRETS_TYPE
+                    value, which means you aren't properly encrypting these stored
+                    TOTP secrets. *tsk*tsk*
+                    """
+                )
+            )
 
         return self.totp_ctx.new()
     
