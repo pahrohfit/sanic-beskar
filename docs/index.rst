@@ -18,9 +18,8 @@ Table of Contents
    :caption: Contents:
 
    Quickstart <quickstart>
+   Configuration <configuration>
    Notes <notes>
-   Comparison to Other Sanic JWT Libraries <comparison>
-   Tutorial <tutorial>
    Developer Guide <developer_guide>
    Contribution Guide <contributing>
    Code of Conduct <conduct>
