@@ -1259,6 +1259,7 @@ class Praetorian():
             msg = Message(
                 subject=notification["subject"],
                 recipients=[notification["email"]],
+                sender=action_sender,
                 html=notification["message"],
                 subtype="html",
                 reply_to=[action_sender],
