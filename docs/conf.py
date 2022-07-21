@@ -46,7 +46,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
-    'sphinx_autodoc_typehints',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -146,6 +145,9 @@ for (root, dirs, files) in os.walk(docs_root):
                 'searchbox.html',
             ]
 """
+
+def setup(app):
+    app.add_css_file('theme_overrides.css')
 
 # -- Options for HTMLHelp output ------------------------------------------
 

@@ -7,6 +7,8 @@ from sanic import Sanic, json
 
 import sanic_praetorian
 from sanic_praetorian import Praetorian
+from sanic_praetorian.orm import TortoiseUserMixin
+
 from sanic_mailing import Mail
 
 
@@ -15,7 +17,7 @@ _mail = Mail()
 
 
 # A generic user model that might be used by an app powered by sanic-praetorian
-class User(Model):
+class User(Model, TortoiseUserMixin):
     """
     Provides a basic user model for use in the tests
     """
@@ -32,69 +34,6 @@ class User(Model):
 
     def __str__(self):
         return f"User {self.id}: {self.username}"
-
-    @property
-    def rolenames(self):
-        """
-        *Required Attribute or Property*
-
-        sanic-praetorian requires that the user class has a :py:meth:``rolenames``
-        instance attribute or property that provides a list of strings that
-        describe the roles attached to the user instance.
-
-        This can be a seperate table (probably sane), so long as this attribute
-        or property properly returns the associated values for the user as a
-        list of strings.
-        """
-        try:
-            return self.roles.split(",")
-        except Exception:
-            return []
-
-    @classmethod
-    async def lookup(cls, username=None, email=None):
-        """
-        *Required Method*
-
-        sanic-praetorian requires that the user class implements a :py:meth:``lookup()``
-        class method that takes a single ``username`` or ``email`` argument and
-        returns a user instance if there is one that matches or ``None`` if
-        there is not.
-        """
-        try:
-            if username:
-                return await cls.filter(username=username).get()
-            elif email:
-                return await cls.filter(email=email).get()
-            else:
-                return None
-        except DoesNotExist:
-            return None
-
-    @classmethod
-    async def identify(cls, id):
-        """
-        *Required Attribute or Property*
-
-        sanic-praetorian requires that the user class implements an :py:meth:``identify()``
-        class method that takes a single ``id`` argument and returns user instance if
-        there is one that matches or ``None`` if there is not.
-        """
-        try:
-            return await cls.filter(id=id).get()
-        except DoesNotExist:
-            return None
-
-    @property
-    def identity(self):
-        """
-        *Required Attribute or Property*
-
-        sanic-praetorian requires that the user class has an :py:meth:``identity``
-        instance attribute or property that provides the unique id of the user
-        instance
-        """
-        return self.id
 
 
 def create_app(db_path=None):
@@ -115,14 +54,12 @@ def create_app(db_path=None):
 
     # sanic-mailing config
     sanic_app.config.MAIL_SERVER = 'localhost:25'
-    sanic_app.config.MAIL_DEFAULT_SENDER = 'praetorian@example.io'
     sanic_app.config.MAIL_USERNAME = ''
     sanic_app.config.MAIL_PASSWORD = ''
     sanic_app.config.MAIL_FROM = 'fake@fake.com'
     sanic_app.config.JWT_PLACES = ['header', 'cookie']
 
     _guard.init_app(sanic_app, User)
-    _mail.init_app(sanic_app)
     sanic_app.ctx.mail = _mail
 
     register_tortoise(
@@ -210,54 +147,6 @@ def create_app(db_path=None):
         """
         user = await sanic_praetorian.current_user()
         return json({"message": f"protected_operator_accepted endpoint (allowed usr {user.username}"})
-
-
-    @sanic_app.route('/register', methods=['POST'])
-    async def register(request):
-        """
-        Registers a new user by parsing a POST request containing new user info and
-        dispatching an email with a registration token
-    
-        .. example::
-           $ curl http://localhost:5000/register -X POST \
-             -d '{
-               "username":"Brandt", \
-               "password":"herlifewasinyourhands" \
-               "email":"brandt@biglebowski.com"
-             }'
-        """
-        req = request.json
-        username = req.get('username', None)
-        email = req.get('email', None)
-        password = req.get('password', None)
-        new_user = await User.create(
-            username=username,
-            email=email,
-            password=_guard.hash_password(password),
-            roles='operator',
-        )
-
-        await _guard.send_registration_email(email, user=new_user)
-        ret = {'message': 'successfully sent registration email to user {}'.format(
-            new_user.username
-        )}
-        return (json(ret), 201)
-    
-    @sanic_app.route('/finalize')
-    async def finalize(request):
-        """
-        Finalizes a user registration with the token that they were issued in their
-        registration email
-    
-        .. example::
-           $ curl http://localhost:5000/finalize -X GET \
-             -H "Authorization: Bearer <your_token>"
-        """
-        registration_token = _guard.read_token_from_header()
-        user = await _guard.get_user_from_registration_token(registration_token)
-        # perform 'activation' of user here...like setting 'active' or something
-        ret = {'access_token': await _guard.encode_jwt_token(user)}
-        return (json(ret), 200)
 
     return sanic_app
 

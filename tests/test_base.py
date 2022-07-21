@@ -2,8 +2,11 @@ import jwt
 import pendulum
 import plummet
 import pytest
+import json
 
 from httpx import Cookies
+
+from passlib.totp import generate_secret
 
 from passlib.exc import (
     InvalidTokenError,
@@ -1228,9 +1231,9 @@ class TestPraetorian:
         assert the_dude.totp_last_counter
 
         # verify a proper failure if TOTP not configured for user
-        with pytest.raises(AuthenticationError, match=r'TOTP challenge is not properly configured') as e:
+        with pytest.raises(AuthenticationError, match=r'TOTP challenge is not properly configured'):
             await default_guard.authenticate_totp('the_muggle', 80085)
-        with pytest.raises(AuthenticationError, match=r'TOTP challenge is not properly configured') as e:
+        with pytest.raises(AuthenticationError, match=r'TOTP challenge is not properly configured'):
             await default_guard.authenticate('the_muggle', 'human', 80085)
 
         # verify a replay failure
@@ -1265,5 +1268,26 @@ class TestPraetorian:
         with pytest.raises(MalformedTokenError):
             await totp_guard.authenticate('the_dude', 'abides', 8008135)
 
+        app.config.PRAETORIAN_TOTP_SECRETS_TYPE = 'failwhale'
+        with pytest.raises(PraetorianError):
+            Praetorian(app, totp_user_class)
+
+        app.config.PRAETORIAN_TOTP_SECRETS_TYPE = 'string'
+        app.config.PRAETORIAN_TOTP_SECRETS_DATA = {1: generate_secret()}
+        totp_protected_guard = Praetorian(app, totp_user_class)
+        totp_protected = totp_protected_guard.totp_ctx.new()
+
+        # create our default test user w/ encrypted TOTP
+        the_protected_dude = await mock_users(username='the_protected_dude',
+                                              password='abides',
+                                              class_name=totp_user_class,
+                                              guard_name=totp_protected_guard,
+                                              totp=totp_protected.to_json())
+
+
+        # ensure we can load the output as json
+        the_protected_dude_totp = json.loads(the_protected_dude.totp)
+        # ensure the key is encrypted
+        assert the_protected_dude_totp.get('enckey')
         # put away your toys
         await the_dude.delete()

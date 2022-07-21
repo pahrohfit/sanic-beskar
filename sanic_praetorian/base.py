@@ -5,7 +5,6 @@ import pendulum
 import re
 import textwrap
 import uuid
-import warnings
 
 from collections.abc import Callable
 from typing import Union
@@ -69,15 +68,18 @@ from sanic_praetorian.constants import (
     RESERVED_CLAIMS,
     VITAM_AETERNUM,
     DEFAULT_TOTP_ENFORCE,
+    DEFAULT_TOTP_SECRETS_TYPE,
+    DEFAULT_TOTP_SECRETS_DATA,
     AccessType,
 )
 
 
 class Praetorian():
     """
-    Comprises the implementation for the :py:mod:`sanic-praetorian` sanic extension.
-    Provides a tool that allows password authentication and token provision
-    for applications and designated endpoints
+    Comprises the implementation for the :py:mod:`sanic-praetorian`
+    :py:mod:`sanic` extension.  Provides a tool that allows password
+    authentication and token provision for applications and designated
+    endpoints
     """
 
     def __init__(
@@ -116,11 +118,11 @@ class Praetorian():
         """
         Initializes the :py:class:`Praetorian` extension
 
-        :param: app:                    The sanic app to bind this
+        :param app:                    The :py:mod:`Sanic` app to bind this
                                         extension to
-        :param: user_class:             The class used to interact with
+        :param user_class:             The class used to interact with
                                         user data
-        :param: is_blacklisted:         A method that may optionally be
+        :param is_blacklisted:         A method that may optionally be
                                         used to check the token against
                                         a blacklist when access or refresh
                                         is requested should take the jti
@@ -177,9 +179,6 @@ class Praetorian():
                 DEFAULT_HASH_DEPRECATED_SCHEMES,
             ),
         )
-
-        # TODO: add 'issuser', at the very least
-        self.totp_ctx = TOTP.using()
 
         valid_schemes = self.pwd_ctx.schemes()
         PraetorianError.require_condition(
@@ -270,6 +269,14 @@ class Praetorian():
             "PRAETORIAN_TOTP_ENFORCE",
             DEFAULT_TOTP_ENFORCE,
         )
+        self.totp_secrets_type = app.config.get(
+            "PRAETORIAN_TOTP_SECRETS_TYPE",
+            DEFAULT_TOTP_SECRETS_TYPE,
+        )
+        self.totp_secrets_data = app.config.get(
+            "PRAETORIAN_TOTP_SECRETS_DATA",
+            DEFAULT_TOTP_SECRETS_DATA,
+        )
 
         if isinstance(self.access_lifespan, dict):
             self.access_lifespan = pendulum.duration(**self.access_lifespan)
@@ -289,6 +296,32 @@ class Praetorian():
             "refresh lifespan was not configured",
         )
 
+        # TODO: add 'issuser', at the very least
+        if self.totp_secrets_type:
+            """
+            If we are saying we are using a TOTP secret protection type,
+            we need to ensure the type is something supported (file, string, wallet),
+            and that the PRAETORIAN_TOTP_SECRETS_DATA is populated.
+            """
+            self.totp_secrets_type = self.totp_secrets_type.lower()
+
+            PraetorianError.require_condition(
+                self.totp_secrets_type in ["file", "string", "wallet"]
+                and self.totp_secrets_data,
+                "If {} is set, it must be one of the following schemes: {}".format(
+                    "PRAETORIAN_TOTP_SECRETS_TYPE",
+                    ["file", "string", "wallet"],
+                ),
+            )
+            if self.totp_secrets_type == 'file':
+                self.totp_ctx = TOTP.using(secrets_path=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+            elif self.totp_secrets_type == 'string':
+                self.totp_ctx = TOTP.using(secrets=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+            elif self.totp_secrets_type == 'wallet':
+                self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+        else:
+            self.totp_ctx = TOTP.using()
+
         self.is_testing = app.config.get("TESTING", False)
 
         if not hasattr(app.ctx, "extensions"):
@@ -299,18 +332,18 @@ class Praetorian():
 
     def _validate_user_class(self, user_class):
         """
-        Validates the supplied user_class to make sure that it has the
+        Validates the supplied :py:data:`user_class` to make sure that it has the
         class methods and attributes necessary to function correctly.
         After validating class methods, will attempt to instantiate a dummy
         instance of the user class to test for the requisite attributes
 
         Requirements:
 
-        - ``lookup`` method. Accepts a string parameter, returns instance
-        - ``identify`` method. Accepts an identity parameter, returns instance
-        - ``identity`` attribute. Provides unique id for the instance
-        - ``rolenames`` attribute. Provides list of roles attached to instance
-        - ``password`` attribute. Provides hashed password for instance
+        - :py:meth:`lookup` method. Accepts a string parameter, returns instance
+        - :py:meth:`identify` method. Accepts an identity parameter, returns instance
+        - :py:attribue:`identity` attribute. Provides unique id for the instance
+        - :py:attribute:`rolenames` attribute. Provides list of roles attached to instance
+        - :py:attribute:`password` attribute. Provides hashed password for instance
         """
         PraetorianError.require_condition(
             getattr(user_class, "lookup", None) is not None,
@@ -373,8 +406,29 @@ class Praetorian():
     async def generate_user_totp(self) -> object:
         """
         Generates a :py:mod:`passlib` TOTP for a user. This must be manually saved/updated to the
-        `User` object.
+        :py:class:`User` object.
+
+        . ..note:: The application secret(s) should be stored in a secure location, and each
+         secret should contain a large amount of entropy (to prevent brute-force attacks
+         if the encrypted keys are leaked).  :py:function:`passlib.generate_secret()` is
+         provided as a convenience helper to generate a new application secret of suitable size.
+         Best practice is to load these values from a file via secrets_path, pulled in value, or
+         utilizing a `passlib wallet`, and then have your application give up permission
+         to read this file once it's running.
+        
+        :returns: New :py:mod:`passlib` TOTP secret object
         """
+        if not self.app.config.get("PRAETORIAN_TOTP_SECRETS_TYPE"):
+            logger.warning(
+                textwrap.dedent(
+                    f"""
+                    Sanic_Praetorian is attempting to generate a new TOTP
+                    for a user, but you haven't configured a PRAETORIAN_TOTP_SECRETS_TYPE
+                    value, which means you aren't properly encrypting these stored
+                    TOTP secrets. *tsk*tsk*
+                    """
+                )
+            )
 
         return self.totp_ctx.new()
     
@@ -390,8 +444,8 @@ class Praetorian():
         totp_factory = self.totp_ctx.new()
 
         """
-        Optionally, if a User model has a :py:meth:`get_cache_verify` method,
-        call it, and use that response as the `last_counter` value.
+        Optionally, if a :py:class:`User` model has a :py:meth:`get_cache_verify` method,
+        call it, and use that response as the :py:data:`last_counter` value.
         """
         _last_counter = None
         if hasattr(user, 'get_cache_verify') and callable(user.get_cache_verify):
@@ -400,9 +454,9 @@ class Praetorian():
                                      last_counter=_last_counter)
 
         """
-        Optionally, if our User model has a `cache_verify` function,
-        call it, providing the good verification `counter` and `cache_seconds`
-        to be stored by `cache_verify` function.
+        Optionally, if our User model has a :py:func:`cache_verify` function,
+        call it, providing the good verification :py:data:`counter` and
+        :py:data:`cache_seconds` to be stored by :py:func:`cache_verify` function.
 
         This is for security against replay attacks, and should ideally be kept
         in a cache, but can be stored in the db
@@ -422,8 +476,8 @@ class Praetorian():
         If verification passes, the matching user instance is returned.
 
         If automatically called by :py:func:`authenticate`,
-        it accepts a `User` object instead of `username` and skips
-        the `lookup` call.
+        it accepts a :py:class:`User` object instead of :py:data:`username`
+        and skips the :py:func:`lookup` call.
         """
         PraetorianError.require_condition(
             self.user_class is not None,
@@ -463,10 +517,10 @@ class Praetorian():
         Verifies that a password matches the stored password for that username.
         If verification passes, the matching user instance is returned
 
-        .. note:: If PRAETORIAN_TOTP_ENFORCE is set to `True`
+        .. note:: If :py:data:`PRAETORIAN_TOTP_ENFORCE` is set to `True`
                   (default), and a user has a TOTP configuration, this call
                   must include the `token` value, or it will raise a
-                  :py:exc:`sanic_praetorian.exceptions.TOTPRequired` exception
+                  :py:exc:`~sanic_praetorian.exceptions.TOTPRequired` exception
                   and not return the user.
                   
                   This means either you will need to call it again, providing
@@ -535,28 +589,6 @@ class Praetorian():
         )
         return self.pwd_ctx.verify(raw_password, hashed_password)
 
-    @deprecated("Use `hash_password` instead.")
-    def encrypt_password(self, raw_password: str):
-        """
-        *NOTE* This should be deprecated as its an incorrect definition for
-            what is actually being done -- we are hashing, not encrypting
-        """
-        return self.hash_password(raw_password)
-
-    def error_handler(self, error: PraetorianError):
-        """
-        Provides a sanic error handler that is used for PraetorianErrors
-        (and derived exceptions).
-        """
-        warnings.warn(
-            """
-            error_handler is deprecated.
-            Use Buzz.build_error_handler instead
-            """,
-            warnings.DeprecationWarning,
-        )
-        return error.jsonify(), error.status_code, error.headers
-
     def _check_user(self, user: object):
         """
         Checks to make sure that a user is valid. First, checks that the user
@@ -564,7 +596,7 @@ class Praetorian():
         checks if the user has a validation method. If the method does not
         exist, the check passes. If the method exists, it is called. If the
         result of the call is not truthy, a
-        :py:exc:`sanic_praetorian.exceptions.InvalidUserError` is raised.
+        :py:exc:`~sanic_praetorian.exceptions.InvalidUserError` is raised.
         """
         MissingUserError.require_condition(
             user is not None,
@@ -594,25 +626,25 @@ class Praetorian():
         Encodes user data into a jwt token that can be used for authorization
         at protected endpoints
 
-        :param: override_access_lifespan:  Override's the instance's access
+        :param override_access_lifespan:  Override's the instance's access
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
-                                           exceed the refresh_lifespan
-        :param: override_refresh_lifespan: Override's the instance's refresh
+                                           exceed the :py:data:`refresh_lifespan`
+        :param override_refresh_lifespan: Override's the instance's refresh
                                            lifespan to set a custom duration
                                            after which the new token's
                                            refreshability will expire.
-        :param: bypass_user_check:         Override checking the user for
+        :param bypass_user_check:         Override checking the user for
                                            being real/active.  Used for
                                            registration token generation.
-        :param: is_registration_token:     Indicates that the token will be
+        :param is_registration_token:     Indicates that the token will be
                                            used only for email-based
                                            registration
-        :param: custom_claims:             Additional claims that should
+        :param custom_claims:             Additional claims that should
                                            be packed in the payload. Note that
                                            any claims supplied here must be
-                                           JSON compatible types
+                                           :py:mod:`json` compatible types
         """
         ClaimCollisionError.require_condition(
             set(custom_claims.keys()).isdisjoint(RESERVED_CLAIMS),
@@ -687,14 +719,14 @@ class Praetorian():
         The new token's refresh expiration moment is the same as the old
         token's, but the new token's access expiration is refreshed
 
-        :param: token:                     The existing jwt token that needs to
+        :param token:                     The existing jwt token that needs to
                                            be replaced with a new, refreshed
                                            token
-        :param: override_access_lifespan:  Override's the instance's access
+        :param override_access_lifespan:  Override's the instance's access
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
-                                           exceed the refresh lifespan
+                                           exceed the :py:data:`refresh_lifespan`
         """
         moment = pendulum.now("UTC")
         data = await self.extract_jwt_token(token, access_type=AccessType.refresh)
@@ -889,8 +921,17 @@ class Praetorian():
     def read_token(self, request=None):
         """
         Tries to unpack the token from the current sanic request
-        in the locations configured by JWT_PLACES.
-        Check-Order is defined by the value order in JWT_PLACES.
+        in the locations configured by :py:data:`JWT_PLACES`.
+        Check-Order is defined by the value order in :py:data:`JWT_PLACES`.
+
+        :param request: Sanic ``request`` object
+        :type request: :py:func:`~sanic.request`
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.MissingToken` if token
+                  is not found in any :py:data:`~sanic_praetorian.constants.JWT_PLACES`
+        
+        :returns: function to read the token based upon where the token was found
+        :rtype: function
         """
         try:
             if not request:
@@ -938,20 +979,27 @@ class Praetorian():
         """
         Encodes a jwt token and packages it into a header dict for a given user
 
-        :param: user:                      The user to package the header for
-        :param: override_access_lifespan:  Override's the instance's access
+        :param user:                      The user to package the header for
+        :type user: :py:class:`User`
+        :param override_access_lifespan:  Override's the instance's access
                                            lifespan to set a custom duration
                                            after which the new token's
                                            accessability will expire. May not
-                                           exceed the refresh_lifespan
-        :param: override_refresh_lifespan: Override's the instance's refresh
+                                           exceed the :py:data:`refresh_lifespan`
+        :type override_access_lifespan: :py:data:`pendulum`
+        :param override_refresh_lifespan: Override's the instance's refresh
                                            lifespan to set a custom duration
                                            after which the new token's
                                            refreshability will expire.
-        :param: custom_claims:             Additional claims that should
+        :type override_refresh_lifespan: :py:data:`pendulum`
+        :param custom_claims:             Additional claims that should
                                            be packed in the payload. Note that
                                            any claims supplied here must be
-                                           JSON compatible types
+                                           :py:mod:`json` compatible types
+        :type custom_claims: json
+
+        :returns: updated header, including token
+        :rtype: json
         """
         token = await self.encode_jwt_token(
             user,
@@ -973,38 +1021,44 @@ class Praetorian():
     ):
         """
         Sends a registration email to a new user, containing a time expiring
-            token usable for validation.  This requires your application
-            is initialized with a `mail` extension, which supports
-            sanic-mailing's :py:class:`Message` object and a
-            :py:meth:`send_message` method.
+        token usable for validation.  This requires your application
+        is initialized with a `mail` extension, which supports
+        sanic-mailing's :py:class:`Message` object and a
+        :py:meth:`send_message` method.
 
         Returns a dict containing the information sent, along with the
             `result` from mail send.
 
-        :param: user:                     The user object to tie claim to
+        :param user:                     The user object to tie claim to
                                           (username, id, email, etc)
-        :param: template:                 HTML Template for confirmation email.
+        :type user: :py:class:`User`
+        :param template:                 HTML Template for confirmation email.
                                           If not provided, a stock entry is
                                           used
-        :param: confirmation_sender:      The sender that shoudl be attached
+        :type template: :py:data:`filehandle`
+        :param confirmation_sender:      The sender that shoudl be attached
                                           to the confirmation email. Overrides
-                                          the PRAETORIAN_CONFIRMATION_SENDER
+                                          the :py:data:`PRAETORIAN_CONFIRMATION_SENDER`
                                           config setting
-        :param: confirmation_uri:         The uri that should be visited to
+        :type confirmation_sender: str
+        :param confirmation_uri:         The uri that should be visited to
                                           complete email registration. Should
                                           usually be a uri to a frontend or
                                           external service that calls a
                                           'finalize' method in the api to
                                           complete registration. Will override
-                                          the PRAETORIAN_CONFIRMATION_URI
+                                          the :py:data:`PRAETORIAN_CONFIRMATION_URI`
                                           config setting
-        :param: subject:                  The registration email subject.
+        :type confirmation_uri: str
+        :param subject:                  The registration email subject.
                                           Will override the
-                                          PRAETORIAN_CONFIRMATION_SUBJECT
+                                          :py:data:`PRAETORIAN_CONFIRMATION_SUBJECT`
                                           config setting.
-        :param: override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
+        :type subject: str
+        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
+        :type override_access_lifespan: :py:data:`pendulum`
         """
         if subject is None:
             subject = self.confirmation_subject
@@ -1047,38 +1101,44 @@ class Praetorian():
     ):
         """
         Sends a password reset email to a user, containing a time expiring
-            token usable for validation.  This requires your application
-            is initialized with a `mail` extension, which supports
-            sanic-mailing's :py:class:`Message` object and a 
-            :py:meth:`send_message()` method.
+        token usable for validation.  This requires your application
+        is initialized with a :py:mod:`mail` extension, which supports
+        sanic-mailing's :py:class:`Message` object and a 
+        :py:meth:`send_message()` method.
 
-        Returns a dict containing the information sent, along with the
-            `result` from mail send.
+        :returns: a :py:data:`dict` containing the information sent, along with the
+                  ``result`` from mail send.
 
-        :param: email:                    The email address to attempt to
+        :param email:                    The email address to attempt to
                                           send to
-        :param: template:                 HTML Template for reset email.
+        :type email: str
+        :param template:                 HTML Template for reset email.
                                           If not provided, a stock entry is
                                           used
-        :param: confirmation_sender:      The sender that shoudl be attached
+        :type template: :py:data:`filehandle`
+        :param confirmation_sender:      The sender that shoudl be attached
                                           to the reset email. Overrides
-                                          the PRAETORIAN_RESET_SENDER
+                                          the :py:data:`PRAETORIAN_RESET_SENDER`
                                           config setting
-        :param: confirmation_uri:         The uri that should be visited to
+        :type confirmation_sender: str
+        :param confirmation_uri:         The uri that should be visited to
                                           complete password reset. Should
                                           usually be a uri to a frontend or
                                           external service that calls the
                                           'validate_reset_token()' method in
                                           the api to complete reset. Will
-                                          override the PRAETORIAN_RESET_URI
+                                          override the :py:data:`PRAETORIAN_RESET_URI`
                                           config setting
-        :param: subject:                  The reset email subject.
+        :type confirmation_uri: str
+        :param subject:                  The reset email subject.
                                           Will override the
-                                          PRAETORIAN_RESET_SUBJECT
+                                          :py:data:`PRAETORIAN_RESET_SUBJECT`
                                           config setting.
-        :param: override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
+        :type subject: str
+        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
+        :type override_access_lifespan: :py:data:`pendulum`
         """
         if subject is None:
             subject = self.reset_subject
@@ -1129,31 +1189,38 @@ class Praetorian():
     ):
         """
         Sends an email to a user, containing a time expiring
-            token usable for several actions.  This requires
-            your application is initialized with a `mail` extension,
-            which supports sanic-mailing's :py:class:`Message` object and
-            a :py:meth:`send_message` method.
+        token usable for several actions.  This requires
+        your application is initialized with a `mail` extension,
+        which supports sanic-mailing's :py:class:`Message` object and
+        a :py:meth:`send_message` method.
 
-        Returns a dict containing the information sent, along with the
-            `result` from mail send.
+        :returns: a :py:data:`dict` containing the information sent, along
+                  with the ``result`` from mail send.
+        :rtype: :py:data:`dict`
 
-        :param: email:                    The email address to use
-                                          (username, id, email, etc)
-        :param: user:                     The user object to tie claim to
-                                          (username, id, email, etc)
-        :param: template:                 HTML Template for confirmation email.
-                                          If not provided, a stock entry is
-                                          used
-        :param: action_sender:            The sender that should be attached
-                                          to the confirmation email.
-        :param: action_uri:               The uri that should be visited to
-                                          complete the token action.
-        :param: subject:                  The email subject.
-        :param: override_access_lifespan: Overrides the JWT_ACCESS_LIFESPAN
+        :param email: The email address to use (username, id, email, etc)
+        :type email: str
+        :param user:  The user object to tie claim to (username, id, email, etc)
+        :type user: :py:class:`User`
+        :param template: HTML Template for confirmation email.
+                          If not provided, a stock entry is used
+        :type template: :py:data:`filehandle`
+        :param action_sender: The sender that should be attached
+                               to the confirmation email.
+        :type action_sender: str
+        :param action_uri: The uri that should be visited to complete the token action.
+        :type action_uri: str
+        :param subject: The email subject.
+        :type subject: str
+        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
-        :param: custom_token:             The token to be carried as the
-                                          email's payload
+        :type override_access_lifespan: :py:data:`pendulum`
+        :param custom_token: The token to be carried as the email's payload
+        :type custom_token: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+                   required parameters
         """
         notification = {
             "result": None,
@@ -1209,6 +1276,14 @@ class Praetorian():
         Gets a user based on the registration token that is supplied. Verifies
         that the token is a regisration token and that the user can be properly
         retrieved
+
+        :param token: Registration token to validate
+        :type token: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+                   required parameters
+        :returns: :py:class:`User` object of looked up user after token validation
+        :rtype: :py:class:`User`
         """
         data = await self.extract_jwt_token(token, access_type=AccessType.register)
         user_id = data.get("id")
@@ -1228,6 +1303,14 @@ class Praetorian():
         Validates a password reset request based on the reset token
         that is supplied. Verifies that the token is a reset token
         and that the user can be properly retrieved
+
+        :param token: Reset token to validate
+        :type token: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+                   required parameters
+        :returns: :py:class:`User` object of looked up user after token validation
+        :rtype: :py:class:`User`
         """
         data = await self.extract_jwt_token(token, access_type=AccessType.reset)
         user_id = data.get("id")
@@ -1245,6 +1328,14 @@ class Praetorian():
     def hash_password(self, raw_password:str):
         """
         Hashes a plaintext password using the stored passlib password context
+
+        :param raw_password: cleartext password for the user
+        :type raw_password: str
+
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if
+                    no password is provided
+        :returns: Properly hashed ciphertext of supplied :py:data:`raw_password`
+        :rtype: str
         """
         PraetorianError.require_condition(
             self.pwd_ctx is not None,
@@ -1260,21 +1351,27 @@ class Praetorian():
     async def verify_and_update(self, user:object=None, password:str=None):
         """
         Validate a password hash contained in the user object is
-        hashed with the defined hash scheme (PRAETORIAN_HASH_SCHEME).
+        hashed with the defined hash scheme (:py:data:`PRAETORIAN_HASH_SCHEME`).
 
-        If not, raise an Exception of :py:exc:`sanic_praetorian.exceptions.LegacySchema`,
-        unless the `password` arguement is provided, in which case an attempt
-        to call `user.save()` will be made, updating the hashed password to the
-        currently desired hash scheme (PRAETORIAN_HASH_SCHEME).
+        If not, raise an Exception of :py:exc:`~sanic_praetorian.exceptions.LegacySchema`,
+        unless the :py:data:`password` arguement is provided, in which case an updated 
+        :py:class:`User` will be returned, and must be saved by the calling app. The
+        updated :py:class:`User` will contain the users current password updated to the
+        currently desired hash scheme (:py:exc:`~PRAETORIAN_HASH_SCHEME`).
 
-        :param: user:     The user object to tie claim to
+        :param user:     The user object to tie claim to
                               (username, id, email, etc). *MUST*
-                              include the hashed password field,
-                              defined as `user.password`
-        :param: password: The user's provide password from login.
+                              include the password field,
+                              defined as :py:attr:`password`
+        :type user: object
+        :param password: The user's provide password from login.
                               If present, this is used to validate
                               and then attempt to update with the
-                              new PRAETORIAN_HASH_SCHEME scheme.
+                              new :py:data:`PRAETORIAN_HASH_SCHEME` scheme.
+        :type password: str
+
+        :returns: Authenticated :py:class:`User`
+        :raises: :py:exc:`~sanic_praetorian.exceptions.AuthenticationError` upon authentication failure
         """
         if self.pwd_ctx.needs_update(user.password):
             if password:

@@ -24,6 +24,7 @@ simple-settings = "^1.2.0"
 Jinja2 = "^3.1.2"
 sanic-mailing = {git = "https://github.com/pahrohfit/sanic-mailing.git", rev = "development"}
 segno = "^1.5.2"
+cryptography = "^37.0.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -40,7 +41,10 @@ pytest-cov = "^3.0.0"
 toml = "^0.10.2"
 sphinx-rtd-theme = "^1.0.0"
 sphinx = "^5"
-sphinx-autodoc-typehints = "^1.18.3"
+umongo = "3.1.0"
+mongomock = "4.1.1"
+mongomock-motor = "^0.0.12"
+motor = "^3.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.1"]

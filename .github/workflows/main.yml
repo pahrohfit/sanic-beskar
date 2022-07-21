@@ -68,12 +68,12 @@ jobs:
         run: |
           poetry run flake8 tests --exit-zero --count --max-line-length=127 --statistics
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           flags: pytest # optional
           name: sanic_praetorian # optional
-          fail_ci_if_error: true # optional (default = false)
+          fail_ci_if_error: false # optional (default = false)
           verbose: true # optional (default = false)
           env_vars: OS,PYTHON
           file: ./coverage.xml
