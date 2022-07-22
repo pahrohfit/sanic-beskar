@@ -14,9 +14,10 @@
  sanic-praetorian
 ******************
 
-** WORK IN PROGRESS -- docs below are fairly correct**
-* Development branch: sanic
-* Seemingly working branch: master
+
+** WORK IN PROGRESS -- docs below are mostly correct, I think **
+
+* Probably Stable branch: master
 * Working example(s): `examples/*.py`
 
 ---------------------------------------------------

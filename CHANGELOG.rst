@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.0.0 - 2022-07-21
+-------------------
+- Moved to Sanic
+- Added OTP
+- Added QR Code generation for OTP
+- Updated all the docs
+- Added a metric f*ton of docstrings
+
 v1.3.0 - 2021-11-25
 -------------------
 - Replaced freezegun dependency with plummet
