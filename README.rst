@@ -14,10 +14,10 @@
  sanic-praetorian
 ******************
 
-** WORK IN PROGRESS -- docs below are semi-correct, at best **
-* Development branch: sanic
-* Probably working branch: master
-* Working example: `tests/server.py`
+** WORK IN PROGRESS -- docs below are mostly correct, I think **
+
+* Probably Stable branch: master
+* Working example(s): `examples/*.py`
 
 ---------------------------------------------------
 Strong, Simple, and Precise security for Sanic APIs
