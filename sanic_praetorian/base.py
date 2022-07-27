@@ -193,6 +193,20 @@ class Praetorian():
             f'If {"PRAETORIAN_HASH_SCHEME"} is set, it must be one of the following schemes: {valid_schemes}'
         )
 
+        if self.pwd_ctx.default_scheme().startswith('pbkdf2_'):
+            try:
+                import fastpbkdf2
+            except Exception as e:
+                logger.warning(
+                    textwrap.dedent(
+                        """
+                        You are using a `pbkdf2` hashing scheme, but didn't instll
+                          the `fastpbkdf2` module, which will give you like 40%
+                          speed improvements. you should go do that now.
+                        """
+                    )
+                )
+
         self.user_class = self._validate_user_class(user_class)
         self.is_blacklisted = is_blacklisted or (lambda t: False)
         self.encode_jwt_token_hook = encode_jwt_token_hook

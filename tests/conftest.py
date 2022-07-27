@@ -3,6 +3,7 @@ from os import path as os_path
 sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
 
 import pytest
+import warnings
 import copy
 
 from tortoise import Tortoise, run_async
@@ -10,7 +11,9 @@ from sanic.log import logger
 from sanic_testing.reusable import ReusableClient
 from sanic.exceptions import SanicException
 
-import sanic_praetorian
+from sanic_praetorian.base import Praetorian
+
+from passlib.context import CryptContext
 
 from models import ValidatingUser, MixinUser, User, TotpUser
 from server import create_app, _guard, _mail
@@ -215,4 +218,11 @@ def no_token_validation(monkeypatch):
     def mockreturn(*args, **kwargs):
         return True
 
-    monkeypatch.setattr(sanic_praetorian.base.Praetorian, "_validate_token_data", mockreturn)
+    monkeypatch.setattr(Praetorian, "_validate_token_data", mockreturn)
+
+@pytest.fixture(autouse=True)
+def speed_up_passlib_for_pytest_only(default_guard):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        default_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)
+        default_guard.pwd_ctx.update(bcrypt__default_rounds=1)

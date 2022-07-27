@@ -46,6 +46,8 @@ umongo = "3.1.0"
 mongomock = "4.1.1"
 mongomock-motor = "^0.0.12"
 motor = "^3.0.0"
+pytest-profiling = "^1.7.0"
+fastpbkdf2 = "^0.2"
 
 [build-system]
 requires = ["poetry-core>=1.1"]
