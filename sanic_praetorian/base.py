@@ -104,6 +104,7 @@ class Praetorian():
         self.token_provider = 'jwt'
         self.paseto_ctx = None
         self.paseto_key = None
+        self.paseto_token = None
 
         if app is not None and user_class is not None:
             self.init_app(

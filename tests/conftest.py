@@ -204,3 +204,15 @@ def mock_users(user_class, default_guard):
             )
 
     return _get_user
+
+@pytest.fixture(autouse=False)
+def no_token_validation(monkeypatch):
+    """
+    Monkeypatch to prevent token validation from automatically
+    taking place. Instead, allow manual validation for testing
+    purposes, when this fixture is included.
+    """
+    def mockreturn(*args, **kwargs):
+        return True
+
+    monkeypatch.setattr(sanic_praetorian.base.Praetorian, "_validate_token_data", mockreturn)

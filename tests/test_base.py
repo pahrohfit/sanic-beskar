@@ -449,7 +449,7 @@ class TestPraetorian:
         with plummet.frozen_time('2017-05-21 19:54:28'):
             guard._validate_token_data(data, AccessType.register)
 
-    async def test_encode_token(self, app, user_class, validating_user_class, mock_users, request):
+    async def test_encode_token(self, app, user_class, validating_user_class, mock_users, no_token_validation):
         """
         This test::
             * verifies that the encode_token correctly encodes jwt
@@ -472,15 +472,7 @@ class TestPraetorian:
             from sanic.log import logger
             logger.critical(f"Token Type: {guard.token_provider}")
             token = await guard.encode_token(the_dude)
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
 
             assert token_data["iat"] == moment.int_timestamp
             assert (
@@ -503,15 +495,7 @@ class TestPraetorian:
                 override_access_lifespan=override_access_lifespan,
                 override_refresh_lifespan=override_refresh_lifespan,
             )
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
 
             assert token_data["iat"] == moment.int_timestamp
             assert (
@@ -534,15 +518,7 @@ class TestPraetorian:
                 override_access_lifespan=override_access_lifespan,
                 override_refresh_lifespan=override_refresh_lifespan,
             )
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert token_data["exp"] == token_data[REFRESH_EXPIRATION_CLAIM]
             assert (
@@ -572,15 +548,7 @@ class TestPraetorian:
                 duder="brief",
                 el_duderino="not brief",
             )
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
@@ -600,7 +568,7 @@ class TestPraetorian:
         expected_message = "custom claims collide"
         assert expected_message in str(err_info.value)
 
-    async def test_encode_eternal_token(self, app, user_class, mock_users):
+    async def test_encode_eternal_token(self, app, user_class, mock_users, no_token_validation):
         """
         This test verifies that the encode_eternal_token correctly encodes
         jwt data based on a user instance. Also verifies that the lifespan is
@@ -611,15 +579,7 @@ class TestPraetorian:
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
             token = await guard.encode_eternal_token(the_dude)
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert token_data["exp"] == (moment + VITAM_AETERNUM).int_timestamp
             assert (
@@ -672,15 +632,7 @@ class TestPraetorian:
         )
         with plummet.frozen_time(new_moment):
             new_token = await guard.refresh_token(token)
-            new_token_data = None
-            if guard.token_provider == 'jwt':
-                new_token_data = jwt.decode(
-                    new_token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                new_token_data = await guard.extract_paseto_token(new_token)
+            new_token_data = await guard.extract_token(new_token)
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
                 new_token_data["exp"]
@@ -706,15 +658,7 @@ class TestPraetorian:
                 token,
                 override_access_lifespan=pendulum.Duration(hours=2),
             )
-            new_token_data = None
-            if guard.token_provider == 'jwt':
-                new_token_data = jwt.decode(
-                    new_token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                new_token_data = await guard.extract_paseto_token(new_token)
+            new_token_data = await guard.extract_token(new_token)
             assert (
                 new_token_data["exp"]
                 == (new_moment + pendulum.Duration(hours=2)).int_timestamp
@@ -734,15 +678,7 @@ class TestPraetorian:
                 override_access_lifespan=pendulum.Duration(hours=2),
             )
             logger.critical(f'new_token: {new_token}')
-            new_token_data = None
-            if guard.token_provider == 'jwt':
-                new_token_data = jwt.decode(
-                    new_token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                new_token_data = await guard.extract_paseto_token(new_token)
+            new_token_data = await guard.extract_token(new_token)
             logger.critical(f"new_token_data: {new_token_data}")
             assert (
                 new_token_data["exp"]
@@ -804,15 +740,7 @@ class TestPraetorian:
         )
         with plummet.frozen_time(new_moment):
             new_token = await guard.refresh_token(token)
-            new_token_data = None
-            if guard.token_provider == 'jwt':
-                new_token_data = jwt.decode(
-                    new_token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                new_token_data = await guard.extract_paseto_token(new_token)
+            new_token_data = await guard.extract_token(new_token)
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
                 new_token_data["exp"]
@@ -880,7 +808,7 @@ class TestPraetorian:
 
         await the_dude.delete()
 
-    async def test_pack_header_for_user(self, app, user_class, mock_users):
+    async def test_pack_header_for_user(self, app, user_class, mock_users, no_token_validation):
         """
         This test::
           * verifies that the pack_header_for_user method can be used to
@@ -897,15 +825,7 @@ class TestPraetorian:
             assert token_header is not None
             token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
             token = token.strip()
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
@@ -931,15 +851,7 @@ class TestPraetorian:
             assert token_header is not None
             token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
             token = token.strip()
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
             assert (
                 token_data["exp"]
                 == (moment + override_access_lifespan).int_timestamp
@@ -961,15 +873,7 @@ class TestPraetorian:
             assert token_header is not None
             token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
             token = token.strip()
-            token_data = None
-            if guard.token_provider == 'jwt':
-                token_data = jwt.decode(
-                    token,
-                    guard.encode_key,
-                    algorithms=guard.allowed_algorithms,
-                )
-            elif guard.token_provider == 'paseto':
-                token_data = await guard.extract_paseto_token(token)
+            token_data = await guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
