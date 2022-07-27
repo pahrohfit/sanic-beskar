@@ -1,10 +1,14 @@
 import datetime
+from os import access
+from tokenize import PseudoExtras
 import jinja2
 import jwt
 import pendulum
 import re
 import textwrap
 import uuid
+import ujson
+from base64 import b64encode
 
 from collections.abc import Callable
 from typing import Union
@@ -39,6 +43,7 @@ from sanic_praetorian.exceptions import (
     ConfigurationError,
     PraetorianError,
     TOTPRequired,
+    VerifyError,
 )
 
 from sanic_praetorian.constants import (
@@ -70,6 +75,8 @@ from sanic_praetorian.constants import (
     DEFAULT_TOTP_ENFORCE,
     DEFAULT_TOTP_SECRETS_TYPE,
     DEFAULT_TOTP_SECRETS_DATA,
+    DEFAULT_TOKEN_PROVIDER,
+    DEFAULT_PASETO_VERSION,
     AccessType,
 )
 
@@ -94,6 +101,9 @@ class Praetorian():
         self.totp_ctx = None
         self.hash_scheme = None
         self.salt = None
+        self.token_provider = 'jwt'
+        self.paseto_ctx = None
+        self.paseto_key = None
 
         if app is not None and user_class is not None:
             self.init_app(
@@ -277,6 +287,19 @@ class Praetorian():
             "PRAETORIAN_TOTP_SECRETS_DATA",
             DEFAULT_TOTP_SECRETS_DATA,
         )
+        self.token_provider = app.config.get(
+            "PRAETORIAN_TOKEN_PROVIDER",
+            DEFAULT_TOKEN_PROVIDER,
+        )
+        self.token_provider = self.token_provider.lower()
+        self.paseto_version = app.config.get(
+            "PRAETORIAN_PASETO_VERSION",
+            DEFAULT_PASETO_VERSION,
+        )
+        self.paseto_key = app.config.get(
+            "PRAETORIAN_PASETO_KEY",
+            self.encode_key,
+        )
 
         if isinstance(self.access_lifespan, dict):
             self.access_lifespan = pendulum.duration(**self.access_lifespan)
@@ -296,6 +319,22 @@ class Praetorian():
             "refresh lifespan was not configured",
         )
 
+        ConfigurationError.require_condition(
+            self.token_provider in ["jwt", "paseto"],
+            "Invalid `token_provider` configured. Valid are ['jwt', 'paseto'] only.",
+        )
+        ConfigurationError.require_condition(
+            self.paseto_version in [1, 2, 3, 4],
+            "Invalid `paseto_version` configured. Valid are [1, 2, 3, 4] only.",
+        )
+
+        if self.token_provider == 'paseto':
+            from pyseto import Key, Paseto, Token # noqa
+
+            self.paseto_key = Key.new(version=self.paseto_version, purpose="local", key=self.paseto_key)
+            self.paseto_ctx = Paseto(exp=self.access_lifespan.seconds, include_iat=False)
+            self.paseto_token = Token
+
         # TODO: add 'issuser', at the very least
         if self.totp_secrets_type:
             """
@@ -305,7 +344,7 @@ class Praetorian():
             """
             self.totp_secrets_type = self.totp_secrets_type.lower()
 
-            PraetorianError.require_condition(
+            ConfigurationError.require_condition(
                 self.totp_secrets_type in ["file", "string", "wallet"]
                 and self.totp_secrets_data,
                 "If {} is set, it must be one of the following schemes: {}".format(
@@ -321,7 +360,7 @@ class Praetorian():
                 self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
         else:
             self.totp_ctx = TOTP.using()
-
+        
         self.is_testing = app.config.get("TESTING", False)
 
         if not hasattr(app.ctx, "extensions"):
@@ -344,6 +383,13 @@ class Praetorian():
         - :py:attribue:`identity` attribute. Provides unique id for the instance
         - :py:attribute:`rolenames` attribute. Provides list of roles attached to instance
         - :py:attribute:`password` attribute. Provides hashed password for instance
+
+        :param user_class: `User` class to use for Praetorian
+        :type user_class: class
+
+        :returns: Validated `User` class
+        :rtype: class
+        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` on missing requirements
         """
         PraetorianError.require_condition(
             getattr(user_class, "lookup", None) is not None,
@@ -612,6 +658,98 @@ class Praetorian():
             "The user is not valid or has had access revoked",
         )
 
+    async def encode_paseto_token(
+        self,
+        user,
+        override_access_lifespan: pendulum.Duration=None,
+        override_refresh_lifespan: pendulum.Duration=None,
+        bypass_user_check=False,
+        is_registration_token=False,
+        is_reset_token=False,
+        **custom_claims
+    ):
+        """
+        Encodes user data into a jwt token that can be used for authorization
+        at protected endpoints
+
+        :param override_access_lifespan:  Override's the instance's access
+                                           lifespan to set a custom duration
+                                           after which the new token's
+                                           accessability will expire. May not
+                                           exceed the :py:data:`refresh_lifespan`
+        :param override_refresh_lifespan: Override's the instance's refresh
+                                           lifespan to set a custom duration
+                                           after which the new token's
+                                           refreshability will expire.
+        :param bypass_user_check:         Override checking the user for
+                                           being real/active.  Used for
+                                           registration token generation.
+        :param is_registration_token:     Indicates that the token will be
+                                           used only for email-based
+                                           registration
+        :param custom_claims:             Additional claims that should
+                                           be packed in the payload. Note that
+                                           any claims supplied here must be
+                                           :py:mod:`json` compatible types
+        """
+        ClaimCollisionError.require_condition(
+            set(custom_claims.keys()).isdisjoint(RESERVED_CLAIMS),
+            "The custom claims collide with required claims",
+        )
+        if not bypass_user_check:
+            self._check_user(user)
+
+        moment = pendulum.now("UTC")
+        if override_refresh_lifespan is None:
+            refresh_lifespan = self.refresh_lifespan
+        else:
+            logger.critical(f"Using custom refresh: {override_refresh_lifespan}")
+            refresh_lifespan = override_refresh_lifespan
+        refresh_expiration = (moment + refresh_lifespan).int_timestamp
+
+        if override_access_lifespan is None:
+            access_lifespan = self.access_lifespan
+        else:
+            logger.critical(f"Using custom lifespan: {override_access_lifespan}")
+            access_lifespan = override_access_lifespan
+        access_expiration = min(
+            (moment + access_lifespan).int_timestamp,
+            refresh_expiration,
+        )
+        logger.critical(f"[pyseto.final] Using lifespan: {access_lifespan}")
+        logger.critical(f"[pyseto.final] Using refresh span: {refresh_lifespan}")
+        logger.critical(f"[pyseto.final] Using refresh seconds: {refresh_expiration}")
+
+        payload_parts = {
+            "iat": moment.int_timestamp,
+            "exp": access_expiration,
+            "jti": str(uuid.uuid4()),
+            "id": user.identity,
+            "rls": ",".join(user.rolenames),
+            REFRESH_EXPIRATION_CLAIM: refresh_expiration,
+        }
+        if is_registration_token:
+            payload_parts[IS_REGISTRATION_TOKEN_CLAIM] = True
+        if is_reset_token:
+            payload_parts[IS_RESET_TOKEN_CLAIM] = True
+        logger.debug(
+            f"Attaching custom claims: {custom_claims}",
+        )
+        payload_parts.update(custom_claims)
+
+        if self.encode_jwt_token_hook:
+            self.encode_jwt_token_hook(**payload_parts)
+
+        # PASETO stores its own EXP as seconds from now()
+        time_delta = access_expiration - moment.int_timestamp
+
+        return self.paseto_ctx.encode(
+            self.paseto_key,
+            payload_parts,
+            serializer=ujson,
+            exp=time_delta,
+        ).decode('utf-8') # bytes by default, which are ugly
+
     async def encode_jwt_token(
         self,
         user,
@@ -669,6 +807,9 @@ class Praetorian():
             (moment + access_lifespan).int_timestamp,
             refresh_expiration,
         )
+        logger.critical(f"[jwt.final] Using lifespan: {access_lifespan}")
+        logger.critical(f"[jwt.final] Using refresh span: {refresh_lifespan}")
+        logger.critical(f"[jwt.final] Using refresh seconds: {refresh_expiration}")
 
         payload_parts = {
             "iat": moment.int_timestamp,
@@ -695,7 +836,31 @@ class Praetorian():
             self.encode_algorithm,
         )
 
-    async def encode_eternal_jwt_token(self, user, **custom_claims):
+    async def encode_token(
+        self,
+        user,
+        override_access_lifespan=None,
+        override_refresh_lifespan=None,
+        bypass_user_check=False,
+        is_registration_token=False,
+        is_reset_token=False,
+        **custom_claims
+    ):
+
+        return await getattr(
+            self,
+            f"encode_{self.token_provider}_token"
+        )(
+            user,
+            override_access_lifespan=override_access_lifespan,
+            override_refresh_lifespan=override_refresh_lifespan,
+            bypass_user_check=bypass_user_check,
+            is_registration_token=is_registration_token,
+            is_reset_token=is_reset_token,
+            **custom_claims
+        )
+
+    async def encode_eternal_token(self, user, **custom_claims):
         """
         This utility function encodes a jwt token that never expires
 
@@ -705,11 +870,77 @@ class Praetorian():
                   implements a blacklist so that a given token can be blocked
                   should it be lost or become a security concern
         """
-        return await self.encode_jwt_token(
+        ## return await self.encode_jwt_token(
+        return await self.encode_token(
             user,
             override_access_lifespan=VITAM_AETERNUM,
             override_refresh_lifespan=VITAM_AETERNUM,
             **custom_claims
+        )
+
+    async def refresh_token(self, token: str, override_access_lifespan=None):
+        return await getattr(
+            self,
+            f"refresh_{self.token_provider}_token"
+        )(token=token, override_access_lifespan=override_access_lifespan)
+    
+    async def refresh_paseto_token(self, token: str, override_access_lifespan=None):
+        """
+        Creates a new token for a user if and only if the old token's access
+        permission is expired but its refresh permission is not yet expired.
+        The new token's refresh expiration moment is the same as the old
+        token's, but the new token's access expiration is refreshed
+
+        :param token:                     The existing jwt token that needs to
+                                           be replaced with a new, refreshed
+                                           token
+        :param override_access_lifespan:  Override's the instance's access
+                                           lifespan to set a custom duration
+                                           after which the new token's
+                                           accessability will expire. May not
+                                           exceed the :py:data:`refresh_lifespan`
+        """
+        moment = pendulum.now("UTC")
+        data = await self.extract_token(token, access_type=AccessType.refresh)
+
+        user = await self.user_class.identify(data["id"])
+        self._check_user(user)
+
+        if override_access_lifespan is None:
+            access_lifespan = self.access_lifespan
+        else:
+            access_lifespan = override_access_lifespan
+        refresh_expiration = data[REFRESH_EXPIRATION_CLAIM]
+        access_expiration = min(
+            (moment + access_lifespan).int_timestamp,
+            refresh_expiration,
+        )
+
+        custom_claims = {
+            k: v for (k, v) in data.items() if k not in RESERVED_CLAIMS
+        }
+        payload_parts = {
+            "iat": moment.int_timestamp,
+            "exp": access_expiration,
+            "jti": data["jti"],
+            "id": data["id"],
+            "rls": ",".join(user.rolenames),
+            REFRESH_EXPIRATION_CLAIM: refresh_expiration,
+        }
+        payload_parts.update(custom_claims)
+        logger.critical(f"Refresh expiration claim: {refresh_expiration}")
+
+        if self.refresh_jwt_token_hook:
+            self.refresh_jwt_token_hook(**payload_parts)
+
+        # PASETO stores its own EXP as seconds from now()
+        time_delta = access_expiration - moment.int_timestamp
+
+        return self.paseto_ctx.encode(
+            self.paseto_key,
+            payload_parts,
+            serializer=ujson,
+            exp=time_delta,
         )
 
     async def refresh_jwt_token(self, token: str, override_access_lifespan=None):
@@ -729,7 +960,8 @@ class Praetorian():
                                            exceed the :py:data:`refresh_lifespan`
         """
         moment = pendulum.now("UTC")
-        data = await self.extract_jwt_token(token, access_type=AccessType.refresh)
+        ## data = await self.extract_jwt_token(token, access_type=AccessType.refresh)
+        data = await self.extract_token(token, access_type=AccessType.refresh)
 
         user = await self.user_class.identify(data["id"])
         self._check_user(user)
@@ -765,6 +997,47 @@ class Praetorian():
             self.encode_algorithm,
         )
 
+    async def extract_token(self, token: str, access_type=AccessType.access):
+        return await getattr(
+            self,
+            f"extract_{self.token_provider}_token"
+        )(token=token, access_type=access_type)
+
+    async def extract_paseto_token(self, token: object, access_type=AccessType.access):
+        """
+        Extracts a data dictionary from a paseto token
+        """
+        # Note: we disable exp verification because we will do it ourselves
+        failed = None
+        keys = self.paseto_key if isinstance(self.paseto_key, list) else [self.paseto_key]
+        t = self.paseto_token.new(token)
+        for k in keys:
+            if k.header != t.header:
+                continue
+            try:
+                if k.purpose == "local":
+                    t.payload = k.decrypt(t.payload, t.footer)
+                else:
+                    t.payload = k.verify(t.payload, t.footer)
+                try:
+                    t.payload = ujson.loads(t.payload)
+                except Exception as err:
+                    raise InvalidTokenHeader("Failed to deserialize the payload.") from err
+            except Exception as err:
+                failed = err
+        if failed:
+            raise failed
+
+        # Convert to expected time format
+        logger.critical(f"pre.Token.exp: {t.payload['exp']}")
+        logger.critical(f"pre.Token.iat: {t.payload['iat']}")
+        t.payload['exp'] = pendulum.parse(t.payload['exp']).int_timestamp
+        #data.payload['iat'] = pendulum.parse(data.payload['iat']).int_timestamp
+        logger.critical(f"post.Token.exp: {t.payload['exp']}")
+        logger.critical(f"post.Token.iat: {t.payload['iat']}")
+        self._validate_token_data(t.payload, access_type=access_type)
+        return t.payload
+
     async def extract_jwt_token(self, token: str, access_type=AccessType.access):
         """
         Extracts a data dictionary from a jwt token
@@ -777,10 +1050,10 @@ class Praetorian():
                 algorithms=self.allowed_algorithms,
                 options={"verify_exp": False},
             )
-        self._validate_jwt_data(data, access_type=access_type)
+        self._validate_token_data(data, access_type=access_type)
         return data
 
-    def _validate_jwt_data(self, data, access_type):
+    def _validate_token_data(self, data, access_type):
         """
         Validates that the data for a jwt token is valid
         """
@@ -814,6 +1087,8 @@ class Praetorian():
                 IS_RESET_TOKEN_CLAIM not in data,
                 "password reset token used for access",
             )
+            logger.critical(f"Moment     : {moment}")
+            logger.critical(f"data['exp']: {data['exp']}")
             ExpiredAccessError.require_condition(
                 moment <= data["exp"],
                 "access permission has expired",
@@ -1001,7 +1276,8 @@ class Praetorian():
         :returns: updated header, including token
         :rtype: json
         """
-        token = await self.encode_jwt_token(
+        ## token = await self.encode_jwt_token(
+        token = await self.encode_token(
             user,
             override_access_lifespan=override_access_lifespan,
             override_refresh_lifespan=override_refresh_lifespan,
@@ -1073,7 +1349,8 @@ class Praetorian():
                 override_access_lifespan
             )
         )
-        custom_token = await self.encode_jwt_token(
+        ## custom_token = await self.encode_jwt_token(
+        custom_token = await self.encode_token(
             user,
             override_access_lifespan=override_access_lifespan,
             bypass_user_check=True,
@@ -1159,7 +1436,8 @@ class Praetorian():
                 override_access_lifespan
             )
         )
-        custom_token = await self.encode_jwt_token(
+        ## custom_token = await self.encode_jwt_token(
+        custom_token = await self.encode_token(
             user,
             override_access_lifespan=override_access_lifespan,
             bypass_user_check=False,
@@ -1286,7 +1564,8 @@ class Praetorian():
         :returns: :py:class:`User` object of looked up user after token validation
         :rtype: :py:class:`User`
         """
-        data = await self.extract_jwt_token(token, access_type=AccessType.register)
+        ## data = await self.extract_jwt_token(token, access_type=AccessType.register)
+        data = await self.extract_token(token, access_type=AccessType.register)
         user_id = data.get("id")
         PraetorianError.require_condition(
             user_id is not None,
@@ -1313,7 +1592,8 @@ class Praetorian():
         :returns: :py:class:`User` object of looked up user after token validation
         :rtype: :py:class:`User`
         """
-        data = await self.extract_jwt_token(token, access_type=AccessType.reset)
+        ## data = await self.extract_jwt_token(token, access_type=AccessType.reset)
+        data = await self.extract_token(token, access_type=AccessType.reset)
         user_id = data.get("id")
         PraetorianError.require_condition(
             user_id is not None,

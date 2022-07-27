@@ -171,7 +171,7 @@ def create_app(db_path=None):
         username = req.get("username", None)
         password = req.get("password", None)
         user = await _guard.authenticate(username, password)
-        ret = {'access_token': await _guard.encode_jwt_token(
+        ret = {'access_token': await _guard.encode_token(
             user,
             nickname=user.nickname,
         )}

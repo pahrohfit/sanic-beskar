@@ -3,7 +3,7 @@ import inspect
 import re
 from typing import NoReturn
 import warnings
-import json
+import ujson
 
 import segno
 
@@ -14,7 +14,7 @@ from sanic_praetorian.constants import RESERVED_CLAIMS
 from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
 
 
-def is_valid_json(data: str) -> json:
+def is_valid_json(data: str) -> ujson:
     """
     Simple helper to validate if a value is valid json data
 
@@ -25,7 +25,7 @@ def is_valid_json(data: str) -> json:
     :rtype: bool
     """
     try:
-        return json.loads(data)
+        return ujson.loads(data)
     except ValueError:
         return False
 
@@ -163,7 +163,7 @@ def current_user_id() -> str:
     return user_id
 
 
-def generate_totp_qr(user_totp: json) -> segno:
+def generate_totp_qr(user_totp: ujson) -> segno:
     """
     This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.

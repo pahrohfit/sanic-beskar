@@ -168,7 +168,7 @@ def create_app(db_path=None):
         username = req.get("username", None)
         password = req.get("password", None)
         user = await _guard.authenticate(username, password)
-        ret = {"access_token": await _guard.encode_jwt_token(user)}
+        ret = {"access_token": await _guard.encode_token(user)}
         return json(ret, status=200)
 
     @sanic_app.route("/protected")
@@ -256,7 +256,7 @@ def create_app(db_path=None):
         registration_token = _guard.read_token_from_header()
         user = await _guard.get_user_from_registration_token(registration_token)
         # perform 'activation' of user here...like setting 'active' or something
-        ret = {'access_token': await _guard.encode_jwt_token(user)}
+        ret = {'access_token': await _guard.encode_token(user)}
         return (json(ret), 200)
 
     return sanic_app

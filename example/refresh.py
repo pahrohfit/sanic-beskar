@@ -166,7 +166,7 @@ def create_app(db_path=None):
         username = req.get("username", None)
         password = req.get("password", None)
         user = await _guard.authenticate(username, password)
-        ret = {"access_token": await _guard.encode_jwt_token(user)}
+        ret = {"access_token": await _guard.encode_token(user)}
         return json(ret, status=200)
 
     @sanic_app.route("/protected")
@@ -192,7 +192,7 @@ def create_app(db_path=None):
              -H "Authorization: Bearer <your_token>"
         """
         old_token = _guard.read_token_from_header()
-        new_token = await _guard.refresh_jwt_token(old_token)
+        new_token = await _guard.refresh_token(old_token)
         ret = {'access_token': new_token}
         return json(ret, 200)
 

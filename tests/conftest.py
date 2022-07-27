@@ -10,6 +10,8 @@ from sanic.log import logger
 from sanic_testing.reusable import ReusableClient
 from sanic.exceptions import SanicException
 
+import sanic_praetorian
+
 from models import ValidatingUser, MixinUser, User, TotpUser
 from server import create_app, _guard, _mail
 
@@ -26,8 +28,9 @@ async def init(db_path=None):
     await Tortoise.generate_schemas()
 
 
-@pytest.fixture
-def app(tmpdir_factory):
+#@pytest.fixture
+@pytest.fixture(params=["jwt", "paseto"])
+def app(tmpdir_factory, request, monkeypatch):
 
     db_path = tmpdir_factory.mktemp(
         "sanic-praetorian-test",
@@ -35,6 +38,9 @@ def app(tmpdir_factory):
     ).join("sqlite.db")
     logger.info(f'Using DB_Path: {str(db_path)}')
     run_async(init(db_path=f'sqlite://{str(db_path)}'))
+
+    # Use the fixture params to test all our token providers
+    monkeypatch.setenv('SANIC_PRAETORIAN_TOKEN_PROVIDER', request.param)
 
     sanic_app = create_app(db_path=f'sqlite://{str(db_path)}')
     # Hack to do some poor code work in the app for some workarounds for broken fucntions under pytest

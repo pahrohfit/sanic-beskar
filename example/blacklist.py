@@ -162,7 +162,7 @@ def create_app(db_path=None):
         username = req.get("username", None)
         password = req.get("password", None)
         user = await _guard.authenticate(username, password)
-        ret = {"access_token": await _guard.encode_jwt_token(user)}
+        ret = {"access_token": await _guard.encode_token(user)}
         return json(ret, status=200)
 
     @sanic_app.route("/protected")
@@ -189,7 +189,7 @@ def create_app(db_path=None):
              -d '{"token":"<your_token>"}'
         """
         req = request.json
-        data = await _guard.extract_jwt_token(req['token'])
+        data = await _guard.extract_token(req['token'])
         blacklist.add(data['jti'])
         return json({"message": f"token blacklisted ({req['token']})"})
 

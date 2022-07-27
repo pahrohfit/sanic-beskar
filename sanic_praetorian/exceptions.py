@@ -76,6 +76,13 @@ class InvalidTokenHeader(PraetorianError):
     pass
 
 
+class VerifyError(InvalidTokenHeader):
+    """
+    The token contained in the header is invalid
+    """
+    pass
+
+
 class InvalidUserError(PraetorianError):
     """
     The user is no longer valid and is now not authorized
