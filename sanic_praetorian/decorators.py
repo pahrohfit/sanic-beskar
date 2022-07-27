@@ -33,7 +33,6 @@ async def _verify_and_add_jwt(request, optional=False):
             if optional:
                 return
             raise err
-        ## jwt_data = await guard.extract_jwt_token(token)
         jwt_data = await guard.extract_token(token)
         add_jwt_data_to_app_context(jwt_data)
 

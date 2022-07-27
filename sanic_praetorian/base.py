@@ -870,7 +870,6 @@ class Praetorian():
                   implements a blacklist so that a given token can be blocked
                   should it be lost or become a security concern
         """
-        ## return await self.encode_jwt_token(
         return await self.encode_token(
             user,
             override_access_lifespan=VITAM_AETERNUM,
@@ -960,7 +959,6 @@ class Praetorian():
                                            exceed the :py:data:`refresh_lifespan`
         """
         moment = pendulum.now("UTC")
-        ## data = await self.extract_jwt_token(token, access_type=AccessType.refresh)
         data = await self.extract_token(token, access_type=AccessType.refresh)
 
         user = await self.user_class.identify(data["id"])
@@ -1276,7 +1274,6 @@ class Praetorian():
         :returns: updated header, including token
         :rtype: json
         """
-        ## token = await self.encode_jwt_token(
         token = await self.encode_token(
             user,
             override_access_lifespan=override_access_lifespan,
@@ -1349,7 +1346,6 @@ class Praetorian():
                 override_access_lifespan
             )
         )
-        ## custom_token = await self.encode_jwt_token(
         custom_token = await self.encode_token(
             user,
             override_access_lifespan=override_access_lifespan,
@@ -1436,7 +1432,6 @@ class Praetorian():
                 override_access_lifespan
             )
         )
-        ## custom_token = await self.encode_jwt_token(
         custom_token = await self.encode_token(
             user,
             override_access_lifespan=override_access_lifespan,
@@ -1564,7 +1559,6 @@ class Praetorian():
         :returns: :py:class:`User` object of looked up user after token validation
         :rtype: :py:class:`User`
         """
-        ## data = await self.extract_jwt_token(token, access_type=AccessType.register)
         data = await self.extract_token(token, access_type=AccessType.register)
         user_id = data.get("id")
         PraetorianError.require_condition(
@@ -1592,7 +1586,6 @@ class Praetorian():
         :returns: :py:class:`User` object of looked up user after token validation
         :rtype: :py:class:`User`
         """
-        ## data = await self.extract_jwt_token(token, access_type=AccessType.reset)
         data = await self.extract_token(token, access_type=AccessType.reset)
         user_id = data.get("id")
         PraetorianError.require_condition(
