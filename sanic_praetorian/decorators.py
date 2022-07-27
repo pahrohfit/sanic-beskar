@@ -91,8 +91,8 @@ def roles_required(*required_rolenames):
             try:
                 MissingRoleError.require_condition(
                     current_rolenames().issuperset(role_set),
-                    "This endpoint requires all the following roles: "
-                    "{}".format([", ".join(role_set)]),
+                    'This endpoint requires all the following roles: '
+                    f'{[", ".join(role_set)]}',
                 )
                 return await method(request, *args, **kwargs)
             finally:
@@ -123,8 +123,8 @@ def roles_accepted(*accepted_rolenames):
             try:
                 MissingRoleError.require_condition(
                     not current_rolenames().isdisjoint(role_set),
-                    "This endpoint requires one of the following roles: "
-                    "{}".format([", ".join(role_set)]),
+                    'This endpoint requires one of the following roles: '
+                    f'{[", ".join(role_set)]}',
                 )
                 return await method(request, *args, **kwargs)
             finally:
