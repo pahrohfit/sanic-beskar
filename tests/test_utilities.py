@@ -86,7 +86,7 @@ class TestPraetorianUtilities:
         add_jwt_data_to_app_context(jwt_data)
         assert await current_user() == the_dude
 
-    def test_current_rolenames(self):
+    async def test_current_rolenames(self):
         """
         This test verifies that the rolenames attached to the current user
         can be extracted from the jwt token data that has been added to the
@@ -94,13 +94,13 @@ class TestPraetorianUtilities:
         """
         jwt_data = {}
         add_jwt_data_to_app_context(jwt_data)
-        assert current_rolenames() == set([
+        assert (await current_rolenames()) == set([
             'non-empty-but-definitely-not-matching-subset'
         ])
 
         jwt_data = {'rls': 'admin,operator'}
         add_jwt_data_to_app_context(jwt_data)
-        assert current_rolenames() == set(['admin', 'operator'])
+        assert (await current_rolenames()) == set(['admin', 'operator'])
 
     def test_current_custom_claims(self):
         """
@@ -151,7 +151,7 @@ class TestPraetorianUtilities:
         with pytest.raises(ConfigurationError):
             duration_from_string('')
 
-    def test_segno_qr_generation(self, default_guard):
+    async def test_segno_qr_generation(self, default_guard):
         """
         This test just verifies we can obtain a segno object
         for rendering QR codes for TOTP usage.
@@ -160,7 +160,7 @@ class TestPraetorianUtilities:
         png_out = BytesIO()
         txt_out = StringIO()
         totp = default_guard.totp_ctx.new()
-        qrcode = generate_totp_qr(totp.to_json())
+        qrcode = await generate_totp_qr(totp.to_json())
         assert qrcode
 
         qrcode.save(kind='png', out=png_out)
@@ -172,4 +172,4 @@ class TestPraetorianUtilities:
         assert type(txt_out) == StringIO
 
         with pytest.raises(TypeError):
-            generate_totp_qr(None)
+            await generate_totp_qr(None)

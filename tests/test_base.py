@@ -1,4 +1,4 @@
-import jwt
+import warnings
 import pendulum
 import plummet
 import pytest
@@ -68,6 +68,9 @@ class TestPraetorian:
 
         app.config["PRAETORIAN_HASH_SCHEME"] = "pbkdf2_sha512"
         specified_guard = Praetorian(app, user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            specified_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
         secret = specified_guard.hash_password("some password")
         assert specified_guard._verify_password("some password", secret)
         assert not specified_guard._verify_password("not right", secret)
@@ -449,7 +452,7 @@ class TestPraetorian:
         with plummet.frozen_time('2017-05-21 19:54:28'):
             guard._validate_token_data(data, AccessType.register)
 
-    async def test_encode_token(self, app, user_class, validating_user_class, mock_users, no_token_validation):
+    async def test_encode_token(self, app, user_class, validating_user_class, mock_users, default_guard, no_token_validation):
         """
         This test::
             * verifies that the encode_token correctly encodes jwt
@@ -465,14 +468,13 @@ class TestPraetorian:
               validates that the custom claims do not collide with reserved
               claims
         """
-        guard = Praetorian(app, user_class)
         the_dude = await mock_users(username="the_dude", password="abides", roles="admin,operator")
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
             from sanic.log import logger
-            logger.critical(f"Token Type: {guard.token_provider}")
-            token = await guard.encode_token(the_dude)
-            token_data = await guard.extract_token(token)
+            logger.critical(f"Token Type: {default_guard.token_provider}")
+            token = await default_guard.encode_token(the_dude)
+            token_data = await default_guard.extract_token(token)
 
             assert token_data["iat"] == moment.int_timestamp
             assert (
@@ -490,12 +492,12 @@ class TestPraetorian:
         override_refresh_lifespan = pendulum.Duration(hours=1)
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(
+            token = await default_guard.encode_token(
                 the_dude,
                 override_access_lifespan=override_access_lifespan,
                 override_refresh_lifespan=override_refresh_lifespan,
             )
-            token_data = await guard.extract_token(token)
+            token_data = await default_guard.extract_token(token)
 
             assert token_data["iat"] == moment.int_timestamp
             assert (
@@ -513,12 +515,12 @@ class TestPraetorian:
         override_refresh_lifespan = pendulum.Duration(minutes=1)
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(
+            token = await default_guard.encode_token(
                 the_dude,
                 override_access_lifespan=override_access_lifespan,
                 override_refresh_lifespan=override_refresh_lifespan,
             )
-            token_data = await guard.extract_token(token)
+            token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert token_data["exp"] == token_data[REFRESH_EXPIRATION_CLAIM]
             assert (
@@ -529,6 +531,9 @@ class TestPraetorian:
             assert token_data["rls"] == "admin,operator"
 
         validating_guard = Praetorian(app, validating_user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            validating_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
         brandt = validating_user_class(
             username="brandt",
             password=validating_guard.hash_password("can't watch"),
@@ -543,12 +548,12 @@ class TestPraetorian:
 
         moment = plummet.momentize('2018-08-18 08:55:12')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(
+            token = await default_guard.encode_token(
                 the_dude,
                 duder="brief",
                 el_duderino="not brief",
             )
-            token_data = await guard.extract_token(token)
+            token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
@@ -564,22 +569,21 @@ class TestPraetorian:
             assert token_data["el_duderino"] == "not brief"
 
         with pytest.raises(ClaimCollisionError) as err_info:
-            await guard.encode_token(the_dude, exp="nice marmot")
+            await default_guard.encode_token(the_dude, exp="nice marmot")
         expected_message = "custom claims collide"
         assert expected_message in str(err_info.value)
 
-    async def test_encode_eternal_token(self, app, user_class, mock_users, no_token_validation):
+    async def test_encode_eternal_token(self, app, user_class, mock_users, no_token_validation, default_guard):
         """
         This test verifies that the encode_eternal_token correctly encodes
         jwt data based on a user instance. Also verifies that the lifespan is
         set to the constant VITAM_AETERNUM
         """
-        guard = Praetorian(app, user_class)
         the_dude = await mock_users(username='the_dude', roles="admin,operator")
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            token = await guard.encode_eternal_token(the_dude)
-            token_data = await guard.extract_token(token)
+            token = await default_guard.encode_eternal_token(the_dude)
+            token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert token_data["exp"] == (moment + VITAM_AETERNUM).int_timestamp
             assert (
@@ -594,6 +598,7 @@ class TestPraetorian:
         user_class,
         validating_user_class,
         mock_users,
+        default_guard,
     ):
         """
         This test::
@@ -615,24 +620,22 @@ class TestPraetorian:
             * verifies that any custom claims in the original token's
               payload are also packaged in the new token's payload
         """
-        guard = Praetorian(app, user_class)
 
         the_dude = await mock_users(username="the_dude",
                                     password="abides",
-                                    roles="admin,operator",
-                                    guard_name=guard)
+                                    roles="admin,operator")
 
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(the_dude)
+            token = await default_guard.encode_token(the_dude)
         new_moment = (
             pendulum.parse("2017-05-21 18:39:55")
             + DEFAULT_JWT_ACCESS_LIFESPAN
             + pendulum.Duration(minutes=1)
         )
         with plummet.frozen_time(new_moment):
-            new_token = await guard.refresh_token(token)
-            new_token_data = await guard.extract_token(new_token)
+            new_token = await default_guard.refresh_token(token)
+            new_token_data = await default_guard.extract_token(new_token)
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
                 new_token_data["exp"]
@@ -647,18 +650,18 @@ class TestPraetorian:
 
         moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time('2017-05-21 18:39:55'):
-            token = await guard.encode_token(the_dude)
+            token = await default_guard.encode_token(the_dude)
         new_moment = (
             pendulum.parse("2017-05-21 18:39:55")
             + DEFAULT_JWT_ACCESS_LIFESPAN
             + pendulum.Duration(minutes=1)
         )
         with plummet.frozen_time(new_moment):
-            new_token = await guard.refresh_token(
+            new_token = await default_guard.refresh_token(
                 token,
                 override_access_lifespan=pendulum.Duration(hours=2),
             )
-            new_token_data = await guard.extract_token(new_token)
+            new_token_data = await default_guard.extract_token(new_token)
             assert (
                 new_token_data["exp"]
                 == (new_moment + pendulum.Duration(hours=2)).int_timestamp
@@ -666,19 +669,19 @@ class TestPraetorian:
 
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(
+            token = await default_guard.encode_token(
                 the_dude,
                 override_refresh_lifespan=pendulum.Duration(hours=2),
                 override_access_lifespan=pendulum.Duration(minutes=30),
             )
         new_moment = moment + pendulum.Duration(minutes=31)
         with plummet.frozen_time(new_moment):
-            new_token = await guard.refresh_token(
+            new_token = await default_guard.refresh_token(
                 token,
                 override_access_lifespan=pendulum.Duration(hours=2),
             )
             logger.critical(f'new_token: {new_token}')
-            new_token_data = await guard.extract_token(new_token)
+            new_token_data = await default_guard.extract_token(new_token)
             logger.critical(f"new_token_data: {new_token_data}")
             assert (
                 new_token_data["exp"]
@@ -690,13 +693,16 @@ class TestPraetorian:
         )
 
         validating_guard = Praetorian(app, validating_user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            validating_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)
         brandt = await mock_users(username="brandt",
                                   password="can't watch",
                                   guard_name=validating_guard,
                                   class_name=validating_user_class)
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(brandt)
+            token = await validating_guard.encode_token(brandt)
         new_moment = moment + expiring_interval
         with plummet.frozen_time(new_moment):
             await validating_guard.refresh_token(token)
@@ -713,11 +719,10 @@ class TestPraetorian:
             minutes=1
         )
 
-        guard = Praetorian(app, user_class)
-        bunny = await mock_users(username="bunny", guard_name=guard)
+        bunny = await mock_users(username="bunny", guard_name=default_guard)
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(bunny)
+            token = await default_guard.encode_token(bunny)
         await bunny.delete()
         new_moment = moment + expiring_interval
         with plummet.frozen_time(new_moment):
@@ -728,7 +733,7 @@ class TestPraetorian:
 
         moment = plummet.momentize('2018-08-14 09:05:24')
         with plummet.frozen_time(moment):
-            token = await guard.encode_token(
+            token = await default_guard.encode_token(
                 the_dude,
                 duder="brief",
                 el_duderino="not brief",
@@ -739,8 +744,8 @@ class TestPraetorian:
             + pendulum.Duration(minutes=1)
         )
         with plummet.frozen_time(new_moment):
-            new_token = await guard.refresh_token(token)
-            new_token_data = await guard.extract_token(new_token)
+            new_token = await default_guard.refresh_token(token)
+            new_token_data = await default_guard.extract_token(new_token)
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
                 new_token_data["exp"]
@@ -759,17 +764,16 @@ class TestPraetorian:
         await brandt.delete()
         await bunny.delete()
 
-    async def test_read_token_from_header(self, app, user_class, client, mock_users):
+    async def test_read_token_from_header(self, app, user_class, client, mock_users, default_guard):
         """
         This test verifies that a token may be properly read from a flask
         request's header using the configuration settings for header name and
         type
         """
-        guard = Praetorian(app, user_class)
         the_dude = await mock_users(username='the_dude', password='abides', roles='admin,operator')
 
         with plummet.frozen_time('2017-05-21 18:39:55'):
-            token = await guard.encode_token(the_dude)
+            token = await default_guard.encode_token(the_dude)
             logger.critical(f'Token: {token}')
 
         request, _ = client.get(
@@ -780,52 +784,50 @@ class TestPraetorian:
             },
         )
 
-        assert guard.read_token_from_header(request) == token
-        assert guard.read_token(request) == token
+        assert default_guard.read_token_from_header(request) == token
+        assert default_guard.read_token(request) == token
         await the_dude.delete()
 
     async def test_read_token_from_cookie(
-        self, app, user_class, client, mock_users
+        self, app, user_class, client, mock_users, default_guard
     ):
         """
         This test verifies that a token may be properly read from a flask
         request's cookies using the configuration settings for cookie
         """
-        guard = Praetorian(app, user_class)
         the_dude = await mock_users(username='the_dude', roles='admin,operator')
 
         cookies = Cookies()
         with plummet.frozen_time('2017-05-21 18:39:55'):
-            token = await guard.encode_token(the_dude)
-            cookies[guard.cookie_name] = token
+            token = await default_guard.encode_token(the_dude)
+            cookies[default_guard.cookie_name] = token
             request, _ = client.get(
                 "/unprotected",
                 cookies=cookies
             )
 
-        assert guard.read_token_from_cookie(request) == token
-        assert guard.read_token(request) == token
+        assert default_guard.read_token_from_cookie(request) == token
+        assert default_guard.read_token(request) == token
 
         await the_dude.delete()
 
-    async def test_pack_header_for_user(self, app, user_class, mock_users, no_token_validation):
+    async def test_pack_header_for_user(self, app, user_class, mock_users, no_token_validation, default_guard):
         """
         This test::
           * verifies that the pack_header_for_user method can be used to
             package a token into a header dict for a specified user
           * verifies that custom claims may be packaged as well
         """
-        guard = Praetorian(app, user_class)
         the_dude = await mock_users(username='the_dude', roles='admin,operator')
 
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            header_dict = await guard.pack_header_for_user(the_dude)
+            header_dict = await default_guard.pack_header_for_user(the_dude)
             token_header = header_dict.get(DEFAULT_JWT_HEADER_NAME)
             assert token_header is not None
             token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
             token = token.strip()
-            token_data = await guard.extract_token(token)
+            token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
@@ -842,7 +844,7 @@ class TestPraetorian:
         override_access_lifespan = pendulum.Duration(minutes=1)
         override_refresh_lifespan = pendulum.Duration(hours=1)
         with plummet.frozen_time(moment):
-            header_dict = await guard.pack_header_for_user(
+            header_dict = await default_guard.pack_header_for_user(
                 the_dude,
                 override_access_lifespan=override_access_lifespan,
                 override_refresh_lifespan=override_refresh_lifespan,
@@ -851,7 +853,7 @@ class TestPraetorian:
             assert token_header is not None
             token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
             token = token.strip()
-            token_data = await guard.extract_token(token)
+            token_data = await default_guard.extract_token(token)
             assert (
                 token_data["exp"]
                 == (moment + override_access_lifespan).int_timestamp
@@ -864,7 +866,7 @@ class TestPraetorian:
 
         moment = plummet.momentize('2018-08-14 09:08:39')
         with plummet.frozen_time(moment):
-            header_dict = await guard.pack_header_for_user(
+            header_dict = await default_guard.pack_header_for_user(
                 the_dude,
                 duder="brief",
                 el_duderino="not brief",
@@ -873,7 +875,7 @@ class TestPraetorian:
             assert token_header is not None
             token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
             token = token.strip()
-            token_data = await guard.extract_token(token)
+            token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
@@ -1062,6 +1064,9 @@ class TestPraetorian:
         """
         app.config["PRAETORIAN_HASH_SCHEME"] = "bcrypt"
         default_guard = Praetorian(app, user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
         bcrypt_password = default_guard.hash_password("bcrypt_password")
         the_dude.password = bcrypt_password
 
@@ -1094,14 +1099,13 @@ class TestPraetorian:
         # put away your toys
         await the_dude.delete()
 
-    async def test_authenticate_validate_and_update(self, app, user_class, mock_users):
+    async def test_authenticate_validate_and_update(self, app, user_class, mock_users, default_guard):
         """
         This test verifies the authenticate() function, when altered by
         either 'PRAETORIAN_HASH_AUTOUPDATE' or 'PRAETORIAN_HASH_AUTOTEST'
         performs the authentication and the required subaction.
         """
 
-        default_guard = Praetorian(app, user_class)
         pbkdf2_sha512_password = default_guard.hash_password("start_password")
 
         # create our default test user
@@ -1124,6 +1128,9 @@ class TestPraetorian:
         """
         app.config["PRAETORIAN_HASH_SCHEME"] = "bcrypt"
         default_guard = Praetorian(app, user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
         bcrypt_password = default_guard.hash_password("bcrypt_password")
         the_dude.password = bcrypt_password
         await the_dude.save(update_fields=["password"])
@@ -1132,6 +1139,9 @@ class TestPraetorian:
         app.config["PRAETORIAN_HASH_DEPRECATED_SCHEMES"] = ["bcrypt"]
         app.config["PRAETORIAN_HASH_AUTOTEST"] = True
         default_guard = Praetorian(app, user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
         with pytest.raises(LegacyScheme):
             await default_guard.authenticate(the_dude.username, "bcrypt_password")
 
@@ -1142,6 +1152,9 @@ class TestPraetorian:
         the_dude_old_password = the_dude.password
         app.config["PRAETORIAN_HASH_AUTOUPDATE"] = True
         default_guard = Praetorian(app, user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            default_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
         updated_dude = await default_guard.authenticate(
             the_dude.username, "bcrypt_password"
         )
@@ -1157,6 +1170,9 @@ class TestPraetorian:
         """
 
         totp_guard = Praetorian(app, totp_user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            totp_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
         totp = totp_guard.totp_ctx.new()
 
         # create our default test user
@@ -1237,6 +1253,9 @@ class TestPraetorian:
         app.config.PRAETORIAN_TOTP_SECRETS_DATA = {1: generate_secret()}
         totp_protected_guard = Praetorian(app, totp_user_class)
         totp_protected = totp_protected_guard.totp_ctx.new()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            totp_protected_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
 
         # create our default test user w/ encrypted TOTP
         the_protected_dude = await mock_users(username='the_protected_dude',
