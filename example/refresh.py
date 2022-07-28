@@ -159,7 +159,7 @@ def create_app(db_path=None):
         Logs a user in by parsing a POST request containing user credentials and
         issuing a JWT token.
         .. example::
-           $ curl http://localhost:8000/login -X POST \
+           $ curl localhost:8000/login -X POST \
              -d '{"username":"Walter","password":"calmerthanyouare"}'
         """
         req = request.json
@@ -176,7 +176,7 @@ def create_app(db_path=None):
         A protected endpoint. The auth_required decorator will require a header
         containing a valid JWT
         .. example::
-           $ curl http://localhost:8000/protected -X GET \
+           $ curl localhost:8000/protected -X GET \
              -H "Authorization: Bearer <your_token>"
         """
         user = await sanic_praetorian.current_user()
@@ -188,7 +188,7 @@ def create_app(db_path=None):
         Refreshes an existing JWT by creating a new one that is a copy of the old
         except that it has a refrehsed access expiration.
         .. example::
-           $ curl http://localhost:5000/refresh -X GET \
+           $ curl localhost:5000/refresh -X GET \
              -H "Authorization: Bearer <your_token>"
         """
         old_token = _guard.read_token_from_header()
@@ -204,7 +204,7 @@ def create_app(db_path=None):
         """
         Disables a user in the data store
         .. example::
-            $ curl http://localhost:5000/disable_user -X POST \
+            $ curl localhost:5000/disable_user -X POST \
               -H "Authorization: Bearer <your_token>" \
               -d '{"username":"Walter"}'
         """

@@ -155,7 +155,7 @@ def create_app(db_path=None):
         Logs a user in by parsing a POST request containing user credentials and
         issuing a JWT token.
         .. example::
-           $ curl http://localhost:8000/login -X POST \
+           $ curl localhost:8000/login -X POST \
              -d '{"username":"Walter","password":"calmerthanyouare"}'
         """
         req = request.json
@@ -172,7 +172,7 @@ def create_app(db_path=None):
         A protected endpoint. The auth_required decorator will require a header
         containing a valid JWT
         .. example::
-           $ curl http://localhost:8000/protected -X GET \
+           $ curl localhost:8000/protected -X GET \
              -H "Authorization: Bearer <your_token>"
         """
         user = await sanic_praetorian.current_user()
@@ -185,7 +185,7 @@ def create_app(db_path=None):
         """
         Blacklists an existing JWT by registering its jti claim in the blacklist.
         .. example::
-           $ curl http://localhost:5000/blacklist_token -X POST \
+           $ curl localhost:5000/blacklist_token -X POST \
              -d '{"token":"<your_token>"}'
         """
         req = request.json
