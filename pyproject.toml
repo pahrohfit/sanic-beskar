@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "sanic-praetorian"
 version = "2.0.0_rc4"
-description = "Strong, Simple, (now async!) and Precise security for Sanic APIs (using jwt)"
+description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
 readme = "README.rst"
