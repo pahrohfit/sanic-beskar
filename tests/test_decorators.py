@@ -56,7 +56,7 @@ class TestPraetorianDecorators:
         exc_msg = textwrap.dedent(
                 f"""
                 Could not find token in any
-                 of the given locations: {default_guard.jwt_places}
+                 of the given locations: {default_guard.token_places}
                 """
         ).replace("\n", "")
 

@@ -110,15 +110,15 @@ def create_app(db_path=None):
 
     # sanic-praetorian config
     sanic_app.config.SECRET_KEY = "top secret"
-    sanic_app.config["JWT_ACCESS_LIFESPAN"] = {"hours": 1000}
-    sanic_app.config["JWT_REFRESH_LIFESPAN"] = {"days": 1000}
+    sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"hours": 1000}
+    sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"days": 1000}
 
     # sanic-mailing config
     sanic_app.config.MAIL_SERVER = 'localhost:25'
     sanic_app.config.MAIL_USERNAME = ''
     sanic_app.config.MAIL_PASSWORD = ''
     sanic_app.config.MAIL_FROM = 'fake@fake.com'
-    sanic_app.config.JWT_PLACES = ['header', 'cookie']
+    sanic_app.config.TOKEN_PLACES = ['header', 'cookie']
 
     blacklist = set()
 

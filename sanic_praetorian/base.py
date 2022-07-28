@@ -44,15 +44,15 @@ from sanic_praetorian.exceptions import (
 )
 
 from sanic_praetorian.constants import (
-    DEFAULT_JWT_ACCESS_LIFESPAN,
+    DEFAULT_TOKEN_ACCESS_LIFESPAN,
     DEFAULT_JWT_ALGORITHM,
     DEFAULT_JWT_ALLOWED_ALGORITHMS,
-    DEFAULT_JWT_PLACES,
-    DEFAULT_JWT_COOKIE_NAME,
-    DEFAULT_JWT_HEADER_NAME,
-    DEFAULT_JWT_HEADER_TYPE,
-    DEFAULT_JWT_REFRESH_LIFESPAN,
-    DEFAULT_JWT_RESET_LIFESPAN,
+    DEFAULT_TOKEN_PLACES,
+    DEFAULT_TOKEN_COOKIE_NAME,
+    DEFAULT_TOKEN_HEADER_NAME,
+    DEFAULT_TOKEN_HEADER_TYPE,
+    DEFAULT_TOKEN_REFRESH_LIFESPAN,
+    DEFAULT_TOKEN_RESET_LIFESPAN,
     DEFAULT_USER_CLASS_VALIDATION_METHOD,
     DEFAULT_CONFIRMATION_TEMPLATE,
     DEFAULT_CONFIRMATION_SUBJECT,
@@ -223,32 +223,32 @@ class Praetorian():
             DEFAULT_JWT_ALGORITHM,
         )
         self.access_lifespan = app.config.get(
-            "JWT_ACCESS_LIFESPAN",
-            DEFAULT_JWT_ACCESS_LIFESPAN,
+            "TOKEN_ACCESS_LIFESPAN",
+            DEFAULT_TOKEN_ACCESS_LIFESPAN,
         )
         self.refresh_lifespan = app.config.get(
-            "JWT_REFRESH_LIFESPAN",
-            DEFAULT_JWT_REFRESH_LIFESPAN,
+            "TOKEN_REFRESH_LIFESPAN",
+            DEFAULT_TOKEN_REFRESH_LIFESPAN,
         )
         self.reset_lifespan = app.config.get(
-            "JWT_RESET_LIFESPAN",
-            DEFAULT_JWT_RESET_LIFESPAN,
+            "TOKEN_RESET_LIFESPAN",
+            DEFAULT_TOKEN_RESET_LIFESPAN,
         )
-        self.jwt_places = app.config.get(
-            "JWT_PLACES",
-            DEFAULT_JWT_PLACES,
+        self.token_places = app.config.get(
+            "TOKEN_PLACES",
+            DEFAULT_TOKEN_PLACES,
         )
         self.cookie_name = app.config.get(
-            "JWT_COOKIE_NAME",
-            DEFAULT_JWT_COOKIE_NAME,
+            "TOKEN_COOKIE_NAME",
+            DEFAULT_TOKEN_COOKIE_NAME,
         )
         self.header_name = app.config.get(
-            "JWT_HEADER_NAME",
-            DEFAULT_JWT_HEADER_NAME,
+            "TOKEN_HEADER_NAME",
+            DEFAULT_TOKEN_HEADER_NAME,
         )
         self.header_type = app.config.get(
-            "JWT_HEADER_TYPE",
-            DEFAULT_JWT_HEADER_TYPE,
+            "TOKEN_HEADER_TYPE",
+            DEFAULT_TOKEN_HEADER_TYPE,
         )
         self.user_class_validation_method = app.config.get(
             "USER_CLASS_VALIDATION_METHOD",
@@ -1232,13 +1232,13 @@ class Praetorian():
         """
         Unpacks a token from a request header
         """
-        jwt_header = headers.get(self.header_name)
+        token_header = headers.get(self.header_name)
         MissingToken.require_condition(
-            jwt_header is not None,
+            token_header is not None,
             f"Token not found in headers under '{self.header_name}'",
         )
 
-        match = re.match(self.header_type + r"\s*([\w\.-]+)", jwt_header)
+        match = re.match(self.header_type + r"\s*([\w\.-]+)", token_header)
         InvalidTokenHeader.require_condition(
             match is not None,
             "Token header structure is invalid",
@@ -1262,12 +1262,12 @@ class Praetorian():
         """
         Unpacks a jwt token from a request cookies
         """
-        jwt_cookie = cookies.get(self.cookie_name)
+        token_cookie = cookies.get(self.cookie_name)
         MissingToken.require_condition(
-            jwt_cookie is not None,
+            token_cookie is not None,
             f"Token not found in cookie under '{self.cookie_name}'"
         )
-        return jwt_cookie
+        return token_cookie
 
     def read_token_from_cookie(self, request=None):
         """
@@ -1283,14 +1283,14 @@ class Praetorian():
     def read_token(self, request=None):
         """
         Tries to unpack the token from the current sanic request
-        in the locations configured by :py:data:`JWT_PLACES`.
-        Check-Order is defined by the value order in :py:data:`JWT_PLACES`.
+        in the locations configured by :py:data:`TOKEN_PLACES`.
+        Check-Order is defined by the value order in :py:data:`TOKEN_PLACES`.
 
         :param request: Sanic ``request`` object
         :type request: :py:func:`~sanic.request`
 
         :raises: :py:exc:`~sanic_praetorian.exceptions.MissingToken` if token
-                  is not found in any :py:data:`~sanic_praetorian.constants.JWT_PLACES`
+                  is not found in any :py:data:`~sanic_praetorian.constants.TOKEN_PLACES`
 
         :returns: function to read the token based upon where the token was found
         :rtype: function
@@ -1301,7 +1301,7 @@ class Praetorian():
         except Exception:
             pass
 
-        for place in self.jwt_places:
+        for place in self.token_places:
             try:
                 return getattr(
                     self,
@@ -1313,11 +1313,11 @@ class Praetorian():
                 logger.warning(
                     textwrap.dedent(
                         f"""
-                        Sanic_Praetorian hasn't implemented reading JWT tokens
+                        Sanic_Praetorian hasn't implemented reading tokens
                         from location {place.lower()}.
-                        Please reconfigure JWT_PLACES.
-                        Values accepted in JWT_PLACES are:
-                        {DEFAULT_JWT_PLACES}
+                        Please reconfigure TOKEN_PLACES.
+                        Values accepted in TOKEN_PLACES are:
+                        {DEFAULT_TOKEN_PLACES}
                         """
                     )
                 )
@@ -1326,7 +1326,7 @@ class Praetorian():
             textwrap.dedent(
                 f"""
                 Could not find token in any
-                 of the given locations: {self.jwt_places}
+                 of the given locations: {self.token_places}
                 """
             ).replace("\n", "")
         )
@@ -1417,7 +1417,7 @@ class Praetorian():
                                           :py:data:`PRAETORIAN_CONFIRMATION_SUBJECT`
                                           config setting.
         :type subject: str
-        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
+        :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         :type override_access_lifespan: :py:data:`pendulum`
@@ -1495,7 +1495,7 @@ class Praetorian():
                                           :py:data:`PRAETORIAN_RESET_SUBJECT`
                                           config setting.
         :type subject: str
-        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
+        :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         :type override_access_lifespan: :py:data:`pendulum`
@@ -1570,7 +1570,7 @@ class Praetorian():
         :type action_uri: str
         :param subject: The email subject.
         :type subject: str
-        :param override_access_lifespan: Overrides the :py:data:`JWT_ACCESS_LIFESPAN`
+        :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
                                           to set an access lifespan for the
                                           registration token.
         :type override_access_lifespan: :py:data:`pendulum`

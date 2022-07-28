@@ -110,15 +110,15 @@ def create_app(db_path=None):
 
     # sanic-praetorian config
     sanic_app.config.SECRET_KEY = "top secret"
-    sanic_app.config["JWT_ACCESS_LIFESPAN"] = {"seconds": 30}
-    sanic_app.config["JWT_REFRESH_LIFESPAN"] = {"minutes": 2}
+    sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"seconds": 30}
+    sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"minutes": 2}
 
     # sanic-mailing config
     sanic_app.config.MAIL_SERVER = 'localhost:25'
     sanic_app.config.MAIL_USERNAME = ''
     sanic_app.config.MAIL_PASSWORD = ''
     sanic_app.config.MAIL_FROM = 'fake@fake.com'
-    sanic_app.config.JWT_PLACES = ['header', 'cookie']
+    sanic_app.config.TOKEN_PLACES = ['header', 'cookie']
 
     _guard.init_app(sanic_app, User)
     sanic_app.ctx.mail = _mail

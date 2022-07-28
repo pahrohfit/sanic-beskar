@@ -35,10 +35,10 @@ from sanic_praetorian.exceptions import (
 )
 from sanic_praetorian.constants import (
     AccessType,
-    DEFAULT_JWT_ACCESS_LIFESPAN,
-    DEFAULT_JWT_REFRESH_LIFESPAN,
-    DEFAULT_JWT_HEADER_NAME,
-    DEFAULT_JWT_HEADER_TYPE,
+    DEFAULT_TOKEN_ACCESS_LIFESPAN,
+    DEFAULT_TOKEN_REFRESH_LIFESPAN,
+    DEFAULT_TOKEN_HEADER_NAME,
+    DEFAULT_TOKEN_HEADER_TYPE,
     IS_REGISTRATION_TOKEN_CLAIM,
     IS_RESET_TOKEN_CLAIM,
     REFRESH_EXPIRATION_CLAIM,
@@ -479,11 +479,11 @@ class TestPraetorian:
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
-                == (moment + DEFAULT_JWT_ACCESS_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
-                == (moment + DEFAULT_JWT_REFRESH_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
             assert token_data["rls"] == "admin,operator"
@@ -557,11 +557,11 @@ class TestPraetorian:
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
-                == (moment + DEFAULT_JWT_ACCESS_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
-                == (moment + DEFAULT_JWT_REFRESH_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
             assert token_data["rls"] == "admin,operator"
@@ -629,7 +629,7 @@ class TestPraetorian:
             token = await default_guard.encode_token(the_dude)
         new_moment = (
             pendulum.parse("2017-05-21 18:39:55")
-            + DEFAULT_JWT_ACCESS_LIFESPAN
+            + DEFAULT_TOKEN_ACCESS_LIFESPAN
             + pendulum.Duration(minutes=1)
         )
         with plummet.frozen_time(new_moment):
@@ -638,11 +638,11 @@ class TestPraetorian:
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
                 new_token_data["exp"]
-                == (new_moment + DEFAULT_JWT_ACCESS_LIFESPAN).int_timestamp
+                == (new_moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
-                == (moment + DEFAULT_JWT_REFRESH_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert new_token_data["id"] == the_dude.id
             assert new_token_data["rls"] == "admin,operator"
@@ -652,7 +652,7 @@ class TestPraetorian:
             token = await default_guard.encode_token(the_dude)
         new_moment = (
             pendulum.parse("2017-05-21 18:39:55")
-            + DEFAULT_JWT_ACCESS_LIFESPAN
+            + DEFAULT_TOKEN_ACCESS_LIFESPAN
             + pendulum.Duration(minutes=1)
         )
         with plummet.frozen_time(new_moment):
@@ -687,7 +687,7 @@ class TestPraetorian:
                 == new_token_data[REFRESH_EXPIRATION_CLAIM]
             )
 
-        expiring_interval = DEFAULT_JWT_ACCESS_LIFESPAN + pendulum.Duration(
+        expiring_interval = DEFAULT_TOKEN_ACCESS_LIFESPAN + pendulum.Duration(
             minutes=1
         )
 
@@ -714,7 +714,7 @@ class TestPraetorian:
         expected_message = "The user is not valid or has had access revoked"
         assert expected_message in str(err_info.value)
 
-        expiring_interval = DEFAULT_JWT_ACCESS_LIFESPAN + pendulum.Duration(
+        expiring_interval = DEFAULT_TOKEN_ACCESS_LIFESPAN + pendulum.Duration(
             minutes=1
         )
 
@@ -739,7 +739,7 @@ class TestPraetorian:
             )
         new_moment = (
             pendulum.parse("2018-08-14 09:05:24")
-            + DEFAULT_JWT_ACCESS_LIFESPAN
+            + DEFAULT_TOKEN_ACCESS_LIFESPAN
             + pendulum.Duration(minutes=1)
         )
         with plummet.frozen_time(new_moment):
@@ -748,11 +748,11 @@ class TestPraetorian:
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
                 new_token_data["exp"]
-                == (new_moment + DEFAULT_JWT_ACCESS_LIFESPAN).int_timestamp
+                == (new_moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
-                == (moment + DEFAULT_JWT_REFRESH_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert new_token_data["id"] == the_dude.id
             assert new_token_data["rls"] == "admin,operator"
@@ -779,7 +779,7 @@ class TestPraetorian:
             "/unprotected",
             headers={
                 "Content-Type": "application/json",
-                DEFAULT_JWT_HEADER_NAME: DEFAULT_JWT_HEADER_TYPE + " " + token,
+                DEFAULT_TOKEN_HEADER_NAME: DEFAULT_TOKEN_HEADER_TYPE + " " + token,
             },
         )
 
@@ -822,19 +822,19 @@ class TestPraetorian:
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
             header_dict = await default_guard.pack_header_for_user(the_dude)
-            token_header = header_dict.get(DEFAULT_JWT_HEADER_NAME)
+            token_header = header_dict.get(DEFAULT_TOKEN_HEADER_NAME)
             assert token_header is not None
-            token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
+            token = token_header.replace(DEFAULT_TOKEN_HEADER_TYPE, "")
             token = token.strip()
             token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
-                == (moment + DEFAULT_JWT_ACCESS_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
-                == (moment + DEFAULT_JWT_REFRESH_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
             assert token_data["rls"] == "admin,operator"
@@ -848,9 +848,9 @@ class TestPraetorian:
                 override_access_lifespan=override_access_lifespan,
                 override_refresh_lifespan=override_refresh_lifespan,
             )
-            token_header = header_dict.get(DEFAULT_JWT_HEADER_NAME)
+            token_header = header_dict.get(DEFAULT_TOKEN_HEADER_NAME)
             assert token_header is not None
-            token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
+            token = token_header.replace(DEFAULT_TOKEN_HEADER_TYPE, "")
             token = token.strip()
             token_data = await default_guard.extract_token(token)
             assert (
@@ -870,19 +870,19 @@ class TestPraetorian:
                 duder="brief",
                 el_duderino="not brief",
             )
-            token_header = header_dict.get(DEFAULT_JWT_HEADER_NAME)
+            token_header = header_dict.get(DEFAULT_TOKEN_HEADER_NAME)
             assert token_header is not None
-            token = token_header.replace(DEFAULT_JWT_HEADER_TYPE, "")
+            token = token_header.replace(DEFAULT_TOKEN_HEADER_TYPE, "")
             token = token.strip()
             token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert (
                 token_data["exp"]
-                == (moment + DEFAULT_JWT_ACCESS_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
-                == (moment + DEFAULT_JWT_REFRESH_LIFESPAN).int_timestamp
+                == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
             assert token_data["rls"] == "admin,operator"
