@@ -452,7 +452,7 @@ class TestPraetorian:
         with plummet.frozen_time('2017-05-21 19:54:28'):
             guard._validate_token_data(data, AccessType.register)
 
-    async def test_encode_token(self, app, user_class, validating_user_class, mock_users, default_guard, no_token_validation):
+    async def test_encode_token(self, app, validating_user_class, mock_users, default_guard, no_token_validation):
         """
         This test::
             * verifies that the encode_token correctly encodes jwt
@@ -573,7 +573,7 @@ class TestPraetorian:
         expected_message = "custom claims collide"
         assert expected_message in str(err_info.value)
 
-    async def test_encode_eternal_token(self, app, user_class, mock_users, no_token_validation, default_guard):
+    async def test_encode_eternal_token(self, mock_users, no_token_validation, default_guard):
         """
         This test verifies that the encode_eternal_token correctly encodes
         jwt data based on a user instance. Also verifies that the lifespan is
@@ -595,7 +595,6 @@ class TestPraetorian:
     async def test_refresh_token(
         self,
         app,
-        user_class,
         validating_user_class,
         mock_users,
         default_guard,
@@ -764,7 +763,7 @@ class TestPraetorian:
         await brandt.delete()
         await bunny.delete()
 
-    async def test_read_token_from_header(self, app, user_class, client, mock_users, default_guard):
+    async def test_read_token_from_header(self, client, mock_users, default_guard):
         """
         This test verifies that a token may be properly read from a flask
         request's header using the configuration settings for header name and
@@ -789,7 +788,7 @@ class TestPraetorian:
         await the_dude.delete()
 
     async def test_read_token_from_cookie(
-        self, app, user_class, client, mock_users, default_guard
+        self, client, mock_users, default_guard
     ):
         """
         This test verifies that a token may be properly read from a flask
@@ -811,7 +810,7 @@ class TestPraetorian:
 
         await the_dude.delete()
 
-    async def test_pack_header_for_user(self, app, user_class, mock_users, no_token_validation, default_guard):
+    async def test_pack_header_for_user(self, mock_users, no_token_validation, default_guard):
         """
         This test::
           * verifies that the pack_header_for_user method can be used to
@@ -950,7 +949,6 @@ class TestPraetorian:
     async def test_registration_email(
         self,
         app,
-        user_class,
         tmpdir,
         default_guard,
         mock_users,

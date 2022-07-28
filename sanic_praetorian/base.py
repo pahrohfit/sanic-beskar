@@ -1,3 +1,4 @@
+from importlib.util import find_spec
 import datetime
 import jinja2
 import jwt
@@ -194,9 +195,7 @@ class Praetorian():
         )
 
         if self.pwd_ctx.default_scheme().startswith('pbkdf2_'):
-            try:
-                import fastpbkdf2
-            except Exception as e:
+            if not find_spec('fastpbkdf2'): 
                 logger.warning(
                     textwrap.dedent(
                         """
@@ -365,7 +364,7 @@ class Praetorian():
                 self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
         else:
             self.totp_ctx = TOTP.using()
-        
+
         self.is_testing = app.config.get("TESTING", False)
 
         if not hasattr(app.ctx, "extensions"):
@@ -666,8 +665,8 @@ class Praetorian():
     async def encode_paseto_token(
         self,
         user,
-        override_access_lifespan: pendulum.Duration=None,
-        override_refresh_lifespan: pendulum.Duration=None,
+        override_access_lifespan: pendulum.Duration = None,
+        override_refresh_lifespan: pendulum.Duration = None,
         bypass_user_check=False,
         is_registration_token=False,
         is_reset_token=False,
@@ -751,7 +750,7 @@ class Praetorian():
             payload_parts,
             serializer=ujson,
             exp=time_delta,
-        ).decode('utf-8') # bytes by default, which are ugly
+        ).decode('utf-8')  # bytes by default, which are ugly
 
     async def encode_jwt_token(
         self,
@@ -842,11 +841,11 @@ class Praetorian():
     async def encode_token(
         self,
         user: object,
-        override_access_lifespan: pendulum.Duration=None,
-        override_refresh_lifespan: pendulum.Duration=None,
-        bypass_user_check: bool=False,
-        is_registration_token: bool=False,
-        is_reset_token: bool=False,
+        override_access_lifespan: pendulum.Duration = None,
+        override_refresh_lifespan: pendulum.Duration = None,
+        bypass_user_check: bool = False,
+        is_registration_token: bool = False,
+        is_reset_token: bool = False,
         **custom_claims
     ):
         """
@@ -941,7 +940,7 @@ class Praetorian():
             self,
             f"refresh_{self.token_provider}_token"
         )(token=token, override_access_lifespan=override_access_lifespan)
-    
+
     async def refresh_paseto_token(self, token: str, override_access_lifespan=None):
         """
         Creates a new token for a user if and only if the old token's access
@@ -1080,7 +1079,7 @@ class Praetorian():
 
     async def extract_paseto_token(self, token: object, access_type=AccessType.access):
         """
-        Extracts a data dictionary from a PASETO token. 
+        Extracts a data dictionary from a PASETO token.
 
         :param token: Token to be processed
         :type token: str
@@ -1118,7 +1117,7 @@ class Praetorian():
 
     async def extract_jwt_token(self, token: str, access_type=AccessType.access):
         """
-        Extracts a data dictionary from a JWT token. 
+        Extracts a data dictionary from a JWT token.
 
         :param token: Token to be processed
         :type token: str

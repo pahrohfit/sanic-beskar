@@ -13,8 +13,6 @@ from sanic.exceptions import SanicException
 
 from sanic_praetorian.base import Praetorian
 
-from passlib.context import CryptContext
-
 from models import ValidatingUser, MixinUser, User, TotpUser
 from server import create_app, _guard, _mail
 
@@ -31,7 +29,6 @@ async def init(db_path=None):
     await Tortoise.generate_schemas()
 
 
-#@pytest.fixture
 @pytest.fixture(params=["jwt", "paseto"])
 def app(tmpdir_factory, request, monkeypatch):
 
@@ -208,17 +205,19 @@ def mock_users(user_class, default_guard):
 
     return _get_user
 
+
 @pytest.fixture(autouse=False)
 def no_token_validation(monkeypatch):
     """
     Monkeypatch to prevent token validation from automatically
-    taking place. Instead, allow manual validation for testing
-    purposes, when this fixture is included.
+      taking place. Instead, allow manual validation for testing
+      purposes, when this fixture is included.
     """
     def mockreturn(*args, **kwargs):
         return True
 
     monkeypatch.setattr(Praetorian, "_validate_token_data", mockreturn)
+
 
 @pytest.fixture(autouse=True)
 def speed_up_passlib_for_pytest_only(default_guard):
