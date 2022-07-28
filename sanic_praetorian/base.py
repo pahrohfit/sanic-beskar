@@ -94,6 +94,7 @@ class Praetorian():
         encode_jwt_token_hook: Callable = None,
         refresh_jwt_token_hook: Callable = None,
     ):
+        self.app: Sanic = None
         self.pwd_ctx = None
         self.totp_ctx = None
         self.hash_scheme = None
@@ -151,6 +152,7 @@ class Praetorian():
         """
 
         """hook on request start etc."""
+        self.app = app
         app.register_middleware(self.open_session, 'request')
 
         PraetorianError.require_condition(
@@ -327,11 +329,11 @@ class Praetorian():
         )
 
         ConfigurationError.require_condition(
-            self.token_provider in ["jwt", "paseto"],
-            "Invalid `token_provider` configured. Valid are ['jwt', 'paseto'] only.",
+            getattr(self, f"encode_{self.token_provider}_token"),
+            "Invalid `token_provider` configured. Please check docs and try again.",
         )
         ConfigurationError.require_condition(
-            self.paseto_version in [1, 2, 3, 4],
+            self.paseto_version >0<4,
             "Invalid `paseto_version` configured. Valid are [1, 2, 3, 4] only.",
         )
 
@@ -352,9 +354,9 @@ class Praetorian():
             self.totp_secrets_type = self.totp_secrets_type.lower()
 
             ConfigurationError.require_condition(
-                self.totp_secrets_type in ["file", "string", "wallet"]
-                and self.totp_secrets_data,
-                f'If {"PRAETORIAN_TOTP_SECRETS_TYPE"} is set, it must be one of the following schemes: {["file", "string", "wallet"]}'
+                self.totp_secrets_data,
+                'If "PRAETORIAN_TOTP_SECRETS_TYPE" is set, you must also'
+                f'provide a valid value for "PRAETORIAN_TOTP_SECRETS_DATA"'
             )
             if self.totp_secrets_type == 'file':
                 self.totp_ctx = TOTP.using(secrets_path=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
@@ -362,6 +364,11 @@ class Praetorian():
                 self.totp_ctx = TOTP.using(secrets=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
             elif self.totp_secrets_type == 'wallet':
                 self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+            else:
+                raise ConfigurationError(
+                    f'If {"PRAETORIAN_TOTP_SECRETS_TYPE"} is set, it must be one'
+                    f'of the following schemes: {["file", "string", "wallet"]}'
+                )
         else:
             self.totp_ctx = TOTP.using()
 
@@ -1585,7 +1592,7 @@ class Praetorian():
         }
 
         PraetorianError.require_condition(
-            Sanic.get_app().ctx.mail,
+            self.app.ctx.mail,
             "Your app must have a mail extension enabled to register by email",
         )
 
@@ -1617,7 +1624,7 @@ class Praetorian():
             )
 
             logger.debug(f"Sending email to {email}")
-            notification["result"] = await Sanic.get_app().ctx.mail.send_message(
+            notification["result"] = await self.app.ctx.mail.send_message(
                 msg
             )
 
