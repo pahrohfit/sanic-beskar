@@ -91,8 +91,8 @@ class Praetorian():
         app: Sanic = None,
         user_class: object = None,
         is_blacklisted: Callable = None,
-        encode_jwt_token_hook: Callable = None,
-        refresh_jwt_token_hook: Callable = None,
+        encode_token_hook: Callable = None,
+        refresh_token_hook: Callable = None,
     ):
         self.app: Sanic = None
         self.pwd_ctx = None
@@ -109,8 +109,8 @@ class Praetorian():
                 app,
                 user_class,
                 is_blacklisted,
-                encode_jwt_token_hook,
-                refresh_jwt_token_hook,
+                encode_token_hook,
+                refresh_token_hook,
             )
 
     async def open_session(self, request):
@@ -121,8 +121,8 @@ class Praetorian():
         app: Sanic = None,
         user_class: object = None,
         is_blacklisted: Callable = None,
-        encode_jwt_token_hook: Callable = None,
-        refresh_jwt_token_hook: Callable = None,
+        encode_token_hook: Callable = None,
+        refresh_token_hook: Callable = None,
     ):
         """
         Initializes the :py:class:`Praetorian` extension
@@ -139,12 +139,12 @@ class Praetorian():
                                         argument. Returns True if the jti is
                                         blacklisted, False otherwise. By
                                         default, always returns False.
-        :param encode_jwt_token_hook:   A method that may optionally be
+        :param encode_token_hook:      A method that may optionally be
                                         called right before an encoded jwt
                                         is generated. Should take
                                         payload_parts which contains the
                                         ingredients for the jwt.
-        :param refresh_jwt_token_hook:  A method that may optionally be called
+        :param refresh_token_hook:     A method that may optionally be called
                                         right before an encoded jwt is
                                         refreshed. Should take payload_parts
                                         which contains the ingredients for
@@ -210,8 +210,8 @@ class Praetorian():
 
         self.user_class = self._validate_user_class(user_class)
         self.is_blacklisted = is_blacklisted or (lambda t: False)
-        self.encode_jwt_token_hook = encode_jwt_token_hook
-        self.refresh_jwt_token_hook = refresh_jwt_token_hook
+        self.encode_token_hook = encode_token_hook
+        self.refresh_token_hook = refresh_token_hook
 
         self.encode_key = app.config["SECRET_KEY"]
         self.allowed_algorithms = app.config.get(
@@ -746,8 +746,8 @@ class Praetorian():
         )
         payload_parts.update(custom_claims)
 
-        if self.encode_jwt_token_hook:
-            self.encode_jwt_token_hook(**payload_parts)
+        if self.encode_token_hook:
+            self.encode_token_hook(**payload_parts)
 
         # PASETO stores its own EXP as seconds from now()
         time_delta = access_expiration - moment.int_timestamp
@@ -837,8 +837,8 @@ class Praetorian():
         )
         payload_parts.update(custom_claims)
 
-        if self.encode_jwt_token_hook:
-            self.encode_jwt_token_hook(**payload_parts)
+        if self.encode_token_hook:
+            self.encode_token_hook(**payload_parts)
         return jwt.encode(
             payload_parts,
             self.encode_key,
@@ -996,8 +996,8 @@ class Praetorian():
         }
         payload_parts.update(custom_claims)
 
-        if self.refresh_jwt_token_hook:
-            self.refresh_jwt_token_hook(**payload_parts)
+        if self.refresh_token_hook:
+            self.refresh_token_hook(**payload_parts)
 
         # PASETO stores its own EXP as seconds from now()
         time_delta = access_expiration - moment.int_timestamp
@@ -1057,8 +1057,8 @@ class Praetorian():
         }
         payload_parts.update(custom_claims)
 
-        if self.refresh_jwt_token_hook:
-            self.refresh_jwt_token_hook(**payload_parts)
+        if self.refresh_token_hook:
+            self.refresh_token_hook(**payload_parts)
         return jwt.encode(
             payload_parts,
             self.encode_key,

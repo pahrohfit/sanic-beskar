@@ -101,7 +101,7 @@ def current_guard(ctx: Optional[Sanic] = None):
     return guard
 
 
-def app_context_has_jwt_data(ctx: Optional[Sanic] = None) -> bool:
+def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     """
     Checks if there is already jwt_data added to the app context
 
@@ -118,7 +118,7 @@ def app_context_has_jwt_data(ctx: Optional[Sanic] = None) -> bool:
     #return hasattr(Sanic.get_app().ctx, 'jwt_data')
 
 
-def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
+def add_token_data_to_app_context(jwt_data) -> NoReturn:
     """
     Adds a dictionary of jwt data (presumably unpacked from a token) to the
     top of the sanic app's context
@@ -130,7 +130,7 @@ def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
     ctx.jwt_data = jwt_data
 
 
-def get_jwt_data_from_app_context() -> str:
+def get_token_data_from_app_context() -> str:
     """
     Fetches a dict of jwt token data from the top of the sanic app's context
 
@@ -150,12 +150,12 @@ def get_jwt_data_from_app_context() -> str:
     return jwt_data
 
 
-def remove_jwt_data_from_app_context() -> NoReturn:
+def remove_token_data_from_app_context() -> NoReturn:
     """
     Removes the dict of jwt token data from the top of the sanic app's context
     """
     ctx = Sanic.get_app().ctx
-    if app_context_has_jwt_data(ctx):
+    if app_context_has_token_data(ctx):
         del ctx.jwt_data
 
 
@@ -168,7 +168,7 @@ def current_user_id() -> str:
     :rtype: str
     :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no user/token found
     """
-    jwt_data = get_jwt_data_from_app_context()
+    jwt_data = get_token_data_from_app_context()
     user_id = jwt_data.get('id', None)
     PraetorianError.require_condition(
         user_id is not None,
@@ -217,7 +217,7 @@ async def current_rolenames() -> set:
     :returns: Set of roles for currently logged in users
     :rtype: set
     """
-    jwt_data = get_jwt_data_from_app_context()
+    jwt_data = get_token_data_from_app_context()
     if 'rls' not in jwt_data:
         # This is necessary so our set arithmetic works correctly
         return set(['non-empty-but-definitely-not-matching-subset'])
@@ -232,7 +232,7 @@ def current_custom_claims() -> dict:
     :returns: Custom claims for currently logged in user
     :rtype: dict
     """
-    jwt_data = get_jwt_data_from_app_context()
+    jwt_data = get_token_data_from_app_context()
     return {k: v for (k, v) in jwt_data.items() if k not in RESERVED_CLAIMS}
 
 
