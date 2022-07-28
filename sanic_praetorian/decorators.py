@@ -90,7 +90,7 @@ def roles_required(*required_rolenames):
             await _verify_and_add_jwt(request)
             try:
                 MissingRoleError.require_condition(
-                    current_rolenames().issuperset(role_set),
+                    (await current_rolenames()).issuperset(role_set),
                     'This endpoint requires all the following roles: '
                     f'{[", ".join(role_set)]}',
                 )
@@ -122,7 +122,7 @@ def roles_accepted(*accepted_rolenames):
             await _verify_and_add_jwt(request)
             try:
                 MissingRoleError.require_condition(
-                    not current_rolenames().isdisjoint(role_set),
+                    not (await current_rolenames()).isdisjoint(role_set),
                     'This endpoint requires one of the following roles: '
                     f'{[", ".join(role_set)]}',
                 )

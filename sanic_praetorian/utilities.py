@@ -14,7 +14,7 @@ from sanic_praetorian.constants import RESERVED_CLAIMS
 from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
 
 
-def is_valid_json(data: str) -> ujson:
+async def is_valid_json(data: str) -> ujson:
     """
     Simple helper to validate if a value is valid json data
 
@@ -76,6 +76,7 @@ def duration_from_string(text: str) -> pendulum:
         return pendulum.duration(**clean)
 
 
+@functools.cache
 def current_guard():
     """
     Fetches the current instance of :py:class:`Praetorian`
@@ -163,7 +164,7 @@ def current_user_id() -> str:
     return user_id
 
 
-def generate_totp_qr(user_totp: ujson) -> segno:
+async def generate_totp_qr(user_totp: ujson) -> segno:
     """
     This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.
@@ -196,7 +197,7 @@ async def current_user() -> object:
     return user
 
 
-def current_rolenames() -> set:
+async def current_rolenames() -> set:
     """
     This method returns the names of all roles associated with the current user
 

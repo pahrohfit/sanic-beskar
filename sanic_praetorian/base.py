@@ -548,7 +548,7 @@ class Praetorian():
             user is not None
             and hasattr(user, 'totp')
             and user.totp
-            and is_valid_json(user.totp),
+            and await is_valid_json(user.totp),
             "TOTP challenge is not properly configured for this user",
         )
         AuthenticationError.require_condition(
@@ -1363,7 +1363,7 @@ class Praetorian():
             override_refresh_lifespan=override_refresh_lifespan,
             **custom_claims
         )
-        return {self.header_name: self.header_type + " " + token}
+        return {self.header_name: f"{self.header_type} {token}"}
 
     async def send_registration_email(
         self,
