@@ -98,7 +98,7 @@ class TestPraetorianDecorators:
             assert response.status == 200
 
             cookies = Cookies()
-            token = await default_guard.encode_jwt_token(the_dude)
+            token = await default_guard.encode_token(the_dude)
             cookies[default_guard.cookie_name] = token
             _, response = client.get("/protected", cookies=cookies)
             assert response.status == 200

@@ -15,6 +15,7 @@ docs/_build/*
 .vscode
 .coverage
 coverage.xml
+prof/
 
 ### Emacs template
 # -*- mode: gitignore; -*-

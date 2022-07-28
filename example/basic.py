@@ -159,14 +159,14 @@ def create_app(db_path=None):
         Logs a user in by parsing a POST request containing user credentials and
         issuing a JWT token.
         .. example::
-           $ curl http://localhost:8000/login -X POST \
+           $ curl localhost:8000/login -X POST \
              -d '{"username":"Walter","password":"calmerthanyouare"}'
         """
         req = request.json
         username = req.get("username", None)
         password = req.get("password", None)
         user = await _guard.authenticate(username, password)
-        ret = {"access_token": await _guard.encode_jwt_token(user)}
+        ret = {"access_token": await _guard.encode_token(user)}
         return json(ret, status=200)
 
     @sanic_app.route("/protected")
@@ -176,7 +176,7 @@ def create_app(db_path=None):
         A protected endpoint. The auth_required decorator will require a header
         containing a valid JWT
         .. example::
-           $ curl http://localhost:8000/protected -X GET \
+           $ curl localhost:8000/protected -X GET \
              -H "Authorization: Bearer <your_token>"
         """
         user = await sanic_praetorian.current_user()
@@ -189,7 +189,7 @@ def create_app(db_path=None):
         A protected endpoint that requires a role. The roles_required decorator
         will require that the supplied JWT includes the required roles
         .. example::
-           $ curl http://localhost:8000/protected_admin_required -X GET \
+           $ curl localhost:8000/protected_admin_required -X GET \
               -H "Authorization: Bearer <your_token>"
         """
         user = await sanic_praetorian.current_user()
@@ -203,7 +203,7 @@ def create_app(db_path=None):
         roles_accepted decorator will require that the supplied JWT includes at
         least one of the accepted roles
         .. example::
-           $ curl http://localhost/protected_operator_accepted -X GET \
+           $ curl localhost/protected_operator_accepted -X GET \
              -H "Authorization: Bearer <your_token>"
         """
         user = await sanic_praetorian.current_user()

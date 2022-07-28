@@ -1,9 +1,9 @@
 import functools
 import inspect
 import re
-from typing import NoReturn
+from typing import NoReturn, Optional
 import warnings
-import json
+import ujson
 
 import segno
 
@@ -14,7 +14,7 @@ from sanic_praetorian.constants import RESERVED_CLAIMS
 from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
 
 
-def is_valid_json(data: str) -> json:
+async def is_valid_json(data: str) -> ujson:
     """
     Simple helper to validate if a value is valid json data
 
@@ -25,7 +25,7 @@ def is_valid_json(data: str) -> json:
     :rtype: bool
     """
     try:
-        return json.loads(data)
+        return ujson.loads(data)
     except ValueError:
         return False
 
@@ -64,29 +64,36 @@ def duration_from_string(text: str) -> pendulum:
     )
     ConfigurationError.require_condition(
         match,
-        "Couldn't parse {}".format(text),
+        f"Couldn't parse {text}",
     )
     parts = match.groupdict()
     clean = {k: int(v) for (k, v) in parts.items() if v}
     ConfigurationError.require_condition(
         clean,
-        "Couldn't parse {}".format(text),
+        f"Couldn't parse {text}",
     )
-    with ConfigurationError.handle_errors("Couldn't parse {}".format(text)):
+    with ConfigurationError.handle_errors(f"Couldn't parse {text}"):
         return pendulum.duration(**clean)
 
 
-def current_guard():
+@functools.lru_cache(maxsize=None)
+def current_guard(ctx: Optional[Sanic] = None):
     """
     Fetches the current instance of :py:class:`Praetorian`
     that is attached to the current sanic app
+
+    :param ctx: Application Context
+    :type ctx: Optional[Sanic]
 
     :returns: Current Praetorian Guard object for this app context
     :rtype: :py:class:`~sanic_praetorian.Praetorian`
 
     :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no guard found
     """
-    guard = Sanic.get_app().ctx.extensions.get('praetorian', None)
+    if not ctx:
+        ctx = Sanic.get_app().ctx
+
+    guard = ctx.extensions.get('praetorian', None)
     PraetorianError.require_condition(
         guard is not None,
         "No current guard found; Praetorian must be initialized first",
@@ -94,17 +101,24 @@ def current_guard():
     return guard
 
 
-def app_context_has_jwt_data() -> bool:
+def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     """
     Checks if there is already jwt_data added to the app context
+
+    :param ctx: Application Context
+    :type ctx: Optional[Sanic]
 
     :returns: ``True``, ``False``
     :rtype: bool
     """
-    return hasattr(Sanic.get_app().ctx, 'jwt_data')
+    if not ctx:
+        ctx = Sanic.get_app().ctx
+
+    return hasattr(ctx, 'jwt_data')
+    #return hasattr(Sanic.get_app().ctx, 'jwt_data')
 
 
-def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
+def add_token_data_to_app_context(jwt_data) -> NoReturn:
     """
     Adds a dictionary of jwt data (presumably unpacked from a token) to the
     top of the sanic app's context
@@ -116,7 +130,7 @@ def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
     ctx.jwt_data = jwt_data
 
 
-def get_jwt_data_from_app_context() -> str:
+def get_token_data_from_app_context() -> str:
     """
     Fetches a dict of jwt token data from the top of the sanic app's context
 
@@ -136,12 +150,12 @@ def get_jwt_data_from_app_context() -> str:
     return jwt_data
 
 
-def remove_jwt_data_from_app_context() -> NoReturn:
+def remove_token_data_from_app_context() -> NoReturn:
     """
     Removes the dict of jwt token data from the top of the sanic app's context
     """
     ctx = Sanic.get_app().ctx
-    if app_context_has_jwt_data():
+    if app_context_has_token_data(ctx):
         del ctx.jwt_data
 
 
@@ -154,7 +168,7 @@ def current_user_id() -> str:
     :rtype: str
     :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no user/token found
     """
-    jwt_data = get_jwt_data_from_app_context()
+    jwt_data = get_token_data_from_app_context()
     user_id = jwt_data.get('id', None)
     PraetorianError.require_condition(
         user_id is not None,
@@ -163,7 +177,7 @@ def current_user_id() -> str:
     return user_id
 
 
-def generate_totp_qr(user_totp: json) -> segno:
+async def generate_totp_qr(user_totp: ujson) -> segno:
     """
     This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.
@@ -196,14 +210,14 @@ async def current_user() -> object:
     return user
 
 
-def current_rolenames() -> set:
+async def current_rolenames() -> set:
     """
     This method returns the names of all roles associated with the current user
 
     :returns: Set of roles for currently logged in users
     :rtype: set
     """
-    jwt_data = get_jwt_data_from_app_context()
+    jwt_data = get_token_data_from_app_context()
     if 'rls' not in jwt_data:
         # This is necessary so our set arithmetic works correctly
         return set(['non-empty-but-definitely-not-matching-subset'])
@@ -218,7 +232,7 @@ def current_custom_claims() -> dict:
     :returns: Custom claims for currently logged in user
     :rtype: dict
     """
-    jwt_data = get_jwt_data_from_app_context()
+    jwt_data = get_token_data_from_app_context()
     return {k: v for (k, v) in jwt_data.items() if k not in RESERVED_CLAIMS}
 
 

@@ -3,12 +3,15 @@ from os import path as os_path
 sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
 
 import pytest
+import warnings
 import copy
 
 from tortoise import Tortoise, run_async
 from sanic.log import logger
 from sanic_testing.reusable import ReusableClient
 from sanic.exceptions import SanicException
+
+from sanic_praetorian.base import Praetorian
 
 from models import ValidatingUser, MixinUser, User, TotpUser
 from server import create_app, _guard, _mail
@@ -26,8 +29,8 @@ async def init(db_path=None):
     await Tortoise.generate_schemas()
 
 
-@pytest.fixture
-def app(tmpdir_factory):
+@pytest.fixture(params=["jwt", "paseto"])
+def app(tmpdir_factory, request, monkeypatch):
 
     db_path = tmpdir_factory.mktemp(
         "sanic-praetorian-test",
@@ -35,6 +38,9 @@ def app(tmpdir_factory):
     ).join("sqlite.db")
     logger.info(f'Using DB_Path: {str(db_path)}')
     run_async(init(db_path=f'sqlite://{str(db_path)}'))
+
+    # Use the fixture params to test all our token providers
+    monkeypatch.setenv('SANIC_PRAETORIAN_TOKEN_PROVIDER', request.param)
 
     sanic_app = create_app(db_path=f'sqlite://{str(db_path)}')
     # Hack to do some poor code work in the app for some workarounds for broken fucntions under pytest
@@ -198,3 +204,24 @@ def mock_users(user_class, default_guard):
             )
 
     return _get_user
+
+
+@pytest.fixture(autouse=False)
+def no_token_validation(monkeypatch):
+    """
+    Monkeypatch to prevent token validation from automatically
+      taking place. Instead, allow manual validation for testing
+      purposes, when this fixture is included.
+    """
+    def mockreturn(*args, **kwargs):
+        return True
+
+    monkeypatch.setattr(Praetorian, "_validate_token_data", mockreturn)
+
+
+@pytest.fixture(autouse=True)
+def speed_up_passlib_for_pytest_only(default_guard):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        default_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)
+        default_guard.pwd_ctx.update(bcrypt__default_rounds=1)

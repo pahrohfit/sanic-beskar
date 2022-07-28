@@ -5,10 +5,10 @@ import pytest
 from io import StringIO, BytesIO
 
 from sanic_praetorian.utilities import (
-    add_jwt_data_to_app_context,
-    app_context_has_jwt_data,
+    add_token_data_to_app_context,
+    app_context_has_token_data,
     generate_totp_qr,
-    remove_jwt_data_from_app_context,
+    remove_token_data_from_app_context,
     current_user,
     current_user_id,
     current_rolenames,
@@ -23,89 +23,89 @@ from sanic_praetorian.exceptions import (
 
 class TestPraetorianUtilities:
 
-    def test_app_context_has_jwt_data(self):
+    def test_app_context_has_token_data(self):
         """
-        This test verifies that the app_context_has_jwt_data method can
+        This test verifies that the app_context_has_token_data method can
         determine if jwt_data has been added to the app context yet
         """
-        assert not app_context_has_jwt_data()
-        add_jwt_data_to_app_context({'a': 1})
-        assert app_context_has_jwt_data()
-        remove_jwt_data_from_app_context()
-        assert not app_context_has_jwt_data()
+        assert not app_context_has_token_data()
+        add_token_data_to_app_context({'a': 1})
+        assert app_context_has_token_data()
+        remove_token_data_from_app_context()
+        assert not app_context_has_token_data()
 
-    def test_remove_jwt_data_from_app_context(self):
+    def test_remove_token_data_from_app_context(self):
         """
-        This test verifies that jwt data can be removed from an app context.
+        This test verifies that token data can be removed from an app context.
         It also verifies that attempting to remove the data if it does not
         exist there does not cause an exception
         """
         jwt_data = {'a': 1}
-        add_jwt_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(jwt_data)
         assert Sanic.get_app().ctx.jwt_data == jwt_data
-        remove_jwt_data_from_app_context()
+        remove_token_data_from_app_context()
         assert not hasattr(Sanic.get_app().ctx, 'jwt_data')
-        remove_jwt_data_from_app_context()
+        remove_token_data_from_app_context()
 
     async def test_current_user_id(self):
         """
         This test verifies that the current user id can be successfully
-        determined based on jwt token data that has been added to the current
+        determined based on token data that has been added to the current
         sanic app's context.
         """
         jwt_data = {}
-        add_jwt_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(jwt_data)
         with pytest.raises(PraetorianError) as err_info:
             await current_user()
         assert 'Could not fetch an id' in str(err_info.value)
 
         jwt_data = {'id': 31}
-        add_jwt_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(jwt_data)
         assert current_user_id() == 31
 
     async def test_current_user(self, mock_users):
         """
         This test verifies that the current user can be successfully
-        determined based on jwt token data that has been added to the current
+        determined based on token data that has been added to the current
         sanic app's context.
         """
         jwt_data = {}
-        add_jwt_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(jwt_data)
         with pytest.raises(PraetorianError) as err_info:
             await current_user()
         assert 'Could not fetch an id' in str(err_info.value)
 
         jwt_data = {'id': 31}
-        add_jwt_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(jwt_data)
         with pytest.raises(PraetorianError) as err_info:
             await current_user()
         assert 'Could not identify the current user' in str(err_info.value)
 
         the_dude = await mock_users(username="the_dude", password="Abides", id=13)
         jwt_data = {'id': 13}
-        add_jwt_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(jwt_data)
         assert await current_user() == the_dude
 
-    def test_current_rolenames(self):
+    async def test_current_rolenames(self):
         """
         This test verifies that the rolenames attached to the current user
-        can be extracted from the jwt token data that has been added to the
+        can be extracted from the token data that has been added to the
         current sanic app's context
         """
         jwt_data = {}
-        add_jwt_data_to_app_context(jwt_data)
-        assert current_rolenames() == set([
+        add_token_data_to_app_context(jwt_data)
+        assert (await current_rolenames()) == set([
             'non-empty-but-definitely-not-matching-subset'
         ])
 
         jwt_data = {'rls': 'admin,operator'}
-        add_jwt_data_to_app_context(jwt_data)
-        assert current_rolenames() == set(['admin', 'operator'])
+        add_token_data_to_app_context(jwt_data)
+        assert (await current_rolenames()) == set(['admin', 'operator'])
 
     def test_current_custom_claims(self):
         """
-        This test verifies that any custom claims attached to the current jwt
-        can be extracted from the jwt token data that has been added to the
+        This test verifies that any custom claims attached to the current token
+        can be extracted from the token data that has been added to the
         current sanic app's context
         """
         jwt_data = dict(
@@ -114,7 +114,7 @@ class TestPraetorianUtilities:
             duder='brief',
             el_duderino='not brief',
         )
-        add_jwt_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(jwt_data)
         assert current_custom_claims() == dict(
             duder='brief',
             el_duderino='not brief',
@@ -151,7 +151,7 @@ class TestPraetorianUtilities:
         with pytest.raises(ConfigurationError):
             duration_from_string('')
 
-    def test_segno_qr_generation(self, default_guard):
+    async def test_segno_qr_generation(self, default_guard):
         """
         This test just verifies we can obtain a segno object
         for rendering QR codes for TOTP usage.
@@ -160,7 +160,7 @@ class TestPraetorianUtilities:
         png_out = BytesIO()
         txt_out = StringIO()
         totp = default_guard.totp_ctx.new()
-        qrcode = generate_totp_qr(totp.to_json())
+        qrcode = await generate_totp_qr(totp.to_json())
         assert qrcode
 
         qrcode.save(kind='png', out=png_out)
@@ -172,4 +172,4 @@ class TestPraetorianUtilities:
         assert type(txt_out) == StringIO
 
         with pytest.raises(TypeError):
-            generate_totp_qr(None)
+            await generate_totp_qr(None)

@@ -9,9 +9,9 @@ from sanic_praetorian.exceptions import (
 
 from sanic_praetorian.utilities import (
     current_guard,
-    add_jwt_data_to_app_context,
-    app_context_has_jwt_data,
-    remove_jwt_data_from_app_context,
+    add_token_data_to_app_context,
+    app_context_has_token_data,
+    remove_token_data_from_app_context,
     current_rolenames,
 )
 
@@ -25,7 +25,7 @@ async def _verify_and_add_jwt(request, optional=False):
 
     Only use in this module
     """
-    if not app_context_has_jwt_data():
+    if not app_context_has_token_data():
         guard = current_guard()
         try:
             token = guard.read_token(request=request)
@@ -33,8 +33,8 @@ async def _verify_and_add_jwt(request, optional=False):
             if optional:
                 return
             raise err
-        jwt_data = await guard.extract_jwt_token(token)
-        add_jwt_data_to_app_context(jwt_data)
+        jwt_data = await guard.extract_token(token)
+        add_token_data_to_app_context(jwt_data)
 
 
 def auth_required(method):
@@ -50,7 +50,7 @@ def auth_required(method):
         try:
             return await method(request, *args, **kwargs)
         finally:
-            remove_jwt_data_from_app_context()
+            remove_token_data_from_app_context()
 
     return wrapper
 
@@ -67,7 +67,7 @@ def auth_accepted(method):
             await _verify_and_add_jwt(request, optional=True)
             return await method(request, *args, **kwargs)
         finally:
-            remove_jwt_data_from_app_context()
+            remove_token_data_from_app_context()
     return wrapper
 
 
@@ -90,13 +90,13 @@ def roles_required(*required_rolenames):
             await _verify_and_add_jwt(request)
             try:
                 MissingRoleError.require_condition(
-                    current_rolenames().issuperset(role_set),
-                    "This endpoint requires all the following roles: "
-                    "{}".format([", ".join(role_set)]),
+                    (await current_rolenames()).issuperset(role_set),
+                    'This endpoint requires all the following roles: '
+                    f'{[", ".join(role_set)]}',
                 )
                 return await method(request, *args, **kwargs)
             finally:
-                remove_jwt_data_from_app_context()
+                remove_token_data_from_app_context()
 
         return wrapper
 
@@ -122,13 +122,13 @@ def roles_accepted(*accepted_rolenames):
             await _verify_and_add_jwt(request)
             try:
                 MissingRoleError.require_condition(
-                    not current_rolenames().isdisjoint(role_set),
-                    "This endpoint requires one of the following roles: "
-                    "{}".format([", ".join(role_set)]),
+                    not (await current_rolenames()).isdisjoint(role_set),
+                    'This endpoint requires one of the following roles: '
+                    f'{[", ".join(role_set)]}',
                 )
                 return await method(request, *args, **kwargs)
             finally:
-                remove_jwt_data_from_app_context()
+                remove_token_data_from_app_context()
 
         return wrapper
 

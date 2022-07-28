@@ -2,6 +2,8 @@ from sys import path as sys_path
 from os import path as os_path
 sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
 
+from ujson import dumps as ujson_dumps, loads as ujson_loads
+
 import sanic_praetorian
 
 from models import User
@@ -25,7 +27,7 @@ def create_app(db_path=None):
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
     """
-    sanic_app = Sanic('sanic-testing')
+    sanic_app = Sanic('sanic-testing', dumps=ujson_dumps, loads=ujson_loads)
     # In order to process more requests after initializing the app,
     # we have to set degug to false so that it will not check to see if there
     # has already been a request before a setup function
