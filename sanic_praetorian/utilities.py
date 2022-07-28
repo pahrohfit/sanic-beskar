@@ -1,7 +1,7 @@
 import functools
 import inspect
 import re
-from typing import NoReturn
+from typing import NoReturn, Optional
 import warnings
 import ujson
 
@@ -77,17 +77,23 @@ def duration_from_string(text: str) -> pendulum:
 
 
 @functools.lru_cache(maxsize=None)
-def current_guard():
+def current_guard(ctx: Optional[Sanic] = None):
     """
     Fetches the current instance of :py:class:`Praetorian`
     that is attached to the current sanic app
+
+    :param ctx: Application Context
+    :type ctx: Optional[Sanic]
 
     :returns: Current Praetorian Guard object for this app context
     :rtype: :py:class:`~sanic_praetorian.Praetorian`
 
     :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no guard found
     """
-    guard = Sanic.get_app().ctx.extensions.get('praetorian', None)
+    if not ctx:
+        ctx = Sanic.get_app().ctx
+
+    guard = ctx.extensions.get('praetorian', None)
     PraetorianError.require_condition(
         guard is not None,
         "No current guard found; Praetorian must be initialized first",
@@ -95,14 +101,21 @@ def current_guard():
     return guard
 
 
-def app_context_has_jwt_data() -> bool:
+def app_context_has_jwt_data(ctx: Optional[Sanic] = None) -> bool:
     """
     Checks if there is already jwt_data added to the app context
+
+    :param ctx: Application Context
+    :type ctx: Optional[Sanic]
 
     :returns: ``True``, ``False``
     :rtype: bool
     """
-    return hasattr(Sanic.get_app().ctx, 'jwt_data')
+    if not ctx:
+        ctx = Sanic.get_app().ctx
+
+    return hasattr(ctx, 'jwt_data')
+    #return hasattr(Sanic.get_app().ctx, 'jwt_data')
 
 
 def add_jwt_data_to_app_context(jwt_data) -> NoReturn:
@@ -142,7 +155,7 @@ def remove_jwt_data_from_app_context() -> NoReturn:
     Removes the dict of jwt token data from the top of the sanic app's context
     """
     ctx = Sanic.get_app().ctx
-    if app_context_has_jwt_data():
+    if app_context_has_jwt_data(ctx):
         del ctx.jwt_data
 
 
