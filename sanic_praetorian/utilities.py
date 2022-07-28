@@ -76,7 +76,7 @@ def duration_from_string(text: str) -> pendulum:
         return pendulum.duration(**clean)
 
 
-@functools.cache
+@functools.lru_cache(maxsize=None)
 def current_guard():
     """
     Fetches the current instance of :py:class:`Praetorian`
