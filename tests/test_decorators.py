@@ -12,7 +12,7 @@ class TestPraetorianDecorators:
         """
         This test verifies that the @auth_accepted decorator can be used
         to optionally use a properly structured auth header including
-        a valid jwt token, setting the `current_user()`.
+        a valid token, setting the `current_user()`.
         """
 
         the_dude = await mock_users(username='the_dude')
@@ -41,7 +41,7 @@ class TestPraetorianDecorators:
         """
         This test verifies that the @auth_required decorator can be used
         to ensure that any access to a protected endpoint must have a properly
-        structured auth header or cookie including a valid jwt token.
+        structured auth header or cookie including a valid token.
         Otherwise, a 401 error occurs with an informative error message.
         """
 
@@ -68,7 +68,7 @@ class TestPraetorianDecorators:
             "/protected",
             headers={"Authorization": "bad_structure iamatoken"},
         )
-        assert "JWT header structure is invalid" in response.json["message"]
+        assert "Token header structure is invalid" in response.json["message"]
         assert response.status == 401
 
         # Token is expired

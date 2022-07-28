@@ -157,7 +157,7 @@ def create_app(db_path=None):
     async def login(request):
         """
         Logs a user in by parsing a POST request containing user credentials and
-        issuing a JWT token.
+        issuing a token.
         .. example::
            $ curl localhost:8000/login -X POST \
              -d '{"username":"Walter","password":"calmerthanyouare"}'
@@ -174,7 +174,7 @@ def create_app(db_path=None):
     async def protected(request):
         """
         A protected endpoint. The auth_required decorator will require a header
-        containing a valid JWT
+        containing a valid token
         .. example::
            $ curl localhost:8000/protected -X GET \
              -H "Authorization: Bearer <your_token>"
@@ -185,7 +185,7 @@ def create_app(db_path=None):
     @sanic_app.route('/refresh', methods=['GET'])
     async def refresh(request):
         """
-        Refreshes an existing JWT by creating a new one that is a copy of the old
+        Refreshes an existing token by creating a new one that is a copy of the old
         except that it has a refrehsed access expiration.
         .. example::
            $ curl localhost:5000/refresh -X GET \

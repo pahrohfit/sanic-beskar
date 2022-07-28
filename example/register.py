@@ -159,7 +159,7 @@ def create_app(db_path=None):
     async def login(request):
         """
         Logs a user in by parsing a POST request containing user credentials and
-        issuing a JWT token.
+        issuing a token.
         .. example::
            $ curl localhost:8000/login -X POST \
              -d '{"username":"Walter","password":"calmerthanyouare"}'
@@ -176,7 +176,7 @@ def create_app(db_path=None):
     async def protected(request):
         """
         A protected endpoint. The auth_required decorator will require a header
-        containing a valid JWT
+        containing a valid token
         .. example::
            $ curl localhost:8000/protected -X GET \
              -H "Authorization: Bearer <your_token>"
@@ -189,7 +189,7 @@ def create_app(db_path=None):
     async def protected_admin_required(request):
         """
         A protected endpoint that requires a role. The roles_required decorator
-        will require that the supplied JWT includes the required roles
+        will require that the supplied token includes the required roles
         .. example::
            $ curl localhost:8000/protected_admin_required -X GET \
               -H "Authorization: Bearer <your_token>"
@@ -202,7 +202,7 @@ def create_app(db_path=None):
     async def protected_operator_accepted(request):
         """
         A protected endpoint that accepts any of the listed roles. The
-        roles_accepted decorator will require that the supplied JWT includes at
+        roles_accepted decorator will require that the supplied token includes at
         least one of the accepted roles
         .. example::
            $ curl localhost/protected_operator_accepted -X GET \

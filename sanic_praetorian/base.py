@@ -197,7 +197,7 @@ class Praetorian():
         )
 
         if self.pwd_ctx.default_scheme().startswith('pbkdf2_'):
-            if not find_spec('fastpbkdf2'): 
+            if not find_spec('fastpbkdf2'):
                 logger.warning(
                     textwrap.dedent(
                         """
@@ -1230,18 +1230,18 @@ class Praetorian():
 
     def _unpack_header(self, headers):
         """
-        Unpacks a jwt token from a request header
+        Unpacks a token from a request header
         """
         jwt_header = headers.get(self.header_name)
         MissingToken.require_condition(
             jwt_header is not None,
-            f"JWT token not found in headers under '{self.header_name}'",
+            f"Token not found in headers under '{self.header_name}'",
         )
 
         match = re.match(self.header_type + r"\s*([\w\.-]+)", jwt_header)
         InvalidTokenHeader.require_condition(
             match is not None,
-            "JWT header structure is invalid",
+            "Token header structure is invalid",
         )
         token = match.group(1)
         return token
@@ -1265,7 +1265,7 @@ class Praetorian():
         jwt_cookie = cookies.get(self.cookie_name)
         MissingToken.require_condition(
             jwt_cookie is not None,
-            f"JWT token not found in cookie under '{self.cookie_name}'"
+            f"Token not found in cookie under '{self.cookie_name}'"
         )
         return jwt_cookie
 

@@ -16,12 +16,12 @@ from sanic_praetorian.utilities import (
 )
 
 
-async def _verify_and_add_jwt(request, optional=False):
+async def _verify_and_add_token(request, optional=False):
     """
-    This helper method just checks and adds jwt data to the app context.
+    This helper method just checks and adds token data to the app context.
     If optional is False and the header is missing the token, just returns.
 
-    Will not add jwt data if it is already present.
+    Will not add token data if it is already present.
 
     Only use in this module
     """
@@ -33,8 +33,8 @@ async def _verify_and_add_jwt(request, optional=False):
             if optional:
                 return
             raise err
-        jwt_data = await guard.extract_token(token)
-        add_token_data_to_app_context(jwt_data)
+        token_data = await guard.extract_token(token)
+        add_token_data_to_app_context(token_data)
 
 
 def auth_required(method):
@@ -46,7 +46,7 @@ def auth_required(method):
 
     @functools.wraps(method)
     async def wrapper(request, *args, **kwargs):
-        await _verify_and_add_jwt(request)
+        await _verify_and_add_token(request)
         try:
             return await method(request, *args, **kwargs)
         finally:
@@ -64,7 +64,7 @@ def auth_accepted(method):
     @functools.wraps(method)
     async def wrapper(request, *args, **kwargs):
         try:
-            await _verify_and_add_jwt(request, optional=True)
+            await _verify_and_add_token(request, optional=True)
             return await method(request, *args, **kwargs)
         finally:
             remove_token_data_from_app_context()
@@ -87,7 +87,7 @@ def roles_required(*required_rolenames):
                 "This feature is not available because roles are disabled",
             )
             role_set = set([str(n) for n in required_rolenames])
-            await _verify_and_add_jwt(request)
+            await _verify_and_add_token(request)
             try:
                 MissingRoleError.require_condition(
                     (await current_rolenames()).issuperset(role_set),
@@ -119,7 +119,7 @@ def roles_accepted(*accepted_rolenames):
                 "This feature is not available because roles are disabled",
             )
             role_set = set([str(n) for n in accepted_rolenames])
-            await _verify_and_add_jwt(request)
+            await _verify_and_add_token(request)
             try:
                 MissingRoleError.require_condition(
                     not (await current_rolenames()).isdisjoint(role_set),

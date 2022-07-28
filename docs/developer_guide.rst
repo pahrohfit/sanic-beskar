@@ -140,5 +140,5 @@ It is most useful to include that in your ``.vimrc`` file
 Other notes
 -----------
 
-* sanic-praetorian uses the ``pendulum`` to timestamp its JWT tokens with
+* sanic-praetorian uses the ``pendulum`` to timestamp its tokens with
   UTC timestamps

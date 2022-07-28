@@ -2,9 +2,10 @@ Overview
 ========
 
 API security should be strong, simple, and precise like a Roman Legionary.
-This package aims to provide that. Using `JWT <https://jwt.io/>`_ tokens as
-implemented by `PyJWT <https://pyjwt.readthedocs.io/en/latest/>`_,
-*sanic_praetorian* uses a very simple interface to make sure that the users
+This package aims to provide that. Using token implemented by either
+`PySETO <https://pyseto.readthedocs.io/en/latest/>`_ or
+`PyJWT <https://pyjwt.readthedocs.io/en/latest/>`_,
+*flask_praetorian* uses a very simple interface to make sure that the users
 accessing your API's endpoints are provisioned with the correct roles for
 access.
 
@@ -15,9 +16,9 @@ needs of all users, *flask-praetorian* will provide a simple and secure mechanis
 to provide security for APIs specifically.
 
 This fork was based on `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_
-v.1.3.0, and has been ported to Sanic, because we all want to *go fast*. In 
-addition to all of the `flask-praetorian` goodness, we've added asyncronous 
-support, as well as dual factor authentication. All intentions and efforts will 
+v.1.3.0, and has been ported to Sanic, because we all want to *go fast*. In
+addition to all of the `flask-praetorian` goodness, we've added asyncronous
+support, as well as dual factor authentication. All intentions and efforts will
 be spared to backport anything from the main `flask-praetorian` code into this fork.
 
 This extesion offers a batteries-included approach to security for your API.
@@ -38,7 +39,7 @@ The *sanic-praetorian* package can be used to:
 * Register new users using email verification
 * Support optional two factor authentication
 
-All of this is provided in a very simple to confiure and initialize `Sanic <https://sanic.dev>`_
+All of this is provided in a very simple to configure and initialize flask
 extension. Though simple, the security provided by *sanic-praetorian* is strong
-due to the usage of the proven security technology of JWT
-and python's `PassLib <http://pythonhosted.org/passlib/>`_ package.
+due to the usage of the proven security technology of PASETO or JWT, along with
+python's `PassLib <http://pythonhosted.org/passlib/>`_ package.

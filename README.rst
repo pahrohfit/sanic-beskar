@@ -25,8 +25,9 @@ Strong, Simple, and Precise security for Sanic APIs
 ---------------------------------------------------
 
 API security should be strong, simple, and precise like a Roman Legionary.
-This package aims to provide that. Using `JWT <https://jwt.io/>`_ tokens as
-implemented by `PyJWT <https://pyjwt.readthedocs.io/en/latest/>`_,
+This package aims to provide that. Using token implemented by either
+`PySETO <https://pyseto.readthedocs.io/en/latest/>`_ or
+`PyJWT <https://pyjwt.readthedocs.io/en/latest/>`_,
 *flask_praetorian* uses a very simple interface to make sure that the users
 accessing your API's endpoints are provisioned with the correct roles for
 access.
@@ -58,8 +59,8 @@ The *sanic-praetorian* package can be used to:
 
 All of this is provided in a very simple to configure and initialize flask
 extension. Though simple, the security provided by *sanic-praetorian* is strong
-due to the usage of the proven security technology of JWT
-and python's `PassLib <http://pythonhosted.org/passlib/>`_ package.
+due to the usage of the proven security technology of PASETO or JWT, along with
+python's `PassLib <http://pythonhosted.org/passlib/>`_ package.
 
 Super-quick Start
 -----------------

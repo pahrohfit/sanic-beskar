@@ -400,7 +400,7 @@ class TestPraetorian:
             with pytest.raises(MisusedResetToken):
                 guard._validate_token_data(data, AccessType.access)
 
-    def test__validate_token_data__succeeds_with_valid_jwt(
+    def test__validate_token_data__succeeds_with_valid_token(
         self,
         app,
         user_class,
@@ -455,7 +455,7 @@ class TestPraetorian:
     async def test_encode_token(self, app, validating_user_class, mock_users, default_guard, no_token_validation):
         """
         This test::
-            * verifies that the encode_token correctly encodes jwt
+            * verifies that the encode_token correctly encodes token
               data based on a user instance.
             * verifies that if a user specifies an override for the access
               lifespan it is used in lieu of the instance's access_lifespan.
@@ -576,7 +576,7 @@ class TestPraetorian:
     async def test_encode_eternal_token(self, mock_users, no_token_validation, default_guard):
         """
         This test verifies that the encode_eternal_token correctly encodes
-        jwt data based on a user instance. Also verifies that the lifespan is
+        token data based on a user instance. Also verifies that the lifespan is
         set to the constant VITAM_AETERNUM
         """
         the_dude = await mock_users(username='the_dude', roles="admin,operator")
@@ -602,7 +602,7 @@ class TestPraetorian:
         """
         This test::
             * verifies that the refresh_token properly generates
-              a refreshed jwt token.
+              a refreshed token.
             * ensures that a token who's access permission has not expired may
               not be refreshed.
             * ensures that a token who's access permission has expired must not
@@ -892,7 +892,7 @@ class TestPraetorian:
     async def test_reset_email(self, app, tmpdir, default_guard, mock_users):
         """
         This test verifies email based password reset functions as expected.
-        This includes sending messages with valid time expiring JWT tokens
+        This includes sending messages with valid time expiring tokens
            and ensuring the body matches the expected body, as well
            as token validation.
         """
@@ -935,11 +935,11 @@ class TestPraetorian:
             assert not notify["result"]
 
         # test our token is good
-        jwt_data = await default_guard.extract_token(
+        token_data = await default_guard.extract_token(
             notify["token"],
             access_type=AccessType.reset,
         )
-        assert jwt_data[IS_RESET_TOKEN_CLAIM]
+        assert token_data[IS_RESET_TOKEN_CLAIM]
 
         validated_user = await default_guard.validate_reset_token(token)
         assert validated_user == the_dude
@@ -955,7 +955,7 @@ class TestPraetorian:
     ):
         """
         This test verifies email based registration functions as expected.
-        This includes sending messages with valid time expiring JWT tokens
+        This includes sending messages with valid time expiring tokens
            and ensuring the body matches the expected body, as well
            as token validation.
         """
@@ -991,11 +991,11 @@ class TestPraetorian:
             assert not notify["result"]
 
         # test our token is good
-        jwt_data = await default_guard.extract_token(
+        token_data = await default_guard.extract_token(
             notify["token"],
             access_type=AccessType.register,
         )
-        assert jwt_data[IS_REGISTRATION_TOKEN_CLAIM]
+        assert token_data[IS_REGISTRATION_TOKEN_CLAIM]
 
     async def test_get_user_from_registration_token(
         self,

@@ -26,7 +26,7 @@ class TestPraetorianUtilities:
     def test_app_context_has_token_data(self):
         """
         This test verifies that the app_context_has_token_data method can
-        determine if jwt_data has been added to the app context yet
+        determine if token_data has been added to the app context yet
         """
         assert not app_context_has_token_data()
         add_token_data_to_app_context({'a': 1})
@@ -40,11 +40,11 @@ class TestPraetorianUtilities:
         It also verifies that attempting to remove the data if it does not
         exist there does not cause an exception
         """
-        jwt_data = {'a': 1}
-        add_token_data_to_app_context(jwt_data)
-        assert Sanic.get_app().ctx.jwt_data == jwt_data
+        token_data = {'a': 1}
+        add_token_data_to_app_context(token_data)
+        assert Sanic.get_app().ctx.token_data == token_data
         remove_token_data_from_app_context()
-        assert not hasattr(Sanic.get_app().ctx, 'jwt_data')
+        assert not hasattr(Sanic.get_app().ctx, 'token_data')
         remove_token_data_from_app_context()
 
     async def test_current_user_id(self):
@@ -53,14 +53,14 @@ class TestPraetorianUtilities:
         determined based on token data that has been added to the current
         sanic app's context.
         """
-        jwt_data = {}
-        add_token_data_to_app_context(jwt_data)
+        token_data = {}
+        add_token_data_to_app_context(token_data)
         with pytest.raises(PraetorianError) as err_info:
             await current_user()
         assert 'Could not fetch an id' in str(err_info.value)
 
-        jwt_data = {'id': 31}
-        add_token_data_to_app_context(jwt_data)
+        token_data = {'id': 31}
+        add_token_data_to_app_context(token_data)
         assert current_user_id() == 31
 
     async def test_current_user(self, mock_users):
@@ -69,21 +69,21 @@ class TestPraetorianUtilities:
         determined based on token data that has been added to the current
         sanic app's context.
         """
-        jwt_data = {}
-        add_token_data_to_app_context(jwt_data)
+        token_data = {}
+        add_token_data_to_app_context(token_data)
         with pytest.raises(PraetorianError) as err_info:
             await current_user()
         assert 'Could not fetch an id' in str(err_info.value)
 
-        jwt_data = {'id': 31}
-        add_token_data_to_app_context(jwt_data)
+        token_data = {'id': 31}
+        add_token_data_to_app_context(token_data)
         with pytest.raises(PraetorianError) as err_info:
             await current_user()
         assert 'Could not identify the current user' in str(err_info.value)
 
         the_dude = await mock_users(username="the_dude", password="Abides", id=13)
-        jwt_data = {'id': 13}
-        add_token_data_to_app_context(jwt_data)
+        token_data = {'id': 13}
+        add_token_data_to_app_context(token_data)
         assert await current_user() == the_dude
 
     async def test_current_rolenames(self):
@@ -92,14 +92,14 @@ class TestPraetorianUtilities:
         can be extracted from the token data that has been added to the
         current sanic app's context
         """
-        jwt_data = {}
-        add_token_data_to_app_context(jwt_data)
+        token_data = {}
+        add_token_data_to_app_context(token_data)
         assert (await current_rolenames()) == set([
             'non-empty-but-definitely-not-matching-subset'
         ])
 
-        jwt_data = {'rls': 'admin,operator'}
-        add_token_data_to_app_context(jwt_data)
+        token_data = {'rls': 'admin,operator'}
+        add_token_data_to_app_context(token_data)
         assert (await current_rolenames()) == set(['admin', 'operator'])
 
     def test_current_custom_claims(self):
@@ -108,13 +108,13 @@ class TestPraetorianUtilities:
         can be extracted from the token data that has been added to the
         current sanic app's context
         """
-        jwt_data = dict(
+        token_data = dict(
             id=13,
             jti='whatever',
             duder='brief',
             el_duderino='not brief',
         )
-        add_token_data_to_app_context(jwt_data)
+        add_token_data_to_app_context(token_data)
         assert current_custom_claims() == dict(
             duder='brief',
             el_duderino='not brief',
