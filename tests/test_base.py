@@ -2,7 +2,7 @@ import warnings
 import pendulum
 import plummet
 import pytest
-import json
+import ujson
 
 from httpx import Cookies
 
@@ -468,10 +468,9 @@ class TestPraetorian:
               validates that the custom claims do not collide with reserved
               claims
         """
-        the_dude = await mock_users(username="the_dude", password="abides", roles="admin,operator")
+        the_dude = await mock_users(username="the_dude", password="abides", roles="admin;operator")
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
-            from sanic.log import logger
             logger.critical(f"Token Type: {default_guard.token_provider}")
             token = await default_guard.encode_token(the_dude)
             token_data = await default_guard.extract_token(token)
@@ -486,7 +485,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert token_data["rls"] == "admin,operator"
+            assert {*token_data["rls"]} == {*['admin','operator']}
 
         override_access_lifespan = pendulum.Duration(minutes=1)
         override_refresh_lifespan = pendulum.Duration(hours=1)
@@ -509,7 +508,7 @@ class TestPraetorian:
                 == (moment + override_refresh_lifespan).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert token_data["rls"] == "admin,operator"
+            assert {*token_data["rls"]} == {*['admin','operator']}
 
         override_access_lifespan = pendulum.Duration(hours=1)
         override_refresh_lifespan = pendulum.Duration(minutes=1)
@@ -528,7 +527,7 @@ class TestPraetorian:
                 == (moment + override_refresh_lifespan).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert token_data["rls"] == "admin,operator"
+            assert {*token_data["rls"]} == {*['admin','operator']}
 
         validating_guard = Praetorian(app, validating_user_class)
         with warnings.catch_warnings():
@@ -564,7 +563,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert token_data["rls"] == "admin,operator"
+            assert {*token_data["rls"]} == {*['admin','operator']}
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"
 
@@ -579,7 +578,7 @@ class TestPraetorian:
         token data based on a user instance. Also verifies that the lifespan is
         set to the constant VITAM_AETERNUM
         """
-        the_dude = await mock_users(username='the_dude', roles="admin,operator")
+        the_dude = await mock_users(username='the_dude', roles="admin;operator")
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
             token = await default_guard.encode_eternal_token(the_dude)
@@ -622,7 +621,7 @@ class TestPraetorian:
 
         the_dude = await mock_users(username="the_dude",
                                     password="abides",
-                                    roles="admin,operator")
+                                    roles="admin;operator")
 
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
@@ -645,7 +644,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert new_token_data["id"] == the_dude.id
-            assert new_token_data["rls"] == "admin,operator"
+            assert {*new_token_data["rls"]} == {*['admin','operator']}
 
         moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time('2017-05-21 18:39:55'):
@@ -755,7 +754,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert new_token_data["id"] == the_dude.id
-            assert new_token_data["rls"] == "admin,operator"
+            assert {*new_token_data["rls"]} == {*['admin','operator']}
             assert new_token_data["duder"] == "brief"
             assert new_token_data["el_duderino"] == "not brief"
 
@@ -769,7 +768,7 @@ class TestPraetorian:
         request's header using the configuration settings for header name and
         type
         """
-        the_dude = await mock_users(username='the_dude', password='abides', roles='admin,operator')
+        the_dude = await mock_users(username='the_dude', password='abides', roles='admin;operator')
 
         with plummet.frozen_time('2017-05-21 18:39:55'):
             token = await default_guard.encode_token(the_dude)
@@ -794,7 +793,7 @@ class TestPraetorian:
         This test verifies that a token may be properly read from a flask
         request's cookies using the configuration settings for cookie
         """
-        the_dude = await mock_users(username='the_dude', roles='admin,operator')
+        the_dude = await mock_users(username='the_dude', roles='admin;operator')
 
         cookies = Cookies()
         with plummet.frozen_time('2017-05-21 18:39:55'):
@@ -817,7 +816,7 @@ class TestPraetorian:
             package a token into a header dict for a specified user
           * verifies that custom claims may be packaged as well
         """
-        the_dude = await mock_users(username='the_dude', roles='admin,operator')
+        the_dude = await mock_users(username='the_dude', roles='admin;operator')
 
         moment = plummet.momentize('2017-05-21 18:39:55')
         with plummet.frozen_time(moment):
@@ -837,7 +836,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert token_data["rls"] == "admin,operator"
+            assert {*token_data["rls"]} == {*['admin','operator']}
 
         moment = plummet.momentize('2017-05-21 18:39:55')
         override_access_lifespan = pendulum.Duration(minutes=1)
@@ -885,7 +884,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert token_data["rls"] == "admin,operator"
+            assert {*token_data["rls"]} == {*['admin','operator']}
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"
 
@@ -1263,7 +1262,7 @@ class TestPraetorian:
                                               totp=totp_protected.to_json())
 
         # ensure we can load the output as json
-        the_protected_dude_totp = json.loads(the_protected_dude.totp)
+        the_protected_dude_totp = ujson.loads(the_protected_dude.totp)
         # ensure the key is encrypted
         assert the_protected_dude_totp.get('enckey')
         # put away your toys

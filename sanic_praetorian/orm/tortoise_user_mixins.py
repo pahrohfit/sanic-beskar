@@ -45,16 +45,30 @@ class TortoiseUserMixin:
 
         This can be a seperate table (probably sane), so long as this attribute
         or property properly returns the associated values for the user as a
-        list of strings.
+        RBAC dict, as:
+            {'rolename', ['permissions'],}
 
         :returns: Provided :py:class:`User`'s current ``roles``
-        :rtype: list
+        :rtype: dict
         """
 
         try:
-            return self.roles.split(",")
+            #return self.roles.split(",")
+            def split_perm(role):
+                _name, _value = None, []
+                if ':' in role:
+                    _name, _value = role.split(':', 2)
+                elif ',' in role:
+                    return role.split(",")
+                else:
+                    return role, []
+
+                if ',' not in _value:
+                    return _name, _value
+                return _name, _value.split(',')
+            return dict(map(split_perm, self.roles.split(';')))
         except Exception:
-            return []
+            return dict()
 
     @classmethod
     async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):

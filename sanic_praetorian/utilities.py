@@ -220,9 +220,15 @@ async def current_rolenames() -> set:
     token_data = get_token_data_from_app_context()
     if 'rls' not in token_data:
         # This is necessary so our set arithmetic works correctly
-        return set(['non-empty-but-definitely-not-matching-subset'])
+        return dict()
     else:
-        return set(r.strip() for r in token_data['rls'].split(','))
+        if isinstance(token_data['rls'], str):
+            try:
+                return ujson.loads(token_data['rls'])
+            except Exception as e:
+                warnings.warn("Error trying to process Roles String: {e}")
+                return dict()
+        return token_data['rls']
 
 
 def current_custom_claims() -> dict:

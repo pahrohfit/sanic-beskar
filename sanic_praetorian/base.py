@@ -734,7 +734,7 @@ class Praetorian():
             "exp": access_expiration,
             "jti": str(uuid.uuid4()),
             "id": user.identity,
-            "rls": ",".join(user.rolenames),
+            "rls": user.rolenames,
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         if is_registration_token:
@@ -825,7 +825,7 @@ class Praetorian():
             "exp": access_expiration,
             "jti": str(uuid.uuid4()),
             "id": user.identity,
-            "rls": ",".join(user.rolenames),
+            "rls": user.rolenames,
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         if is_registration_token:
@@ -991,7 +991,7 @@ class Praetorian():
             "exp": access_expiration,
             "jti": data["jti"],
             "id": data["id"],
-            "rls": ",".join(user.rolenames),
+            "rls": user.rolenames,
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         payload_parts.update(custom_claims)
@@ -1052,7 +1052,7 @@ class Praetorian():
             "exp": access_expiration,
             "jti": data["jti"],
             "id": data["id"],
-            "rls": ",".join(user.rolenames),
+            "rls": user.rolenames,
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         payload_parts.update(custom_claims)
@@ -1134,7 +1134,6 @@ class Praetorian():
         :returns: Extracted token as a dict
         :rtype: dict
         """
-        # Note: we disable exp verification because we will do it ourselves
         # Note: we disable exp verification because we will do it ourselves
         with InvalidTokenHeader.handle_errors("failed to decode JWT token"):
             data = jwt.decode(

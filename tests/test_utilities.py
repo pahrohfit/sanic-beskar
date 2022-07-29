@@ -94,13 +94,11 @@ class TestPraetorianUtilities:
         """
         token_data = {}
         add_token_data_to_app_context(token_data)
-        assert (await current_rolenames()) == set([
-            'non-empty-but-definitely-not-matching-subset'
-        ])
+        assert await current_rolenames() == dict()
 
-        token_data = {'rls': 'admin,operator'}
+        token_data = {'rls': '{"admin": [], "operator": []}'}
         add_token_data_to_app_context(token_data)
-        assert (await current_rolenames()) == set(['admin', 'operator'])
+        assert {*(await current_rolenames())} == {*['admin','operator']}
 
     def test_current_custom_claims(self):
         """
