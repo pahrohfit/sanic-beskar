@@ -27,10 +27,10 @@ name: "Mayhem for API"
 
 on:
   push:
-    branches: [ "master", "sanic" ]
+    branches: [ "master" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "master", "sanic" ]
+    branches: [ "master" ]
 
 jobs:
   mayhem-for-api:
