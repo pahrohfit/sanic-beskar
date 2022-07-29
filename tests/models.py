@@ -26,7 +26,6 @@ class User(Model):
     @property
     def rolenames(self):
         try:
-            #return self.roles.split(",")
             def split_perm(role):
                 _name, _value = None, []
                 if ':' in role:

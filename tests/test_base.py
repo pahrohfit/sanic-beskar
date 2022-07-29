@@ -485,7 +485,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert {*token_data["rls"]} == {*['admin','operator']}
+            assert {*token_data["rls"]} == {*['admin', 'operator']}
 
         override_access_lifespan = pendulum.Duration(minutes=1)
         override_refresh_lifespan = pendulum.Duration(hours=1)
@@ -508,7 +508,7 @@ class TestPraetorian:
                 == (moment + override_refresh_lifespan).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert {*token_data["rls"]} == {*['admin','operator']}
+            assert {*token_data["rls"]} == {*['admin', 'operator']}
 
         override_access_lifespan = pendulum.Duration(hours=1)
         override_refresh_lifespan = pendulum.Duration(minutes=1)
@@ -527,7 +527,7 @@ class TestPraetorian:
                 == (moment + override_refresh_lifespan).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert {*token_data["rls"]} == {*['admin','operator']}
+            assert {*token_data["rls"]} == {*['admin', 'operator']}
 
         validating_guard = Praetorian(app, validating_user_class)
         with warnings.catch_warnings():
@@ -563,7 +563,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert {*token_data["rls"]} == {*['admin','operator']}
+            assert {*token_data["rls"]} == {*['admin', 'operator']}
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"
 
@@ -644,7 +644,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert new_token_data["id"] == the_dude.id
-            assert {*new_token_data["rls"]} == {*['admin','operator']}
+            assert {*new_token_data["rls"]} == {*['admin', 'operator']}
 
         moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time('2017-05-21 18:39:55'):
@@ -754,7 +754,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert new_token_data["id"] == the_dude.id
-            assert {*new_token_data["rls"]} == {*['admin','operator']}
+            assert {*new_token_data["rls"]} == {*['admin', 'operator']}
             assert new_token_data["duder"] == "brief"
             assert new_token_data["el_duderino"] == "not brief"
 
@@ -836,7 +836,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert {*token_data["rls"]} == {*['admin','operator']}
+            assert {*token_data["rls"]} == {*['admin', 'operator']}
 
         moment = plummet.momentize('2017-05-21 18:39:55')
         override_access_lifespan = pendulum.Duration(minutes=1)
@@ -884,7 +884,7 @@ class TestPraetorian:
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
             assert token_data["id"] == the_dude.id
-            assert {*token_data["rls"]} == {*['admin','operator']}
+            assert {*token_data["rls"]} == {*['admin', 'operator']}
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"
 

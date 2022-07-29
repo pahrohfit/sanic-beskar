@@ -115,7 +115,6 @@ def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
         ctx = Sanic.get_app().ctx
 
     return hasattr(ctx, 'token_data')
-    #return hasattr(Sanic.get_app().ctx, 'token_data')
 
 
 def add_token_data_to_app_context(token_data) -> NoReturn:
@@ -226,7 +225,7 @@ async def current_rolenames() -> set:
             try:
                 return ujson.loads(token_data['rls'])
             except Exception as e:
-                warnings.warn("Error trying to process Roles String: {e}")
+                warnings.warn(f"Error trying to process Roles String: {e}")
                 return dict()
         return token_data['rls']
 

@@ -333,7 +333,7 @@ class Praetorian():
             "Invalid `token_provider` configured. Please check docs and try again.",
         )
         ConfigurationError.require_condition(
-            self.paseto_version >0<4,
+            self.paseto_version > 0 < 4,
             "Invalid `paseto_version` configured. Valid are [1, 2, 3, 4] only.",
         )
 
@@ -356,7 +356,7 @@ class Praetorian():
             ConfigurationError.require_condition(
                 self.totp_secrets_data,
                 'If "PRAETORIAN_TOTP_SECRETS_TYPE" is set, you must also'
-                f'provide a valid value for "PRAETORIAN_TOTP_SECRETS_DATA"'
+                'provide a valid value for "PRAETORIAN_TOTP_SECRETS_DATA"'
             )
             if self.totp_secrets_type == 'file':
                 self.totp_ctx = TOTP.using(secrets_path=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))

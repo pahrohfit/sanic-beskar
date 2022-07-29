@@ -98,7 +98,7 @@ class TestPraetorianUtilities:
 
         token_data = {'rls': '{"admin": [], "operator": []}'}
         add_token_data_to_app_context(token_data)
-        assert {*(await current_rolenames())} == {*['admin','operator']}
+        assert {*(await current_rolenames())} == {*['admin', 'operator']}
 
     def test_current_custom_claims(self):
         """
