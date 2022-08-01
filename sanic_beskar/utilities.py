@@ -23,7 +23,6 @@ def get_request(request: Request) -> Request:
         raise BeskarError("Could not identify current Sanic request")
 
 
-
 async def is_valid_json(data: str) -> ujson:
     """
     Simple helper to validate if a value is valid json data
