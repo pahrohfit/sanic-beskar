@@ -18,7 +18,7 @@ DEFAULT_ROLES_DISABLED: bool = False
 DEFAULT_USER_CLASS_VALIDATION_METHOD: str = "is_valid"
 
 DEFAULT_CONFIRMATION_TEMPLATE = (
-    "{}/sanic_praetorian/templates/registration_email.html".format(
+    "{}/sanic_beskar/templates/registration_email.html".format(
         dirname(dirname(abspath(__file__))),
     )
 )
@@ -26,7 +26,7 @@ DEFAULT_CONFIRMATION_TEMPLATE = (
 DEFAULT_CONFIRMATION_SENDER: str = "you@whatever.com"
 DEFAULT_CONFIRMATION_SUBJECT: str = "Please confirm your registration"
 
-DEFAULT_RESET_TEMPLATE = "{}/sanic_praetorian/templates/{}".format(
+DEFAULT_RESET_TEMPLATE = "{}/sanic_beskar/templates/{}".format(
     dirname(dirname(abspath(__file__))),
     "reset_email.html",
 )

@@ -1,7 +1,7 @@
-sanic-praetorian
+sanic-beskar
 ================
 
 .. toctree::
    :maxdepth: 4
 
-   sanic_praetorian
+   sanic_beskar

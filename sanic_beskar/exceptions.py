@@ -4,9 +4,9 @@ from sanic.exceptions import SanicException
 from sanic import json
 
 
-class PraetorianError(SanicException, Buzz):
+class BeskarError(SanicException, Buzz):
     """
-    Provides a custom exception class for sanic-praetorian based on py-buzz.
+    Provides a custom exception class for sanic-beskar based on py-buzz.
     `py-buzz on gitub <https://github.com/dusktreader/py-buzz>`_
     """
     status: int = 401
@@ -27,49 +27,49 @@ class PraetorianError(SanicException, Buzz):
         return f"{super().__str__()} ({self.status})"
 
 
-class MissingClaimError(PraetorianError):
+class MissingClaimError(BeskarError):
     """
     The token is missing a required claim
     """
     pass
 
 
-class BlacklistedError(PraetorianError):
+class BlacklistedError(BeskarError):
     """
     The token has been blacklisted and may not be used any more
     """
     status = 403
 
 
-class ExpiredAccessError(PraetorianError):
+class ExpiredAccessError(BeskarError):
     """
     The token has expired for access and must be refreshed
     """
     pass
 
 
-class EarlyRefreshError(PraetorianError):
+class EarlyRefreshError(BeskarError):
     """
     The token has not yet expired for access and may not be refreshed
     """
     status = 425  # HTTP Status Code : 425 Too Early
 
 
-class ExpiredRefreshError(PraetorianError):
+class ExpiredRefreshError(BeskarError):
     """
     The token has expired for refresh. An entirely new token must be issued
     """
     pass
 
 
-class MissingToken(PraetorianError):
+class MissingToken(BeskarError):
     """
     The header is missing the required token
     """
     pass
 
 
-class InvalidTokenHeader(PraetorianError):
+class InvalidTokenHeader(BeskarError):
     """
     The token contained in the header is invalid
     """
@@ -83,77 +83,77 @@ class VerifyError(InvalidTokenHeader):
     pass
 
 
-class InvalidUserError(PraetorianError):
+class InvalidUserError(BeskarError):
     """
     The user is no longer valid and is now not authorized
     """
     status = 403
 
 
-class MissingRoleError(PraetorianError):
+class MissingRoleError(BeskarError):
     """
     The token is missing a required role
     """
     status = 403
 
 
-class MissingUserError(PraetorianError):
+class MissingUserError(BeskarError):
     """
     The user could not be identified
     """
     pass
 
 
-class AuthenticationError(PraetorianError):
+class AuthenticationError(BeskarError):
     """
     The entered user's password did not match the stored password
     """
     pass
 
 
-class ClaimCollisionError(PraetorianError):
+class ClaimCollisionError(BeskarError):
     """"
     Custom claims to pack into the payload collide with reserved claims
     """
     pass
 
 
-class LegacyScheme(PraetorianError):
+class LegacyScheme(BeskarError):
     """
     The processed hash is using an outdated scheme
     """
     pass
 
 
-class InvalidResetToken(PraetorianError):
+class InvalidResetToken(BeskarError):
     """
     The supplied registration token is invalid
     """
     pass
 
 
-class InvalidRegistrationToken(PraetorianError):
+class InvalidRegistrationToken(BeskarError):
     """
     The supplied registration token is invalid
     """
     pass
 
 
-class MisusedRegistrationToken(PraetorianError):
+class MisusedRegistrationToken(BeskarError):
     """
     Attempted to use a registration token for normal access
     """
     pass
 
 
-class MisusedResetToken(PraetorianError):
+class MisusedResetToken(BeskarError):
     """
     Attempted to use a password reset token for normal access
     """
     pass
 
 
-class ConfigurationError(PraetorianError):
+class ConfigurationError(BeskarError):
     """
     There was a problem with the configuration
     """
@@ -163,7 +163,7 @@ class ConfigurationError(PraetorianError):
 class TOTPRequired(AuthenticationError):
     """
     The user requires TOTP authentication, per configuation
-    `PRAETORIAN_TOTP_ENFORCE` which was not performed
+    `BESKAR_TOTP_ENFORCE` which was not performed
     by this call to `authenticate()`. A call to
     `authenticate_totp()` should be performed seperately,
     or a call to `authenticate()` again, but providing the
