@@ -11,7 +11,7 @@ import ujson
 from collections.abc import Callable
 from typing import Union
 
-from sanic import Sanic, Request
+from sanic import Sanic
 from sanic.log import logger
 
 from sanic_mailing import Message
@@ -19,7 +19,7 @@ from sanic_mailing import Message
 from passlib.context import CryptContext
 from passlib.totp import TOTP
 
-from sanic_beskar.utilities import duration_from_string, is_valid_json
+from sanic_beskar.utilities import duration_from_string, is_valid_json, get_request
 
 from sanic_beskar.exceptions import (
     AuthenticationError,
@@ -1249,13 +1249,8 @@ class Beskar():
         """
         Unpacks a jwt token from the current sanic request
         """
-        try:
-            if not request:
-                request = Request.get_current()
-        except Exception:
-            raise BeskarError("Could not identify current Sanic request")
-
-        return self._unpack_header(request.headers)
+        _request = get_request(request)
+        return self._unpack_header(_request.headers)
 
     def _unpack_cookie(self, cookies):
         """
@@ -1272,13 +1267,8 @@ class Beskar():
         """
         Unpacks a jwt token from the current sanic request
         """
-        try:
-            if not request:
-                request = Request.get_current()
-        except Exception:
-            raise BeskarError("Could not identify current Sanic request")
-
-        return self._unpack_cookie(request.cookies)
+        _request = get_request(request)
+        return self._unpack_cookie(_request.cookies)
 
     def read_token(self, request=None):
         """
@@ -1295,18 +1285,13 @@ class Beskar():
         :returns: function to read the token based upon where the token was found
         :rtype: function
         """
-        try:
-            if not request:
-                request = Request.get_current()
-        except Exception:
-            raise BeskarError("Could not identify current Sanic request")
-
+        _request = get_request(request)
         for place in self.token_places:
             try:
                 return getattr(
                     self,
                     f"read_token_from_{place.lower()}"
-                )(request)
+                )(_request)
             except MissingToken:
                 pass
             except AttributeError:

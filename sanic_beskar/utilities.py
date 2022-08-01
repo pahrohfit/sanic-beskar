@@ -7,11 +7,21 @@ import ujson
 
 import segno
 
-from sanic import Sanic
+from sanic import Sanic, Request
 import pendulum
 
 from sanic_beskar.constants import RESERVED_CLAIMS
 from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
+
+
+def get_request(request: Request) -> Request:
+    try:
+        if not request:
+            return Request.get_current()
+        return request
+    except Exception:
+        raise BeskarError("Could not identify current Sanic request")
+
 
 
 async def is_valid_json(data: str) -> ujson:
