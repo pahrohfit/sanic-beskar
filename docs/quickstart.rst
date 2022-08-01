@@ -8,7 +8,7 @@ Requirements
 * Sanic 22.6+
 * Sanic-Ext 22.6+ `provides CORS`
 * cryptography 37+ `for encrypting stuff`
-* Any `async` Mail plugin, providing :py:func:`mail()` and :py:class:`Mailer()`, 
+* Any `async` Mail plugin, providing :py:func:`mail()` and :py:class:`Mailer()`,
   similiar to `Sanic-Mailing <https://github.com/pahrohfit/sanic-mailing>`_
 
 Note on Requirements
@@ -65,7 +65,7 @@ directory:
 
    * - File Name
      - Description
-   * - `examples/basic.py 
+   * - `examples/basic.py
        <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/basic.py>`_
      - Simple example of most basic usage (see below)
    * - `examples/basic_with_tortoise_mixin.py
@@ -74,20 +74,20 @@ directory:
        :py:mod:`~sanic_praetorian.orm.umongo_user_mixins`
    * - `examples/basic_with_umongo_mixin.py
        <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/basic_with_umongo_mixin.py>`_
-     - Same simple example, using the provided 
+     - Same simple example, using the provided
        :py:mod:`~sanic_praetorian.orm.tortoise_user_mixins`
-   * - `examples/blacklist.py 
+   * - `examples/blacklist.py
        <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/blacklist.py>`_
-     - Simple example utilizing the blacklist functionality   
-   * - `examples/custom_claims.py 
+     - Simple example utilizing the blacklist functionality
+   * - `examples/custom_claims.py
        <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/custom_claims.py>`_
-     - Simple example utilizing custom claims in the JWT
+     - Simple example utilizing custom claims in the token
    * - `examples/refresh.py
        <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/refresh.py>`_
-     - Simple example showing token expirataion and refresh   
+     - Simple example showing token expirataion and refresh
    * - `examples/register.py
        <https://github.com/pahrohfit/sanic-praetorian/blob/master/example/register.py>`_
-     - Simple example showing email based registration validation                                              
+     - Simple example showing email based registration validation
 
 
 The most basic utilization of the :py:mod:`sanic_praetorian` decorators is included:

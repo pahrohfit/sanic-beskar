@@ -29,42 +29,42 @@ class PraetorianError(SanicException, Buzz):
 
 class MissingClaimError(PraetorianError):
     """
-    The jwt token is missing a required claim
+    The token is missing a required claim
     """
     pass
 
 
 class BlacklistedError(PraetorianError):
     """
-    The jwt token has been blacklisted and may not be used any more
+    The token has been blacklisted and may not be used any more
     """
     status = 403
 
 
 class ExpiredAccessError(PraetorianError):
     """
-    The jwt token has expired for access and must be refreshed
+    The token has expired for access and must be refreshed
     """
     pass
 
 
 class EarlyRefreshError(PraetorianError):
     """
-    The jwt token has not yet expired for access and may not be refreshed
+    The token has not yet expired for access and may not be refreshed
     """
     status = 425  # HTTP Status Code : 425 Too Early
 
 
 class ExpiredRefreshError(PraetorianError):
     """
-    The jwt token has expired for refresh. An entirely new token must be issued
+    The token has expired for refresh. An entirely new token must be issued
     """
     pass
 
 
 class MissingToken(PraetorianError):
     """
-    The header is missing the required jwt token
+    The header is missing the required token
     """
     pass
 
@@ -113,7 +113,7 @@ class AuthenticationError(PraetorianError):
 
 class ClaimCollisionError(PraetorianError):
     """"
-    Custom claims to pack into the JWT payload collide with reserved claims
+    Custom claims to pack into the payload collide with reserved claims
     """
     pass
 

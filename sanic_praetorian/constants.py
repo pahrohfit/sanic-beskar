@@ -3,13 +3,13 @@ import enum
 from os.path import dirname, abspath
 
 
-DEFAULT_JWT_PLACES: list = ["header", "cookie"]
-DEFAULT_JWT_COOKIE_NAME: str = "access_token"
-DEFAULT_JWT_HEADER_NAME: str = "Authorization"
-DEFAULT_JWT_HEADER_TYPE: str = "Bearer"
-DEFAULT_JWT_ACCESS_LIFESPAN: pendulum = pendulum.duration(minutes=15)
-DEFAULT_JWT_REFRESH_LIFESPAN: pendulum = pendulum.duration(days=30)
-DEFAULT_JWT_RESET_LIFESPAN: pendulum = pendulum.duration(minutes=10)
+DEFAULT_TOKEN_PLACES: list = ["header", "cookie"]
+DEFAULT_TOKEN_COOKIE_NAME: str = "access_token"
+DEFAULT_TOKEN_HEADER_NAME: str = "Authorization"
+DEFAULT_TOKEN_HEADER_TYPE: str = "Bearer"
+DEFAULT_TOKEN_ACCESS_LIFESPAN: pendulum = pendulum.duration(minutes=15)
+DEFAULT_TOKEN_REFRESH_LIFESPAN: pendulum = pendulum.duration(days=30)
+DEFAULT_TOKEN_RESET_LIFESPAN: pendulum = pendulum.duration(minutes=10)
 DEFAULT_JWT_ALGORITHM: str = "HS256"
 DEFAULT_JWT_ALLOWED_ALGORITHMS: list = ["HS256"]
 

@@ -40,7 +40,7 @@ def create_app(db_path=None):
     sanic_app.config.MAIL_USERNAME = ''
     sanic_app.config.MAIL_PASSWORD = ''
     sanic_app.config.MAIL_FROM = 'fake@fake.com'
-    sanic_app.config.JWT_PLACES = ['header', 'cookie']
+    sanic_app.config.TOKEN_PLACES = ['header', 'cookie']
 
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 

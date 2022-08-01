@@ -4,7 +4,7 @@ Configuration Settings
 Core Configuration Settings
 ---------------------------
 
-.. list-table:: 
+.. list-table::
    :header-rows: 1
    :widths: auto
 
@@ -28,26 +28,26 @@ Core Configuration Settings
    * - ``JWT_ALGORITHM``
      - The jwt hashing algorithm to be used to encode tokens
      - ``'HS256'``
-   * - ``JWT_ACCESS_LIFESPAN``
-     - The default length of time that a JWT may be used to access a protected
+   * - ``TOKEN_ACCESS_LIFESPAN``
+     - The default length of time that a token may be used to access a protected
        endpoint. See `the PyJWT docs #usage
        <https://pyjwt.readthedocs.io/en/latest/usage.html#expiration-time-claim-exp>`_
        for more details.
      - ``{'minutes': 15}``
-   * - ``JWT_REFRESH_LIFESPAN``
-     - The default length of time that a JWT may be refreshed. JWT may also not
+   * - ``TOKEN_REFRESH_LIFESPAN``
+     - The default length of time that a token may be refreshed. Token may also not
        be refreshed if its access lifespan is not expired.
      - ``{'days': 30}``
-   * - ``JWT_PLACES``
-     - A list of places where JWT will be checked
+   * - ``TOKEN_PLACES``
+     - A list of places where token will be checked
      - ``['header', 'cookie']``
-   * - ``JWT_COOKIE_NAME``
-     - The name of the cookie in HTTP requests where the JWT will be found
+   * - ``TOKEN_COOKIE_NAME``
+     - The name of the cookie in HTTP requests where the token will be found
      - ``'access_token'``
-   * - ``JWT_HEADER_NAME``
-     - The name of the header in HTTP requests where the JWT will be found
+   * - ``TOKEN_HEADER_NAME``
+     - The name of the header in HTTP requests where the token will be found
      - ``'Authorization'``
-   * - ``JWT_HEADER_TYPE``
+   * - ``TOKEN_HEADER_TYPE``
      - A string describing the type of the header. Usually 'Bearer' but may be
        customized by the user
      - ``'Bearer'``

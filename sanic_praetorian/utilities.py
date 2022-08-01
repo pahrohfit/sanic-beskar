@@ -103,7 +103,7 @@ def current_guard(ctx: Optional[Sanic] = None):
 
 def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     """
-    Checks if there is already jwt_data added to the app context
+    Checks if there is already token_data added to the app context
 
     :param ctx: Application Context
     :type ctx: Optional[Sanic]
@@ -114,62 +114,61 @@ def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     if not ctx:
         ctx = Sanic.get_app().ctx
 
-    return hasattr(ctx, 'jwt_data')
-    #return hasattr(Sanic.get_app().ctx, 'jwt_data')
+    return hasattr(ctx, 'token_data')
 
 
-def add_token_data_to_app_context(jwt_data) -> NoReturn:
+def add_token_data_to_app_context(token_data) -> NoReturn:
     """
-    Adds a dictionary of jwt data (presumably unpacked from a token) to the
+    Adds a dictionary of token data (presumably unpacked from a token) to the
     top of the sanic app's context
 
-    :param jwt_data: ``dict`` of JWT data to add
-    :type jwt_data: dict
+    :param token_data: ``dict`` of token data to add
+    :type token_data: dict
     """
     ctx = Sanic.get_app().ctx
-    ctx.jwt_data = jwt_data
+    ctx.token_data = token_data
 
 
 def get_token_data_from_app_context() -> str:
     """
-    Fetches a dict of jwt token data from the top of the sanic app's context
+    Fetches a dict of token data from the top of the sanic app's context
 
-    :returns: JWT Token ``dict`` found in current app context
+    :returns: Token ``dict`` found in current app context
     :rtype: dict
     :raises: :py:exc:`~sanic_praetorian.PraetorianError` on missing token
     """
     ctx = Sanic.get_app().ctx
-    jwt_data = getattr(ctx, 'jwt_data', None)
+    token_data = getattr(ctx, 'token_data', None)
     PraetorianError.require_condition(
-        jwt_data is not None,
+        token_data is not None,
         """
-        No jwt_data found in app context.
+        No token_data found in app context.
         Make sure @auth_required decorator is specified *first* for route
         """,
     )
-    return jwt_data
+    return token_data
 
 
 def remove_token_data_from_app_context() -> NoReturn:
     """
-    Removes the dict of jwt token data from the top of the sanic app's context
+    Removes the dict of token data from the top of the sanic app's context
     """
     ctx = Sanic.get_app().ctx
     if app_context_has_token_data(ctx):
-        del ctx.jwt_data
+        del ctx.token_data
 
 
 def current_user_id() -> str:
     """
-    This method returns the user id retrieved from jwt token data attached to
+    This method returns the user id retrieved from token data attached to
     the current sanic app's context
 
     :returns: ``id`` of current :py:class:`User`, if any
     :rtype: str
     :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no user/token found
     """
-    jwt_data = get_token_data_from_app_context()
-    user_id = jwt_data.get('id', None)
+    token_data = get_token_data_from_app_context()
+    user_id = token_data.get('id', None)
     PraetorianError.require_condition(
         user_id is not None,
         "Could not fetch an id for the current user",
@@ -193,7 +192,7 @@ async def generate_totp_qr(user_totp: ujson) -> segno:
 
 async def current_user() -> object:
     """
-    This method returns a user instance for jwt token data attached to the
+    This method returns a user instance for token data attached to the
     current sanic app's context
 
     :returns: Current logged in ``User`` object
@@ -217,23 +216,29 @@ async def current_rolenames() -> set:
     :returns: Set of roles for currently logged in users
     :rtype: set
     """
-    jwt_data = get_token_data_from_app_context()
-    if 'rls' not in jwt_data:
+    token_data = get_token_data_from_app_context()
+    if 'rls' not in token_data:
         # This is necessary so our set arithmetic works correctly
-        return set(['non-empty-but-definitely-not-matching-subset'])
+        return dict()
     else:
-        return set(r.strip() for r in jwt_data['rls'].split(','))
+        if isinstance(token_data['rls'], str):
+            try:
+                return ujson.loads(token_data['rls'])
+            except Exception as e:
+                warnings.warn(f"Error trying to process Roles String: {e}")
+                return dict()
+        return token_data['rls']
 
 
 def current_custom_claims() -> dict:
     """
-    This method returns any custom claims in the current jwt
+    This method returns any custom claims in the current token
 
     :returns: Custom claims for currently logged in user
     :rtype: dict
     """
-    jwt_data = get_token_data_from_app_context()
-    return {k: v for (k, v) in jwt_data.items() if k not in RESERVED_CLAIMS}
+    token_data = get_token_data_from_app_context()
+    return {k: v for (k, v) in token_data.items() if k not in RESERVED_CLAIMS}
 
 
 def deprecated(reason):

@@ -12,7 +12,7 @@ class TestPraetorianDecorators:
         """
         This test verifies that the @auth_accepted decorator can be used
         to optionally use a properly structured auth header including
-        a valid jwt token, setting the `current_user()`.
+        a valid token, setting the `current_user()`.
         """
 
         the_dude = await mock_users(username='the_dude')
@@ -41,7 +41,7 @@ class TestPraetorianDecorators:
         """
         This test verifies that the @auth_required decorator can be used
         to ensure that any access to a protected endpoint must have a properly
-        structured auth header or cookie including a valid jwt token.
+        structured auth header or cookie including a valid token.
         Otherwise, a 401 error occurs with an informative error message.
         """
 
@@ -56,7 +56,7 @@ class TestPraetorianDecorators:
         exc_msg = textwrap.dedent(
                 f"""
                 Could not find token in any
-                 of the given locations: {default_guard.jwt_places}
+                 of the given locations: {default_guard.token_places}
                 """
         ).replace("\n", "")
 
@@ -68,7 +68,7 @@ class TestPraetorianDecorators:
             "/protected",
             headers={"Authorization": "bad_structure iamatoken"},
         )
-        assert "JWT header structure is invalid" in response.json["message"]
+        assert "Token header structure is invalid" in response.json["message"]
         assert response.status == 401
 
         # Token is expired
@@ -145,7 +145,7 @@ class TestPraetorianDecorators:
             in response.json["message"]
         )
 
-        maude = await mock_users(username='maude', roles="operator,admin")
+        maude = await mock_users(username='maude', roles="operator;admin")
         # Has two of two required roles
         _, response = client.get(
             "/protected_admin_and_operator_required",
@@ -211,14 +211,14 @@ class TestPraetorianDecorators:
         )
         assert response.status == 200
 
-        maude = await mock_users(username='maude', roles="operator,admin")
+        maude = await mock_users(username='maude', roles="operator;admin")
         _, response = client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(maude),
         )
         assert response.status == 200
 
-        jesus = await mock_users(username='jesus', roles="admin,god")
+        jesus = await mock_users(username='jesus', roles="admin;god")
         _, response = client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(jesus),
