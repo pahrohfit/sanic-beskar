@@ -912,26 +912,23 @@ class TestBeskar:
         # create our default test user
         the_dude = await mock_users(username='the_dude', password='blah')
 
-        with app.ctx.mail.record_messages() as outbox:
-            # test a bad username
-            with pytest.raises(MissingUserError):
-                notify = await default_guard.send_reset_email(
-                    email="fail@whale.org",
-                    reset_sender="you@whatever.com",
-                )
-
-            # test a good username
+        # test a bad username
+        with pytest.raises(MissingUserError):
             notify = await default_guard.send_reset_email(
-                email=the_dude.email,
+                email="fail@whale.org",
                 reset_sender="you@whatever.com",
             )
-            token = notify["token"]
 
-            # test our own interpretation and what we got back from flask_mail
-            assert token in notify["message"]
-            assert len(outbox) == 1
+        # test a good username
+        notify = await default_guard.send_reset_email(
+            email=the_dude.email,
+            reset_sender="you@whatever.com",
+        )
+        token = notify["token"]
 
-            assert not notify["result"]
+        # test our own interpretation and what we got back from flask_mail
+        assert token in notify["message"]
+        assert not notify["result"]
 
         # test our token is good
         token_data = await default_guard.extract_token(
@@ -975,19 +972,16 @@ class TestBeskar:
         # create our default test user
         the_dude = await mock_users(username='the_dude', password='Abides')
 
-        with app.ctx.mail.record_messages() as outbox:
-            notify = await default_guard.send_registration_email(
-                "the@dude.com",
-                user=the_dude,
-                confirmation_sender="you@whatever.com",
-            )
-            token = notify["token"]
+        notify = await default_guard.send_registration_email(
+            "the@dude.com",
+            user=the_dude,
+            confirmation_sender="you@whatever.com",
+        )
+        token = notify["token"]
 
-            # test our own interpretation and what we got back from flask_mail
-            assert token in notify["message"]
-            assert len(outbox) == 1
-
-            assert not notify["result"]
+        # test our own interpretation and what we got back from flask_mail
+        assert token in notify["message"]
+        assert not notify["result"]
 
         # test our token is good
         token_data = await default_guard.extract_token(

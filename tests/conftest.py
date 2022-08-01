@@ -16,6 +16,8 @@ from sanic_beskar.base import Beskar
 from models import ValidatingUser, MixinUser, User, TotpUser
 from server import create_app, _guard, _mail
 
+import async_sender
+
 import nest_asyncio
 nest_asyncio.apply()
 
@@ -47,7 +49,7 @@ def app(tmpdir_factory, request, monkeypatch):
     sanic_app.config['PYTESTING'] = True
 
     sanic_app.config.SUPPRESS_SEND = 1  # Don't actually send mails
-    _mail.init_app(sanic_app)
+    #_mail.init_app(sanic_app)
 
     yield sanic_app
     sanic_app = None
@@ -217,6 +219,17 @@ def no_token_validation(monkeypatch):
 
     monkeypatch.setattr(Beskar, "_validate_token_data", mockreturn)
 
+
+@pytest.fixture(autouse=True)
+def no_email_sending(monkeypatch):
+    """
+    Monkeypatch to prevent emails from actually attempting to be
+      sent from async_sender.
+    """
+    async def mock_send_message(*args, **kwargs):
+        pass
+
+    monkeypatch.setattr(async_sender.api.Mail, "send_message", mock_send_message)
 
 @pytest.fixture(autouse=True)
 def speed_up_passlib_for_pytest_only(default_guard):

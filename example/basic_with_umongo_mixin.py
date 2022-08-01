@@ -4,7 +4,7 @@ from sanic import Sanic, json
 
 import sanic_beskar
 from sanic_beskar import Beskar, UmongoUserMixin
-from sanic_mailing import Mail
+from async_sender import Mail
 
 from umongo import Document, fields, validate
 
@@ -32,13 +32,6 @@ def create_app(db_path=None):
     sanic_app.config.SECRET_KEY = ''.join(secrets.choice(string.ascii_letters) for i in range(15))
     sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"hours": 24}
     sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"days": 30}
-
-    # sanic-mailing config
-    sanic_app.config.MAIL_SERVER = 'localhost:25'
-    sanic_app.config.MAIL_USERNAME = ''
-    sanic_app.config.MAIL_PASSWORD = ''
-    sanic_app.config.MAIL_FROM = 'fake@fake.com'
-    sanic_app.config.TOKEN_PLACES = ['header', 'cookie']
 
     sanic_app.ctx.mail = _mail
 

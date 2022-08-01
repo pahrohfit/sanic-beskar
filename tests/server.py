@@ -15,7 +15,7 @@ from tortoise.contrib.sanic import register_tortoise
 
 from sanic_beskar import Beskar
 from sanic_beskar.exceptions import BeskarError
-from sanic_mailing import Mail
+from async_sender import Mail
 
 
 _guard = Beskar()

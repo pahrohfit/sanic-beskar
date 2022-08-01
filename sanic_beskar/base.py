@@ -1,3 +1,4 @@
+from importlib import import_module
 from importlib.util import find_spec
 import datetime
 import jinja2
@@ -13,8 +14,6 @@ from typing import Union
 
 from sanic import Sanic
 from sanic.log import logger
-
-from sanic_mailing import Message
 
 from passlib.context import CryptContext
 from passlib.totp import TOTP
@@ -1625,12 +1624,12 @@ class Beskar():
             jinja_tmpl = jinja2.Template(template)
             notification["message"] = jinja_tmpl.render(notification).strip()
 
-            msg = Message(
+            Mail = import_module(self.app.ctx.mail.__module__)
+            msg = Mail.Message(
                 subject=notification["subject"],
-                recipients=[notification["email"]],
-                sender=action_sender,
+                to=[notification["email"]],
+                from_address=action_sender,
                 html=notification["message"],
-                subtype="html",
                 reply_to=[action_sender],
             )
 
