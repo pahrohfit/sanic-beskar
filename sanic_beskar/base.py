@@ -1299,7 +1299,7 @@ class Beskar():
             if not request:
                 request = Request.get_current()
         except Exception:
-            pass
+            raise BeskarError("Could not identify current Sanic request")
 
         for place in self.token_places:
             try:
