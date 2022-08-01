@@ -33,7 +33,7 @@ class UmongoUserMixin():
         This can be a seperate table (probably sane), so long as this attribute
         or property properly returns the associated values for the user as a
         RBAC dict, as:
-            {'rolename', ['permissions'],}
+        {'rolename', ['permissions'],}
 
         :returns: Provided :py:class:`User`'s current ``roles``
         :rtype: dict
