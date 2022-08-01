@@ -1276,7 +1276,8 @@ class Beskar():
             if not request:
                 request = Request.get_current()
         except Exception:
-            pass
+            raise BeskarError("Could not identify current Sanic request")
+
         return self._unpack_cookie(request.cookies)
 
     def read_token(self, request=None):
