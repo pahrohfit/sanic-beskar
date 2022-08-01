@@ -73,3 +73,8 @@ Documentation
 
 The complete documentation can be found at the
 `sanic-praetorian home page <http://sanic-praetorian.readthedocs.io>`_
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/55f9192c1f584ae294bc1642b0fcc70c
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/pahrohfit/sanic-beskar?utm_source=github.com&utm_medium=referral&utm_content=pahrohfit/sanic-beskar&utm_campaign=Badge_Grade_Settings
