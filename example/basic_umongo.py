@@ -1,3 +1,5 @@
+import secrets, string
+
 from sanic import Sanic, json
 
 from bson.objectid import ObjectId
@@ -30,7 +32,7 @@ def create_app(db_path=None):
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
     # sanic-beskar config
-    sanic_app.config.SECRET_KEY = "top secret"
+    sanic_app.config.SECRET_KEY = ''.join(secrets.choice(string.ascii_letters) for i in range(15))
     sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"hours": 24}
     sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"days": 30}
 

@@ -1,13 +1,12 @@
-from sanic import Sanic, json
+import secrets, string
 
-from bson.objectid import ObjectId
+from sanic import Sanic, json
 
 import sanic_beskar
 from sanic_beskar import Beskar, UmongoUserMixin
 from sanic_mailing import Mail
 
 from umongo import Document, fields, validate
-from umongo.exceptions import NotCreatedError
 
 from umongo.frameworks.motor_asyncio import MotorAsyncIOInstance
 from mongomock_motor import AsyncMongoMockClient
@@ -30,7 +29,7 @@ def create_app(db_path=None):
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
     # sanic-beskar config
-    sanic_app.config.SECRET_KEY = "top secret"
+    sanic_app.config.SECRET_KEY = ''.join(secrets.choice(string.ascii_letters) for i in range(15))
     sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"hours": 24}
     sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"days": 30}
 

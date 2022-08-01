@@ -545,7 +545,7 @@ class Beskar():
         If we are called from `authenticate`, we already looked up the user,
             don't waste the DB call again.
         """
-        if type(username) != 'string':
+        if isinstance(username, str):
             user = await self.user_class.lookup(username=username)
         else:
             user = username
@@ -1253,7 +1253,7 @@ class Beskar():
             if not request:
                 request = Request.get_current()
         except Exception:
-            pass
+            raise BeskarError("Could not identify current Sanic request")
 
         return self._unpack_header(request.headers)
 

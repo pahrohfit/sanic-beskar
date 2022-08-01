@@ -1,7 +1,8 @@
+import secrets, string
+
 from tortoise.contrib.sanic import register_tortoise
 from tortoise.models import Model
 from tortoise import fields
-from tortoise.exceptions import DoesNotExist
 
 from sanic import Sanic, json
 
@@ -48,7 +49,7 @@ def create_app(db_path=None):
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
     # sanic-beskar config
-    sanic_app.config.SECRET_KEY = "top secret"
+    sanic_app.config.SECRET_KEY = ''.join(secrets.choice(string.ascii_letters) for i in range(15))
     sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"hours": 24}
     sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"days": 30}
 

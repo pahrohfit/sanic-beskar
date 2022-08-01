@@ -1,7 +1,8 @@
 Overview
 ========
 
-This project's begining was fully lifted from the awesome `Flask-Praetorian`.
+This project's begining was fully lifted from the awesome
+`Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_.
 
 Why `beskar <https://starwars.fandom.com/wiki/Beskar>`? Why not -- what
 is better than star wars (provided you ignore the fact ~the mandolorian~

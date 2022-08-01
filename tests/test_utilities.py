@@ -165,9 +165,9 @@ class TestBeskarUtilities:
         qrcode.save(kind='txt', out=txt_out)
 
         assert png_out != BytesIO()
-        assert type(png_out) == BytesIO
+        assert isinstance(png_out, BytesIO)
         assert txt_out != StringIO()
-        assert type(txt_out) == StringIO
+        assert isinstance(txt_out, StringIO)
 
         with pytest.raises(TypeError):
             await generate_totp_qr(None)

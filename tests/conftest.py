@@ -116,7 +116,6 @@ def clean_sanic_app_config(app):
     stock_config = copy.copy(app.config)
     yield
     app.config = copy.copy(stock_config)
-    pass
 
 
 @pytest.fixture
