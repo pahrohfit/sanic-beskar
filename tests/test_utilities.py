@@ -4,7 +4,7 @@ import pytest
 
 from io import StringIO, BytesIO
 
-from sanic_praetorian.utilities import (
+from sanic_beskar.utilities import (
     add_token_data_to_app_context,
     app_context_has_token_data,
     generate_totp_qr,
@@ -15,13 +15,13 @@ from sanic_praetorian.utilities import (
     current_custom_claims,
     duration_from_string,
 )
-from sanic_praetorian.exceptions import (
-    PraetorianError,
+from sanic_beskar.exceptions import (
+    BeskarError,
     ConfigurationError,
 )
 
 
-class TestPraetorianUtilities:
+class TestBeskarUtilities:
 
     def test_app_context_has_token_data(self):
         """
@@ -55,7 +55,7 @@ class TestPraetorianUtilities:
         """
         token_data = {}
         add_token_data_to_app_context(token_data)
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             await current_user()
         assert 'Could not fetch an id' in str(err_info.value)
 
@@ -71,13 +71,13 @@ class TestPraetorianUtilities:
         """
         token_data = {}
         add_token_data_to_app_context(token_data)
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             await current_user()
         assert 'Could not fetch an id' in str(err_info.value)
 
         token_data = {'id': 31}
         add_token_data_to_app_context(token_data)
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             await current_user()
         assert 'Could not identify the current user' in str(err_info.value)
 

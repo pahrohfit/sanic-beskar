@@ -4,10 +4,10 @@ import plummet
 
 from httpx import Cookies
 
-from sanic_praetorian.exceptions import MissingRoleError
+from sanic_beskar.exceptions import MissingRoleError
 
 
-class TestPraetorianDecorators:
+class TestBeskarDecorators:
     async def test_auth_accepted(self, default_guard, mock_users, client):
         """
         This test verifies that the @auth_accepted decorator can be used

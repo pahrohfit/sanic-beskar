@@ -1,23 +1,28 @@
-.. image::  https://badge.fury.io/py/sanic-praetorian.svg
-   :target: https://badge.fury.io/py/sanic-praetorian
+.. image::  https://badge.fury.io/py/sanic-beskar.svg
+   :target: https://badge.fury.io/py/sanic-beskar
    :alt:    Latest Published Version
 
-.. image::  https://travis-ci.org/pahrohfit/sanic-praetorian.svg?branch=master
-   :target: https://travis-ci.org/pahrohfit/sanic-praetorian
+.. image::  https://travis-ci.org/pahrohfit/sanic-beskar.svg?branch=master
+   :target: https://travis-ci.org/pahrohfit/sanic-beskar
    :alt:    Build Status
 
-.. image::  https://readthedocs.org/projects/sanic-praetorian/badge/?version=latest
-   :target: http://sanic-praetorian.readthedocs.io/en/latest/?badge=latest
+.. image::  https://readthedocs.org/projects/sanic-beskar/badge/?version=latest
+   :target: http://sanic-beskar.readthedocs.io/en/latest/?badge=latest
    :alt:    Documentation Build Status
 
+.. image:: https://api.codacy.com/project/badge/Grade/55f9192c1f584ae294bc1642b0fcc70c
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/pahrohfit/sanic-beskar?utm_source=github.com&utm_medium=referral&utm_content=pahrohfit/sanic-beskar&utm_campaign=Badge_Grade_Settings
+
 ******************
- sanic-praetorian
+ sanic-beskar
 ******************
 
 
 ** WORK IN PROGRESS -- docs below are mostly correct, I think **
 
-* Probably Stable branch: master
+* Stable branch: master
+* CBTE (coding by trial and error) branch: dev
 * Working example(s): `examples/*.py`
 
 ---------------------------------------------------
@@ -35,17 +40,17 @@ access.
 This project was heavily influenced by
 `Flask-Security <https://pythonhosted.org/Flask-Security/>`_, but intends
 to supply only essential functionality. Instead of trying to anticipate the
-needs of all users, *sanic-praetorian* will provide a simple and secure mechanism
+needs of all users, *sanic-beskar* will provide a simple and secure mechanism
 to provide security for APIs specifically.
 
 This project was heavily liftef from the awesome `Flask-Praetorian`.
 
 This extesion offers a batteries-included approach to security for your API.
 For essential security concerns for Sanic-based APIs,
-`sanic-praetorian <https://github.com/pahrohfit/sanic-praetorian>`_ should
+`sanic-beskar <https://github.com/pahrohfit/sanic-beskar>`_ should
 supply everything you need.
 
-The *sanic-praetorian* package can be used to:
+The *sanic-beskar* package can be used to:
 
 * Hash passwords for storing in your database
 * Verify plaintext passwords against the hashed, stored versions
@@ -58,18 +63,18 @@ The *sanic-praetorian* package can be used to:
 * Register new users using email verification
 
 All of this is provided in a very simple to configure and initialize flask
-extension. Though simple, the security provided by *sanic-praetorian* is strong
+extension. Though simple, the security provided by *sanic-beskar* is strong
 due to the usage of the proven security technology of PASETO or JWT, along with
 python's `PassLib <http://pythonhosted.org/passlib/>`_ package.
 
 Super-quick Start
 -----------------
  - requirements: `python` versions 3.7+
- - install through pip: `$ pip install sanic-praetorian`
- - minimal usage example: `example/basic.py <https://github.com/pahrohfit/sanic-praetorian/tree/master/example/basic.py>`_
+ - install through pip: `$ pip install sanic-beskar`
+ - minimal usage example: `example/basic.py <https://github.com/pahrohfit/sanic-beskar/tree/master/example/basic.py>`_
 
 Documentation
 -------------
 
 The complete documentation can be found at the
-`sanic-praetorian home page <http://sanic-praetorian.readthedocs.io>`_
+`sanic-beskar home page <http://sanic-beskar.readthedocs.io>`_

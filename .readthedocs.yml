@@ -13,7 +13,7 @@ build:
     post_install:
       - |
         . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate"
-        && cd sanic_praetorian
+        && cd sanic_beskar
         && poetry install --no-interaction --no-root
         && pwd
 

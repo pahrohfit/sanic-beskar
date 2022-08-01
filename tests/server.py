@@ -4,7 +4,7 @@ sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."
 
 from ujson import dumps as ujson_dumps, loads as ujson_loads
 
-import sanic_praetorian
+import sanic_beskar
 
 from models import User
 
@@ -13,12 +13,12 @@ from sanic.log import logger
 
 from tortoise.contrib.sanic import register_tortoise
 
-from sanic_praetorian import Praetorian
-from sanic_praetorian.exceptions import PraetorianError
+from sanic_beskar import Beskar
+from sanic_beskar.exceptions import BeskarError
 from sanic_mailing import Mail
 
 
-_guard = Praetorian()
+_guard = Beskar()
 _mail = Mail()
 
 
@@ -52,50 +52,50 @@ def create_app(db_path=None):
         return json({'message': "success"})
 
     @sanic_app.route("/kinda_protected")
-    @sanic_praetorian.auth_accepted
+    @sanic_beskar.auth_accepted
     async def kinda_protected(request):
         try:
-            authed_user = await sanic_praetorian.current_user()
+            authed_user = await sanic_beskar.current_user()
             return json({"message": "success", "user": authed_user.username})
-        except PraetorianError:
+        except BeskarError:
             return json({"message": "success", "user": None})
 
     @sanic_app.route("/protected")
-    @sanic_praetorian.auth_required
+    @sanic_beskar.auth_required
     async def protected(request):
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_required")
-    @sanic_praetorian.auth_required
-    @sanic_praetorian.roles_required("admin")
+    @sanic_beskar.auth_required
+    @sanic_beskar.roles_required("admin")
     async def protected_admin_required(request):
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_and_operator_required")
-    @sanic_praetorian.auth_required
-    @sanic_praetorian.roles_required("admin", "operator")
+    @sanic_beskar.auth_required
+    @sanic_beskar.roles_required("admin", "operator")
     async def protected_admin_and_operator_required(request):
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_and_operator_accepted")
-    @sanic_praetorian.auth_required
-    @sanic_praetorian.roles_accepted("admin", "operator")
+    @sanic_beskar.auth_required
+    @sanic_beskar.roles_accepted("admin", "operator")
     async def protected_admin_and_operator_accepted(request):
         return json({"message": "success"})
 
     @sanic_app.route("/undecorated_admin_required")
-    @sanic_praetorian.roles_required("admin")
+    @sanic_beskar.roles_required("admin")
     async def undecorated_admin_required(request):
         return json({"message": "success"})
 
     @sanic_app.route("/undecorated_admin_accepted")
-    @sanic_praetorian.roles_accepted("admin")
+    @sanic_beskar.roles_accepted("admin")
     async def undecorated_admin_accepted(request):
         return json({"message": "success"})
 
     @sanic_app.route("/reversed_decorators")
-    @sanic_praetorian.roles_required("admin", "operator")
-    @sanic_praetorian.auth_required
+    @sanic_beskar.roles_required("admin", "operator")
+    @sanic_beskar.auth_required
     async def reversed_decorators(request):
         return json({"message": "success"})
 

@@ -24,7 +24,7 @@ log in again.
 Rate Limiting
 -------------
 
-There is not any sort of rate-limiting protection offered by sanic-praetorian.
+There is not any sort of rate-limiting protection offered by sanic-beskar.
 Thus, if your app does not implment such a thing, it could be vulnerable to brute
 force attacks. It's advisable that you implement some sort of system for limiting
 incorrect username/password attempts.
@@ -32,16 +32,16 @@ incorrect username/password attempts.
 Error Handling
 --------------
 
-By default, sanic-praetorian will add an error handler to Sanic for
-PraetorianErrors. This error handler produces nicely formatted json responses
-with status codes that reflect the failures. The sanic-praetorian package's
-custom exception type ``PraetorianError`` derives from the ``pyBuzz`` base
+By default, sanic-beskar will add an error handler to Sanic for
+BeskarErrors. This error handler produces nicely formatted json responses
+with status codes that reflect the failures. The sanic-beskar package's
+custom exception type ``BeskarError`` derives from the ``pyBuzz`` base
 exception type from the
 `py-buzz exceptions package <https://github.com/dusktreader/py-buzz>`_.
 The py-buzz package provides convenience methods for error handlers.
 
 The error handling may be disabled by adding a configuration setting for
-``DISABLE_PRAETORIAN_ERROR_HANDLER``. You may wish to do this if you want to
+``DISABLE_BESKAR_ERROR_HANDLER``. You may wish to do this if you want to
 customize your error handling even further.
 
 For example, you may wish to have the error handler log messages about failures
@@ -72,7 +72,7 @@ satisfy the following requirements:
 
 * Provide a ``rolenames`` instance attribute
 
-  * only applies if roles are not disabled. See ``PRAETORIAN_ROLES_DISABLED`` setting
+  * only applies if roles are not disabled. See ``BESKAR_ROLES_DISABLED`` setting
 
   * should return a list of string roles assigned to the user
 

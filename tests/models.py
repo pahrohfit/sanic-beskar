@@ -2,7 +2,7 @@ from tortoise.models import Model
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
 
-from sanic_praetorian import TortoiseUserMixin
+from sanic_beskar import TortoiseUserMixin
 
 
 class User(Model):

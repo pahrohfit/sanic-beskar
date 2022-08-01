@@ -10,8 +10,8 @@ import segno
 from sanic import Sanic
 import pendulum
 
-from sanic_praetorian.constants import RESERVED_CLAIMS
-from sanic_praetorian.exceptions import (PraetorianError, ConfigurationError)
+from sanic_beskar.constants import RESERVED_CLAIMS
+from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
 
 
 async def is_valid_json(data: str) -> ujson:
@@ -45,7 +45,7 @@ def duration_from_string(text: str) -> pendulum:
     :returns: Time Object
     :rtype: :py:mod:`pendulum`
 
-    :raises: :py:exc:`~sanic_praetorian.ConfigurationError` on bad strings
+    :raises: :py:exc:`~sanic_beskar.ConfigurationError` on bad strings
     """
     text = text.replace(' ', '')
     text = text.replace(',', '')
@@ -79,24 +79,24 @@ def duration_from_string(text: str) -> pendulum:
 @functools.lru_cache(maxsize=None)
 def current_guard(ctx: Optional[Sanic] = None):
     """
-    Fetches the current instance of :py:class:`Praetorian`
+    Fetches the current instance of :py:class:`Beskar`
     that is attached to the current sanic app
 
     :param ctx: Application Context
     :type ctx: Optional[Sanic]
 
-    :returns: Current Praetorian Guard object for this app context
-    :rtype: :py:class:`~sanic_praetorian.Praetorian`
+    :returns: Current Beskar Guard object for this app context
+    :rtype: :py:class:`~sanic_beskar.Beskar`
 
-    :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no guard found
+    :raises: :py:exc:`~sanic_beskar.BeskarError` if no guard found
     """
     if not ctx:
         ctx = Sanic.get_app().ctx
 
-    guard = ctx.extensions.get('praetorian', None)
-    PraetorianError.require_condition(
+    guard = ctx.extensions.get('beskar', None)
+    BeskarError.require_condition(
         guard is not None,
-        "No current guard found; Praetorian must be initialized first",
+        "No current guard found; Beskar must be initialized first",
     )
     return guard
 
@@ -135,11 +135,11 @@ def get_token_data_from_app_context() -> str:
 
     :returns: Token ``dict`` found in current app context
     :rtype: dict
-    :raises: :py:exc:`~sanic_praetorian.PraetorianError` on missing token
+    :raises: :py:exc:`~sanic_beskar.BeskarError` on missing token
     """
     ctx = Sanic.get_app().ctx
     token_data = getattr(ctx, 'token_data', None)
-    PraetorianError.require_condition(
+    BeskarError.require_condition(
         token_data is not None,
         """
         No token_data found in app context.
@@ -165,11 +165,11 @@ def current_user_id() -> str:
 
     :returns: ``id`` of current :py:class:`User`, if any
     :rtype: str
-    :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no user/token found
+    :raises: :py:exc:`~sanic_beskar.BeskarError` if no user/token found
     """
     token_data = get_token_data_from_app_context()
     user_id = token_data.get('id', None)
-    PraetorianError.require_condition(
+    BeskarError.require_condition(
         user_id is not None,
         "Could not fetch an id for the current user",
     )
@@ -197,12 +197,12 @@ async def current_user() -> object:
 
     :returns: Current logged in ``User`` object
     :rtype: ``User``
-    :raises: :py:exc:`~sanic_praetorian.PraetorianError` if no user identified
+    :raises: :py:exc:`~sanic_beskar.BeskarError` if no user identified
     """
     user_id = current_user_id()
     guard = current_guard()
     user = await guard.user_class.identify(user_id)
-    PraetorianError.require_condition(
+    BeskarError.require_condition(
         user is not None,
         "Could not identify the current user from the current id",
     )

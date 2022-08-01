@@ -25,7 +25,7 @@ class UmongoUserMixin():
         """
         *Required Attribute or Property*
 
-        sanic-praetorian requires that the user class has a
+        sanic-beskar requires that the user class has a
         :py:attr:`rolenames` instance attribute or property that
         provides a list of strings that describe the roles attached to
         the user instance.
@@ -60,7 +60,7 @@ class UmongoUserMixin():
         """
         *Required Method*
 
-        sanic-praetorian requires that the user class implements a :py:meth:`lookup()`
+        sanic-beskar requires that the user class implements a :py:meth:`lookup()`
         class method that takes a single :py:data:`username` or :py:data:`email`
         argument and returns a user instance if there is one that matches or
         ``None`` if there is not.
@@ -88,7 +88,7 @@ class UmongoUserMixin():
         """
         *Required Attribute or Property*
 
-        sanic-praetorian requires that the user class implements an
+        sanic-beskar requires that the user class implements an
         :py:meth:`identify()` class method that takes a single
         :py:data:`id` argument and returns user instance if
         there is one that matches or ``None`` if there is not.
@@ -109,7 +109,7 @@ class UmongoUserMixin():
         """
         *Required Attribute or Property*
 
-        sanic-praetorian requires that the user class has an :py:meth:`identity`
+        sanic-beskar requires that the user class has an :py:meth:`identity`
         instance attribute or property that provides the unique id of the user
         instance
 
