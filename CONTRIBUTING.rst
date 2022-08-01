@@ -12,22 +12,22 @@ communication*. For other issue reports, see below.
 Thanks!
 -------
 
-First, thank you for your interest in contributing to flask-praetorian! Even
-though this is a small flask-extension project, it takes a bit of work to keep
+First, thank you for your interest in contributing to sanic-beskar! Even
+though this is a small sanic-extension project, it takes a bit of work to keep
 it maintained. All contributions help and improve the extension.
 
 Contact Us
 ----------
 
-The maintainers of flask-praetorian can be reached most easily via email::
+The maintainers of sanic-beskar can be reached most easily via email::
 
-  * Tucker Beck <tucker.beck@gmail.com>
+  * Rob Dailey <rob@suspected.org>
 
 Conduct
 -------
 Everyone's conduct should be respectful and friendly. For most folks, these
 things don't need to be spelled out. However, to establish a baseline of
-acceptable conduct, the flask-praetorian project expects contributors to adhere
+acceptable conduct, the sanic-beskar project expects contributors to adhere
 to a `customized version <coc.html>`_ of the
 `Python Software Foundation's Code of Conduct <https://www.python.org/psf/codeofconduct>`_.
 Please see the "Conduct" section to reference the code of conduct.
@@ -94,7 +94,7 @@ Documentation
 
 Help with documentation is *always* welcome.
 
-The flask-praetorian project uses
+The sanic-beskar project uses
 `sphinx <http://www.sphinx-doc.org/en/master/>`_ for document generation.
 
 Documentation lives in the ``docs`` subdirectory. Added pages should be
