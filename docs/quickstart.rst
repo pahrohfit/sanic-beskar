@@ -9,7 +9,7 @@ Requirements
 * Sanic-Ext 22.6+ `provides CORS`
 * cryptography 37+ `for encrypting stuff`
 * Any `async` Mail plugin, providing :py:func:`mail()` and :py:class:`Mailer()`,
-  similiar to `Sanic-Mailing <https://github.com/pahrohfit/sanic-mailing>`_
+  similiar to `async-sender <https://github.com/theruziev/async_sender>`_
 
 Note on Requirements
 ....................
