@@ -11,7 +11,7 @@ from sanic.log import logger
 from sanic_testing.reusable import ReusableClient
 from sanic.exceptions import SanicException
 
-from sanic_praetorian.base import Praetorian
+from sanic_beskar.base import Beskar
 
 from models import ValidatingUser, MixinUser, User, TotpUser
 from server import create_app, _guard, _mail
@@ -33,14 +33,14 @@ async def init(db_path=None):
 def app(tmpdir_factory, request, monkeypatch):
 
     db_path = tmpdir_factory.mktemp(
-        "sanic-praetorian-test",
+        "sanic-beskar-test",
         numbered=True,
     ).join("sqlite.db")
     logger.info(f'Using DB_Path: {str(db_path)}')
     run_async(init(db_path=f'sqlite://{str(db_path)}'))
 
     # Use the fixture params to test all our token providers
-    monkeypatch.setenv('SANIC_PRAETORIAN_TOKEN_PROVIDER', request.param)
+    monkeypatch.setenv('SANIC_BESKAR_TOKEN_PROVIDER', request.param)
 
     sanic_app = create_app(db_path=f'sqlite://{str(db_path)}')
     # Hack to do some poor code work in the app for some workarounds for broken fucntions under pytest
@@ -88,7 +88,7 @@ def validating_user_class():
 @pytest.fixture(scope="session")
 def default_guard():
     """
-    This fixtures fetches the sanic-praetorian instance to be used in testing
+    This fixtures fetches the sanic-beskar instance to be used in testing
     """
     return _guard
 
@@ -173,7 +173,7 @@ def mock_users(user_class, default_guard):
             if guard_name.pwd_ctx.identify(str(kwargs['password'])):
                 password = kwargs['password']
 
-        email = kwargs.get('email', f"praetorian_{username}@mock.com")
+        email = kwargs.get('email', f"beskar_{username}@mock.com")
 
         # TODO: This is ugly, gotta be a nicer way
         if kwargs.get('id'):
@@ -216,7 +216,7 @@ def no_token_validation(monkeypatch):
     def mockreturn(*args, **kwargs):
         return True
 
-    monkeypatch.setattr(Praetorian, "_validate_token_data", mockreturn)
+    monkeypatch.setattr(Beskar, "_validate_token_data", mockreturn)
 
 
 @pytest.fixture(autouse=True)

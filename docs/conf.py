@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# sanic-praetorian documentation build configuration file, created by
+# sanic-beskar documentation build configuration file, created by
 # sphinx-quickstart on Sat July  16 09:38:59 2022.
 #
 # This file is execfile()d with the current directory set to its
@@ -150,4 +150,3 @@ def setup(app):
     app.add_css_file('theme_overrides.css')
 
 # -- Options for HTMLHelp output ------------------------------------------
-

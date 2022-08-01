@@ -1,13 +1,13 @@
 import functools
 
-from sanic_praetorian.exceptions import (
-    PraetorianError,
+from sanic_beskar.exceptions import (
+    BeskarError,
     MissingRoleError,
     MissingToken,
 )
 
 
-from sanic_praetorian.utilities import (
+from sanic_beskar.utilities import (
     current_guard,
     add_token_data_to_app_context,
     app_context_has_token_data,
@@ -82,7 +82,7 @@ def roles_required(*required_rolenames):
     def decorator(method):
         @functools.wraps(method)
         async def wrapper(request, *args, **kwargs):
-            PraetorianError.require_condition(
+            BeskarError.require_condition(
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",
             )
@@ -113,7 +113,7 @@ def roles_accepted(*accepted_rolenames):
     def decorator(method):
         @functools.wraps(method)
         async def wrapper(request, *args, **kwargs):
-            PraetorianError.require_condition(
+            BeskarError.require_condition(
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",
             )

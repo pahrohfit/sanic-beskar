@@ -19,9 +19,9 @@ from sanic_mailing import Message
 from passlib.context import CryptContext
 from passlib.totp import TOTP
 
-from sanic_praetorian.utilities import duration_from_string, is_valid_json
+from sanic_beskar.utilities import duration_from_string, is_valid_json
 
-from sanic_praetorian.exceptions import (
+from sanic_beskar.exceptions import (
     AuthenticationError,
     BlacklistedError,
     ClaimCollisionError,
@@ -39,11 +39,11 @@ from sanic_praetorian.exceptions import (
     MisusedRegistrationToken,
     MisusedResetToken,
     ConfigurationError,
-    PraetorianError,
+    BeskarError,
     TOTPRequired,
 )
 
-from sanic_praetorian.constants import (
+from sanic_beskar.constants import (
     DEFAULT_TOKEN_ACCESS_LIFESPAN,
     DEFAULT_JWT_ALGORITHM,
     DEFAULT_JWT_ALLOWED_ALGORITHMS,
@@ -78,9 +78,9 @@ from sanic_praetorian.constants import (
 )
 
 
-class Praetorian():
+class Beskar():
     """
-    Comprises the implementation for the :py:mod:`sanic-praetorian`
+    Comprises the implementation for the :py:mod:`sanic-beskar`
     :py:mod:`sanic` extension.  Provides a tool that allows password
     authentication and token provision for applications and designated
     endpoints
@@ -125,7 +125,7 @@ class Praetorian():
         refresh_token_hook: Callable = None,
     ):
         """
-        Initializes the :py:class:`Praetorian` extension
+        Initializes the :py:class:`Beskar` extension
 
         :param app:                    The :py:mod:`Sanic` app to bind this
                                         extension to
@@ -155,45 +155,45 @@ class Praetorian():
         self.app = app
         app.register_middleware(self.open_session, 'request')
 
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             app.config.get("SECRET_KEY") is not None,
             "There must be a SECRET_KEY app config setting set",
         )
 
         self.roles_disabled = app.config.get(
-            "PRAETORIAN_ROLES_DISABLED",
+            "BESKAR_ROLES_DISABLED",
             DEFAULT_ROLES_DISABLED,
         )
 
         self.hash_autoupdate = app.config.get(
-            "PRAETORIAN_HASH_AUTOUPDATE",
+            "BESKAR_HASH_AUTOUPDATE",
             DEFAULT_HASH_AUTOUPDATE,
         )
 
         self.hash_autotest = app.config.get(
-            "PRAETORIAN_HASH_AUTOTEST",
+            "BESKAR_HASH_AUTOTEST",
             DEFAULT_HASH_AUTOTEST,
         )
 
         self.pwd_ctx = CryptContext(
             schemes=app.config.get(
-                "PRAETORIAN_HASH_ALLOWED_SCHEMES",
+                "BESKAR_HASH_ALLOWED_SCHEMES",
                 DEFAULT_HASH_ALLOWED_SCHEMES,
             ),
             default=app.config.get(
-                "PRAETORIAN_HASH_SCHEME",
+                "BESKAR_HASH_SCHEME",
                 DEFAULT_HASH_SCHEME,
             ),
             deprecated=app.config.get(
-                "PRAETORIAN_HASH_DEPRECATED_SCHEMES",
+                "BESKAR_HASH_DEPRECATED_SCHEMES",
                 DEFAULT_HASH_DEPRECATED_SCHEMES,
             ),
         )
 
         valid_schemes = self.pwd_ctx.schemes()
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             self.hash_scheme in valid_schemes or self.hash_scheme is None,
-            f'If {"PRAETORIAN_HASH_SCHEME"} is set, it must be one of the following schemes: {valid_schemes}'
+            f'If {"BESKAR_HASH_SCHEME"} is set, it must be one of the following schemes: {valid_schemes}'
         )
 
         if self.pwd_ctx.default_scheme().startswith('pbkdf2_'):
@@ -256,57 +256,57 @@ class Praetorian():
         )
 
         self.confirmation_template = app.config.get(
-            "PRAETORIAN_CONFIRMATION_TEMPLATE",
+            "BESKAR_CONFIRMATION_TEMPLATE",
             DEFAULT_CONFIRMATION_TEMPLATE,
         )
         self.confirmation_uri = app.config.get(
-            "PRAETORIAN_CONFIRMATION_URI",
+            "BESKAR_CONFIRMATION_URI",
         )
         self.confirmation_sender = app.config.get(
-            "PRAETORIAN_CONFIRMATION_SENDER",
+            "BESKAR_CONFIRMATION_SENDER",
         )
         self.confirmation_subject = app.config.get(
-            "PRAETORIAN_CONFIRMATION_SUBJECT",
+            "BESKAR_CONFIRMATION_SUBJECT",
             DEFAULT_CONFIRMATION_SUBJECT,
         )
 
         self.reset_template = app.config.get(
-            "PRAETORIAN_RESET_TEMPLATE",
+            "BESKAR_RESET_TEMPLATE",
             DEFAULT_RESET_TEMPLATE,
         )
         self.reset_uri = app.config.get(
-            "PRAETORIAN_RESET_URI",
+            "BESKAR_RESET_URI",
         )
         self.reset_sender = app.config.get(
-            "PRAETORIAN_RESET_SENDER",
+            "BESKAR_RESET_SENDER",
         )
         self.reset_subject = app.config.get(
-            "PRAETORIAN_RESET_SUBJECT",
+            "BESKAR_RESET_SUBJECT",
             DEFAULT_RESET_SUBJECT,
         )
         self.totp_enforce = app.config.get(
-            "PRAETORIAN_TOTP_ENFORCE",
+            "BESKAR_TOTP_ENFORCE",
             DEFAULT_TOTP_ENFORCE,
         )
         self.totp_secrets_type = app.config.get(
-            "PRAETORIAN_TOTP_SECRETS_TYPE",
+            "BESKAR_TOTP_SECRETS_TYPE",
             DEFAULT_TOTP_SECRETS_TYPE,
         )
         self.totp_secrets_data = app.config.get(
-            "PRAETORIAN_TOTP_SECRETS_DATA",
+            "BESKAR_TOTP_SECRETS_DATA",
             DEFAULT_TOTP_SECRETS_DATA,
         )
         self.token_provider = app.config.get(
-            "PRAETORIAN_TOKEN_PROVIDER",
+            "BESKAR_TOKEN_PROVIDER",
             DEFAULT_TOKEN_PROVIDER,
         )
         self.token_provider = self.token_provider.lower()
         self.paseto_version = app.config.get(
-            "PRAETORIAN_PASETO_VERSION",
+            "BESKAR_PASETO_VERSION",
             DEFAULT_PASETO_VERSION,
         )
         self.paseto_key = app.config.get(
-            "PRAETORIAN_PASETO_KEY",
+            "BESKAR_PASETO_KEY",
             self.encode_key,
         )
 
@@ -349,24 +349,24 @@ class Praetorian():
             """
             If we are saying we are using a TOTP secret protection type,
             we need to ensure the type is something supported (file, string, wallet),
-            and that the PRAETORIAN_TOTP_SECRETS_DATA is populated.
+            and that the BESKAR_TOTP_SECRETS_DATA is populated.
             """
             self.totp_secrets_type = self.totp_secrets_type.lower()
 
             ConfigurationError.require_condition(
                 self.totp_secrets_data,
-                'If "PRAETORIAN_TOTP_SECRETS_TYPE" is set, you must also'
-                'provide a valid value for "PRAETORIAN_TOTP_SECRETS_DATA"'
+                'If "BESKAR_TOTP_SECRETS_TYPE" is set, you must also'
+                'provide a valid value for "BESKAR_TOTP_SECRETS_DATA"'
             )
             if self.totp_secrets_type == 'file':
-                self.totp_ctx = TOTP.using(secrets_path=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+                self.totp_ctx = TOTP.using(secrets_path=app.config.get("BESKAR_TOTP_SECRETS_DATA"))
             elif self.totp_secrets_type == 'string':
-                self.totp_ctx = TOTP.using(secrets=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+                self.totp_ctx = TOTP.using(secrets=app.config.get("BESKAR_TOTP_SECRETS_DATA"))
             elif self.totp_secrets_type == 'wallet':
-                self.totp_ctx = TOTP.using(wallet=app.config.get("PRAETORIAN_TOTP_SECRETS_DATA"))
+                self.totp_ctx = TOTP.using(wallet=app.config.get("BESKAR_TOTP_SECRETS_DATA"))
             else:
                 raise ConfigurationError(
-                    f'If {"PRAETORIAN_TOTP_SECRETS_TYPE"} is set, it must be one'
+                    f'If {"BESKAR_TOTP_SECRETS_TYPE"} is set, it must be one'
                     f'of the following schemes: {["file", "string", "wallet"]}'
                 )
         else:
@@ -376,7 +376,7 @@ class Praetorian():
 
         if not hasattr(app.ctx, "extensions"):
             app.ctx.extensions = {}
-        app.ctx.extensions["praetorian"] = self
+        app.ctx.extensions["beskar"] = self
 
         return app
 
@@ -395,14 +395,14 @@ class Praetorian():
         - :py:attribute:`rolenames` attribute. Provides list of roles attached to instance
         - :py:attribute:`password` attribute. Provides hashed password for instance
 
-        :param user_class: `User` class to use for Praetorian
+        :param user_class: `User` class to use for Beskar
         :type user_class: class
 
         :returns: Validated `User` class
         :rtype: class
-        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` on missing requirements
+        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` on missing requirements
         """
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             getattr(user_class, "lookup", None) is not None,
             textwrap.dedent(
                 """
@@ -411,7 +411,7 @@ class Praetorian():
                 """
             ),
         )
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             getattr(user_class, "identify", None) is not None,
             textwrap.dedent(
                 """
@@ -430,7 +430,7 @@ class Praetorian():
                 "user cannot be instantiated without arguments"
             )
         if dummy_user:
-            PraetorianError.require_condition(
+            BeskarError.require_condition(
                 hasattr(dummy_user, "identity"),
                 textwrap.dedent(
                     """
@@ -439,7 +439,7 @@ class Praetorian():
                     """
                 ),
             )
-            PraetorianError.require_condition(
+            BeskarError.require_condition(
                 self.roles_disabled or hasattr(dummy_user, "rolenames"),
                 textwrap.dedent(
                     """
@@ -448,7 +448,7 @@ class Praetorian():
                     """
                 ),
             )
-            PraetorianError.require_condition(
+            BeskarError.require_condition(
                 hasattr(dummy_user, "password"),
                 textwrap.dedent(
                     """
@@ -475,12 +475,12 @@ class Praetorian():
 
         :returns: New :py:mod:`passlib` TOTP secret object
         """
-        if not self.app.config.get("PRAETORIAN_TOTP_SECRETS_TYPE"):
+        if not self.app.config.get("BESKAR_TOTP_SECRETS_TYPE"):
             logger.warning(
                 textwrap.dedent(
                     """
-                    Sanic_Praetorian is attempting to generate a new TOTP
-                    for a user, but you haven't configured a PRAETORIAN_TOTP_SECRETS_TYPE
+                    Sanic_Beskar is attempting to generate a new TOTP
+                    for a user, but you haven't configured a BESKAR_TOTP_SECRETS_TYPE
                     value, which means you aren't properly encrypting these stored
                     TOTP secrets. *tsk*tsk*
                     """
@@ -494,9 +494,9 @@ class Praetorian():
         Verifies that a plaintext password matches the hashed version of that
         password using the stored :py:mod:`passlib` password context
         """
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             self.totp_ctx is not None,
-            "Praetorian must be initialized before this method is available",
+            "Beskar must be initialized before this method is available",
         )
         totp_factory = self.totp_ctx.new()
 
@@ -536,9 +536,9 @@ class Praetorian():
         it accepts a :py:class:`User` object instead of :py:data:`username`
         and skips the :py:func:`lookup` call.
         """
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             self.user_class is not None,
-            "Praetorian must be initialized before this method is available",
+            "Beskar must be initialized before this method is available",
         )
 
         """
@@ -574,10 +574,10 @@ class Praetorian():
         Verifies that a password matches the stored password for that username.
         If verification passes, the matching user instance is returned
 
-        .. note:: If :py:data:`PRAETORIAN_TOTP_ENFORCE` is set to `True`
+        .. note:: If :py:data:`BESKAR_TOTP_ENFORCE` is set to `True`
                   (default), and a user has a TOTP configuration, this call
                   must include the `token` value, or it will raise a
-                  :py:exc:`~sanic_praetorian.exceptions.TOTPRequired` exception
+                  :py:exc:`~sanic_beskar.exceptions.TOTPRequired` exception
                   and not return the user.
 
                   This means either you will need to call it again, providing
@@ -588,9 +588,9 @@ class Praetorian():
 
                   **Choose your own adventure.**
         """
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             self.user_class is not None,
-            "Praetorian must be initialized before this method is available",
+            "Beskar must be initialized before this method is available",
         )
         user = await self.user_class.lookup(username=username)
         AuthenticationError.require_condition(
@@ -619,12 +619,12 @@ class Praetorian():
                                    f"TOTP still *required* for user '{user.username}'.")
 
         """
-        If we are set to PRAETORIAN_HASH_AUTOUPDATE then check our hash
+        If we are set to BESKAR_HASH_AUTOUPDATE then check our hash
             and if needed, update the user.  The developer is responsible
             for using the returned user object and updating the data
             storage endpoint.
 
-        Else, if we are set to PRAETORIAN_HASH_AUTOTEST then check out hash
+        Else, if we are set to BESKAR_HASH_AUTOTEST then check out hash
             and return exception if our hash is using the wrong scheme,
             but don't modify the user.
         """
@@ -640,9 +640,9 @@ class Praetorian():
         Verifies that a plaintext password matches the hashed version of that
         password using the stored :py:mod:`passlib` password context
         """
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             self.pwd_ctx is not None,
-            "Praetorian must be initialized before this method is available",
+            "Beskar must be initialized before this method is available",
         )
         return self.pwd_ctx.verify(raw_password, hashed_password)
 
@@ -653,7 +653,7 @@ class Praetorian():
         checks if the user has a validation method. If the method does not
         exist, the check passes. If the method exists, it is called. If the
         result of the call is not truthy, a
-        :py:exc:`~sanic_praetorian.exceptions.InvalidUserError` is raised.
+        :py:exc:`~sanic_beskar.exceptions.InvalidUserError` is raised.
         """
         MissingUserError.require_condition(
             user is not None,
@@ -1288,8 +1288,8 @@ class Praetorian():
         :param request: Sanic ``request`` object
         :type request: :py:func:`~sanic.request`
 
-        :raises: :py:exc:`~sanic_praetorian.exceptions.MissingToken` if token
-                  is not found in any :py:data:`~sanic_praetorian.constants.TOKEN_PLACES`
+        :raises: :py:exc:`~sanic_beskar.exceptions.MissingToken` if token
+                  is not found in any :py:data:`~sanic_beskar.constants.TOKEN_PLACES`
 
         :returns: function to read the token based upon where the token was found
         :rtype: function
@@ -1312,7 +1312,7 @@ class Praetorian():
                 logger.warning(
                     textwrap.dedent(
                         f"""
-                        Sanic_Praetorian hasn't implemented reading tokens
+                        Sanic_Beskar hasn't implemented reading tokens
                         from location {place.lower()}.
                         Please reconfigure TOKEN_PLACES.
                         Values accepted in TOKEN_PLACES are:
@@ -1399,7 +1399,7 @@ class Praetorian():
         :type template: :py:data:`filehandle`
         :param confirmation_sender:      The sender that shoudl be attached
                                           to the confirmation email. Overrides
-                                          the :py:data:`PRAETORIAN_CONFIRMATION_SENDER`
+                                          the :py:data:`BESKAR_CONFIRMATION_SENDER`
                                           config setting
         :type confirmation_sender: str
         :param confirmation_uri:         The uri that should be visited to
@@ -1408,12 +1408,12 @@ class Praetorian():
                                           external service that calls a
                                           'finalize' method in the api to
                                           complete registration. Will override
-                                          the :py:data:`PRAETORIAN_CONFIRMATION_URI`
+                                          the :py:data:`BESKAR_CONFIRMATION_URI`
                                           config setting
         :type confirmation_uri: str
         :param subject:                  The registration email subject.
                                           Will override the
-                                          :py:data:`PRAETORIAN_CONFIRMATION_SUBJECT`
+                                          :py:data:`BESKAR_CONFIRMATION_SUBJECT`
                                           config setting.
         :type subject: str
         :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
@@ -1477,7 +1477,7 @@ class Praetorian():
         :type template: :py:data:`filehandle`
         :param confirmation_sender:      The sender that shoudl be attached
                                           to the reset email. Overrides
-                                          the :py:data:`PRAETORIAN_RESET_SENDER`
+                                          the :py:data:`BESKAR_RESET_SENDER`
                                           config setting
         :type confirmation_sender: str
         :param confirmation_uri:         The uri that should be visited to
@@ -1486,12 +1486,12 @@ class Praetorian():
                                           external service that calls the
                                           'validate_reset_token()' method in
                                           the api to complete reset. Will
-                                          override the :py:data:`PRAETORIAN_RESET_URI`
+                                          override the :py:data:`BESKAR_RESET_URI`
                                           config setting
         :type confirmation_uri: str
         :param subject:                  The reset email subject.
                                           Will override the
-                                          :py:data:`PRAETORIAN_RESET_SUBJECT`
+                                          :py:data:`BESKAR_RESET_SUBJECT`
                                           config setting.
         :type subject: str
         :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
@@ -1576,7 +1576,7 @@ class Praetorian():
         :param custom_token: The token to be carried as the email's payload
         :type custom_token: str
 
-        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` if missing
                    required parameters
         """
         notification = {
@@ -1590,17 +1590,17 @@ class Praetorian():
             "action_uri": action_uri,
         }
 
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             self.app.ctx.mail,
             "Your app must have a mail extension enabled to register by email",
         )
 
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             action_sender,
             "A sender is required to send confirmation email",
         )
 
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             custom_token,
             "A custom_token is required to send notification email",
         )
@@ -1609,7 +1609,7 @@ class Praetorian():
             with open(self.confirmation_template) as fh:
                 template = fh.read()
 
-        with PraetorianError.handle_errors("fail sending email"):
+        with BeskarError.handle_errors("fail sending email"):
             jinja_tmpl = jinja2.Template(template)
             notification["message"] = jinja_tmpl.render(notification).strip()
 
@@ -1638,19 +1638,19 @@ class Praetorian():
         :param token: Registration token to validate
         :type token: str
 
-        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` if missing
                    required parameters
         :returns: :py:class:`User` object of looked up user after token validation
         :rtype: :py:class:`User`
         """
         data = await self.extract_token(token, access_type=AccessType.register)
         user_id = data.get("id")
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             user_id is not None,
             "Could not fetch an id from the registration token",
         )
         user = await self.user_class.identify(user_id)
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             user is not None,
             "Could not identify the user from the registration token",
         )
@@ -1665,19 +1665,19 @@ class Praetorian():
         :param token: Reset token to validate
         :type token: str
 
-        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if missing
+        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` if missing
                    required parameters
         :returns: :py:class:`User` object of looked up user after token validation
         :rtype: :py:class:`User`
         """
         data = await self.extract_token(token, access_type=AccessType.reset)
         user_id = data.get("id")
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             user_id is not None,
             "Could not fetch an id from the reset token",
         )
         user = await self.user_class.identify(user_id)
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             user is not None,
             "Could not identify the user from the reset token",
         )
@@ -1690,14 +1690,14 @@ class Praetorian():
         :param raw_password: cleartext password for the user
         :type raw_password: str
 
-        :raises: :py:exc:`~sanic_praetorian.exceptions.PraetorianError` if
+        :raises: :py:exc:`~sanic_beskareptions.BeskarError` if
                     no password is provided
         :returns: Properly hashed ciphertext of supplied :py:data:`raw_password`
         :rtype: str
         """
-        PraetorianError.require_condition(
+        BeskarError.require_condition(
             self.pwd_ctx is not None,
-            "Praetorian must be initialized before this method is available",
+            "Beskar must be initialized before this method is available",
         )
         """
         `scheme` is now set with self.pwd_ctx.update(default=scheme) due
@@ -1709,13 +1709,13 @@ class Praetorian():
     async def verify_and_update(self, user: object = None, password: str = None):
         """
         Validate a password hash contained in the user object is
-        hashed with the defined hash scheme (:py:data:`PRAETORIAN_HASH_SCHEME`).
+        hashed with the defined hash scheme (:py:data:`BESKAR_HASH_SCHEME`).
 
-        If not, raise an Exception of :py:exc:`~sanic_praetorian.exceptions.LegacySchema`,
+        If not, raise an Exception of :py:exc:`~sanic_beskar.exceptions.LegacySchema`,
         unless the :py:data:`password` arguement is provided, in which case an updated
         :py:class:`User` will be returned, and must be saved by the calling app. The
         updated :py:class:`User` will contain the users current password updated to the
-        currently desired hash scheme (:py:exc:`~PRAETORIAN_HASH_SCHEME`).
+        currently desired hash scheme (:py:exc:`~BESKAR_HASH_SCHEME`).
 
         :param user:     The user object to tie claim to
                               (username, id, email, etc). *MUST*
@@ -1725,11 +1725,11 @@ class Praetorian():
         :param password: The user's provide password from login.
                               If present, this is used to validate
                               and then attempt to update with the
-                              new :py:data:`PRAETORIAN_HASH_SCHEME` scheme.
+                              new :py:data:`BESKAR_HASH_SCHEME` scheme.
         :type password: str
 
         :returns: Authenticated :py:class:`User`
-        :raises: :py:exc:`~sanic_praetorian.exceptions.AuthenticationError` upon authentication failure
+        :raises: :py:exc:`~sanic_beskar.exceptions.AuthenticationError` upon authentication failure
         """
         if self.pwd_ctx.needs_update(user.password):
             if password:

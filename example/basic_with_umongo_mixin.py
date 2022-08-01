@@ -2,8 +2,8 @@ from sanic import Sanic, json
 
 from bson.objectid import ObjectId
 
-import sanic_praetorian
-from sanic_praetorian import Praetorian, UmongoUserMixin
+import sanic_beskar
+from sanic_beskar import Beskar, UmongoUserMixin
 from sanic_mailing import Mail
 
 from umongo import Document, fields, validate
@@ -13,7 +13,7 @@ from umongo.frameworks.motor_asyncio import MotorAsyncIOInstance
 from mongomock_motor import AsyncMongoMockClient
 
 
-_guard = Praetorian()
+_guard = Beskar()
 _mail = Mail()
 
 
@@ -29,7 +29,7 @@ def create_app(db_path=None):
     # has already been a request before a setup function
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
-    # sanic-praetorian config
+    # sanic-beskar config
     sanic_app.config.SECRET_KEY = "top secret"
     sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"hours": 24}
     sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"days": 30}
@@ -47,7 +47,7 @@ def create_app(db_path=None):
     instance = MotorAsyncIOInstance(db)
     instance.set_db(db)
 
-    # A generic user model that might be used by an app powered by sanic-praetorian
+    # A generic user model that might be used by an app powered by sanic-beskar
     @instance.register
     class User(UmongoUserMixin, Document):
         """
@@ -75,25 +75,25 @@ def create_app(db_path=None):
         await User.ensure_indexes()
 
         await User(username="the_dude",
-                   email="the_dude@praetorian.test.io",
+                   email="the_dude@beskart.io",
                    password=_guard.hash_password("abides"),
         ).commit()
 
         await User(username="Walter",
-                   email="walter@praetorian.test.io",
+                   email="walter@beskar.test.io",
                    password=_guard.hash_password("calmerthanyouare"),
                    roles="admin",
         ).commit()
 
         await User(username="Donnie",
-                   email="donnie@praetorian.test.io",
+                   email="donnie@beskar.test.io",
                    password=_guard.hash_password("iamthewalrus"),
                    roles="operator",
         ).commit()
 
         await User(username="Maude",
                    password=_guard.hash_password("andthorough"),
-                   email="maude@praetorian.test.io",
+                   email="maude@beskar.test.io",
                    roles="operator,admin",
         ).commit()
 
@@ -117,7 +117,7 @@ def create_app(db_path=None):
         return json(ret, status=200)
 
     @sanic_app.route("/protected")
-    @sanic_praetorian.auth_required
+    @sanic_beskar.auth_required
     async def protected(request):
         """
         A protected endpoint. The auth_required decorator will require a header
@@ -126,11 +126,11 @@ def create_app(db_path=None):
            $ curl localhost:8000/protected -X GET \
              -H "Authorization: Bearer <your_token>"
         """
-        user = await sanic_praetorian.current_user()
+        user = await sanic_beskar.current_user()
         return json({"message": f"protected endpoint (allowed user {user.username})"})
 
     @sanic_app.route("/protected_admin_required")
-    @sanic_praetorian.roles_required("admin")
+    @sanic_beskar.roles_required("admin")
     async def protected_admin_required(request):
         """
         A protected endpoint that requires a role. The roles_required decorator
@@ -139,11 +139,11 @@ def create_app(db_path=None):
            $ curl localhost:8000/protected_admin_required -X GET \
               -H "Authorization: Bearer <your_token>"
         """
-        user = await sanic_praetorian.current_user()
+        user = await sanic_beskar.current_user()
         return json({"message": f"protected_admin_required endpoint (allowed user {user.username})"})
 
     @sanic_app.route("/protected_operator_accepted")
-    @sanic_praetorian.roles_accepted("operator", "admin")
+    @sanic_beskar.roles_accepted("operator", "admin")
     async def protected_operator_accepted(request):
         """
         A protected endpoint that accepts any of the listed roles. The
@@ -153,7 +153,7 @@ def create_app(db_path=None):
            $ curl localhost/protected_operator_accepted -X GET \
              -H "Authorization: Bearer <your_token>"
         """
-        user = await sanic_praetorian.current_user()
+        user = await sanic_beskar.current_user()
         return json({"message": f"protected_operator_accepted endpoint (allowed usr {user.username}"})
 
     return sanic_app

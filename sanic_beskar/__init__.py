@@ -1,12 +1,12 @@
-from sanic_praetorian.base import Praetorian
-from sanic_praetorian.exceptions import PraetorianError
-from sanic_praetorian.decorators import (
+from sanic_beskar.base import Beskar
+from sanic_beskar.exceptions import BeskarError
+from sanic_beskar.decorators import (
     auth_required,
     auth_accepted,
     roles_required,
     roles_accepted,
 )
-from sanic_praetorian.utilities import (
+from sanic_beskar.utilities import (
     current_user,
     current_user_id,
     current_rolenames,
@@ -14,13 +14,13 @@ from sanic_praetorian.utilities import (
     generate_totp_qr,
 )
 
-from sanic_praetorian.orm.tortoise_user_mixins import TortoiseUserMixin
-from sanic_praetorian.orm.umongo_user_mixins import UmongoUserMixin
+from sanic_beskar.orm.tortoise_user_mixins import TortoiseUserMixin
+from sanic_beskar.orm.umongo_user_mixins import UmongoUserMixin
 
 
 __all__ = [
-    "Praetorian",
-    "PraetorianError",
+    "Beskar",
+    "BeskarError",
     "auth_required",
     "auth_accepted",
     "roles_required",

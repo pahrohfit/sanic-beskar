@@ -16,8 +16,8 @@ from passlib.exc import (
 
 from sanic.log import logger
 
-from sanic_praetorian import Praetorian
-from sanic_praetorian.exceptions import (
+from sanic_beskar import Beskar
+from sanic_beskar.exceptions import (
     AuthenticationError,
     BlacklistedError,
     ClaimCollisionError,
@@ -29,11 +29,11 @@ from sanic_praetorian.exceptions import (
     MissingUserError,
     MisusedRegistrationToken,
     MisusedResetToken,
-    PraetorianError,
+    BeskarError,
     LegacyScheme,
     TOTPRequired,
 )
-from sanic_praetorian.constants import (
+from sanic_beskar.constants import (
     AccessType,
     DEFAULT_TOKEN_ACCESS_LIFESPAN,
     DEFAULT_TOKEN_REFRESH_LIFESPAN,
@@ -46,10 +46,10 @@ from sanic_praetorian.constants import (
 )
 
 
-class TestPraetorian:
+class TestBeskar:
     async def test_hash_password(self, default_guard):
         """
-        This test verifies that Praetorian hashes passwords using the scheme
+        This test verifies that Beskar hashes passwords using the scheme
         specified by the HASH_SCHEME setting. If no scheme is supplied, the
         test verifies that the default scheme is used. Otherwise, the test
         verifies that the hashed password matches the supplied scheme.
@@ -66,8 +66,8 @@ class TestPraetorian:
         assert default_guard._verify_password("some password", secret)
         assert not default_guard._verify_password("not right", secret)
 
-        app.config["PRAETORIAN_HASH_SCHEME"] = "pbkdf2_sha512"
-        specified_guard = Praetorian(app, user_class)
+        app.config["BESKAR_HASH_SCHEME"] = "pbkdf2_sha512"
+        specified_guard = Beskar(app, user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             specified_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
@@ -113,7 +113,7 @@ class TestPraetorian:
             def identify(cls, id):
                 pass
 
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             default_guard._validate_user_class(NoLookupUser)
         assert "must have a lookup class method" in err_info.value.message
 
@@ -126,7 +126,7 @@ class TestPraetorian:
             def lookup(cls, username):
                 pass
 
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             default_guard._validate_user_class(NoIdentifyUser)
         assert "must have an identify class method" in err_info.value.message
 
@@ -146,7 +146,7 @@ class TestPraetorian:
             def lookup(cls, username):
                 pass
 
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             default_guard._validate_user_class(NoIdentityUser)
         assert "must have an identity attribute" in err_info.value.message
 
@@ -166,7 +166,7 @@ class TestPraetorian:
             def lookup(cls, username):
                 pass
 
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             default_guard._validate_user_class(NoRolenamesUser)
         assert "must have a rolenames attribute" in err_info.value.message
 
@@ -187,8 +187,8 @@ class TestPraetorian:
             def lookup(cls, username):
                 pass
 
-        app.config["PRAETORIAN_ROLES_DISABLED"] = True
-        guard = Praetorian(app, user_class)
+        app.config["BESKAR_ROLES_DISABLED"] = True
+        guard = Beskar(app, user_class)
         assert guard._validate_user_class(NoRolenamesUser)
 
     def test__validate_user_class__fails_if_class_has_no_password_attribute(
@@ -207,7 +207,7 @@ class TestPraetorian:
             def lookup(cls, username):
                 pass
 
-        with pytest.raises(PraetorianError) as err_info:
+        with pytest.raises(BeskarError) as err_info:
             default_guard._validate_user_class(NoPasswordUser)
         assert "must have a password attribute" in err_info.value.message
 
@@ -217,7 +217,7 @@ class TestPraetorian:
     ):
         class EmptyInitBlowsUpUser:
             def __init__(self, *args):
-                PraetorianError.require_condition(len(args) > 0, "BOOM")
+                BeskarError.require_condition(len(args) > 0, "BOOM")
 
             @classmethod
             def identify(cls, id):
@@ -234,7 +234,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = dict()
         with pytest.raises(MissingClaimError) as err_info:
             guard._validate_token_data(data, AccessType.access)
@@ -245,7 +245,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class, is_blacklisted=(lambda jti: True))
+        guard = Beskar(app, user_class, is_blacklisted=(lambda jti: True))
         data = dict(jti="jti")
         with pytest.raises(BlacklistedError):
             guard._validate_token_data(data, AccessType.access)
@@ -255,7 +255,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = dict(jti="jti")
         with pytest.raises(MissingClaimError) as err_info:
             guard._validate_token_data(data, AccessType.access)
@@ -266,7 +266,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = dict(jti="jti", id=1)
         with pytest.raises(MissingClaimError) as err_info:
             guard._validate_token_data(data, AccessType.access)
@@ -277,7 +277,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -294,7 +294,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -312,7 +312,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -330,7 +330,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -348,7 +348,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -367,7 +367,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -386,7 +386,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -405,7 +405,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -422,7 +422,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -439,7 +439,7 @@ class TestPraetorian:
         app,
         user_class,
     ):
-        guard = Praetorian(app, user_class)
+        guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
             "id": 1,
@@ -529,7 +529,7 @@ class TestPraetorian:
             assert token_data["id"] == the_dude.id
             assert {*token_data["rls"]} == {*['admin', 'operator']}
 
-        validating_guard = Praetorian(app, validating_user_class)
+        validating_guard = Beskar(app, validating_user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             validating_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
@@ -690,7 +690,7 @@ class TestPraetorian:
             minutes=1
         )
 
-        validating_guard = Praetorian(app, validating_user_class)
+        validating_guard = Beskar(app, validating_user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             validating_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)
@@ -906,8 +906,8 @@ class TestPraetorian:
         template_file.write(template)
 
         app.config["TESTING"] = True
-        app.config["PRAETORIAN_EMAIL_TEMPLATE"] = str(template_file)
-        app.config["PRAETORIAN_RESET_ENDPOINT"] = "unprotected"
+        app.config["BESKAR_EMAIL_TEMPLATE"] = str(template_file)
+        app.config["BESKAR_RESET_ENDPOINT"] = "unprotected"
 
         # create our default test user
         the_dude = await mock_users(username='the_dude', password='blah')
@@ -969,8 +969,8 @@ class TestPraetorian:
         template_file.write(template)
 
         app.config["TESTING"] = True
-        app.config["PRAETORIAN_EMAIL_TEMPLATE"] = str(template_file)
-        app.config["PRAETORIAN_CONFIRMATION_ENDPOINT"] = "unprotected"
+        app.config["BESKAR_EMAIL_TEMPLATE"] = str(template_file)
+        app.config["BESKAR_CONFIRMATION_ENDPOINT"] = "unprotected"
 
         # create our default test user
         the_dude = await mock_users(username='the_dude', password='Abides')
@@ -1040,7 +1040,7 @@ class TestPraetorian:
 
     async def test_validate_and_update(self, app, user_class, default_guard, mock_users):
         """
-        This test verifies that Praetorian hashes passwords using the scheme
+        This test verifies that Beskar hashes passwords using the scheme
         specified by the HASH_SCHEME setting. If no scheme is supplied, the
         test verifies that the default scheme is used. Otherwise, the test
         verifies that the hashed password matches the supplied scheme.
@@ -1051,31 +1051,31 @@ class TestPraetorian:
         the_dude = await mock_users(username='the_dude', password=pbkdf2_sha512_password)
 
         """
-        Test the current password is hashed with PRAETORIAN_HASH_SCHEME
+        Test the current password is hashed with BESKAR_HASH_SCHEME
         """
         assert await default_guard.verify_and_update(user=the_dude)
 
         """
         Test a password hashed with something other than
-            PRAETORIAN_HASH_ALLOWED_SCHEME triggers an Exception.
+            BESKAR_HASH_ALLOWED_SCHEME triggers an Exception.
         """
-        app.config["PRAETORIAN_HASH_SCHEME"] = "bcrypt"
-        default_guard = Praetorian(app, user_class)
+        app.config["BESKAR_HASH_SCHEME"] = "bcrypt"
+        default_guard = Beskar(app, user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
         bcrypt_password = default_guard.hash_password("bcrypt_password")
         the_dude.password = bcrypt_password
 
-        del app.config["PRAETORIAN_HASH_SCHEME"]
-        app.config["PRAETORIAN_HASH_DEPRECATED_SCHEMES"] = ["bcrypt"]
-        default_guard = Praetorian(app, user_class)
+        del app.config["BESKAR_HASH_SCHEME"]
+        app.config["BESKAR_HASH_DEPRECATED_SCHEMES"] = ["bcrypt"]
+        default_guard = Beskar(app, user_class)
         with pytest.raises(LegacyScheme):
             await default_guard.verify_and_update(the_dude)
 
         """
         Test a password hashed with something other than
-            PRAETORIAN_HASH_SCHEME, and supplied good password
+            BESKAR_HASH_SCHEME, and supplied good password
             gets the user entry's password updated and saved.
         """
         the_dude_old_password = the_dude.password
@@ -1086,7 +1086,7 @@ class TestPraetorian:
 
         """
         Test a password hashed with something other than
-            PRAETORIAN_HASH_SCHEME, and supplied bad password
+            BESKAR_HASH_SCHEME, and supplied bad password
             gets an Exception raised.
         """
         the_dude.password = bcrypt_password
@@ -1099,7 +1099,7 @@ class TestPraetorian:
     async def test_authenticate_validate_and_update(self, app, user_class, mock_users, default_guard):
         """
         This test verifies the authenticate() function, when altered by
-        either 'PRAETORIAN_HASH_AUTOUPDATE' or 'PRAETORIAN_HASH_AUTOTEST'
+        either 'BESKAR_HASH_AUTOUPDATE' or 'BESKAR_HASH_AUTOTEST'
         performs the authentication and the required subaction.
         """
 
@@ -1123,8 +1123,8 @@ class TestPraetorian:
         Test the updated model with a bad hash scheme and AUTOTEST enabled.
         Should raise and exception
         """
-        app.config["PRAETORIAN_HASH_SCHEME"] = "bcrypt"
-        default_guard = Praetorian(app, user_class)
+        app.config["BESKAR_HASH_SCHEME"] = "bcrypt"
+        default_guard = Beskar(app, user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
@@ -1132,10 +1132,10 @@ class TestPraetorian:
         the_dude.password = bcrypt_password
         await the_dude.save(update_fields=["password"])
 
-        del app.config["PRAETORIAN_HASH_SCHEME"]
-        app.config["PRAETORIAN_HASH_DEPRECATED_SCHEMES"] = ["bcrypt"]
-        app.config["PRAETORIAN_HASH_AUTOTEST"] = True
-        default_guard = Praetorian(app, user_class)
+        del app.config["BESKAR_HASH_SCHEME"]
+        app.config["BESKAR_HASH_DEPRECATED_SCHEMES"] = ["bcrypt"]
+        app.config["BESKAR_HASH_AUTOTEST"] = True
+        default_guard = Beskar(app, user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
@@ -1147,8 +1147,8 @@ class TestPraetorian:
         Should return an updated user object we need to save ourselves.
         """
         the_dude_old_password = the_dude.password
-        app.config["PRAETORIAN_HASH_AUTOUPDATE"] = True
-        default_guard = Praetorian(app, user_class)
+        app.config["BESKAR_HASH_AUTOUPDATE"] = True
+        default_guard = Beskar(app, user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             default_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
@@ -1166,7 +1166,7 @@ class TestPraetorian:
         with TOTP two factor authentication.
         """
 
-        totp_guard = Praetorian(app, totp_user_class)
+        totp_guard = Beskar(app, totp_user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             totp_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
@@ -1242,13 +1242,13 @@ class TestPraetorian:
         with pytest.raises(MalformedTokenError):
             await totp_guard.authenticate('the_dude', 'abides', 8008135)
 
-        app.config.PRAETORIAN_TOTP_SECRETS_TYPE = 'failwhale'
-        with pytest.raises(PraetorianError):
-            Praetorian(app, totp_user_class)
+        app.config.BESKAR_TOTP_SECRETS_TYPE = 'failwhale'
+        with pytest.raises(BeskarError):
+            Beskar(app, totp_user_class)
 
-        app.config.PRAETORIAN_TOTP_SECRETS_TYPE = 'string'
-        app.config.PRAETORIAN_TOTP_SECRETS_DATA = {1: generate_secret()}
-        totp_protected_guard = Praetorian(app, totp_user_class)
+        app.config.BESKAR_TOTP_SECRETS_TYPE = 'string'
+        app.config.BESKAR_TOTP_SECRETS_DATA = {1: generate_secret()}
+        totp_protected_guard = Beskar(app, totp_user_class)
         totp_protected = totp_protected_guard.totp_ctx.new()
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

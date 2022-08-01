@@ -1,61 +1,61 @@
-sanic\_praetorian package
+sanic\_beskar package
 =========================
 
 Submodules
 ----------
 
-sanic\_praetorian.base module
+sanic\_beskar.base module
 -----------------------------
 
-.. automodule:: sanic_praetorian.base
+.. automodule:: sanic_beskar.base
    :members:
    :undoc-members:
    :show-inheritance:
 
-sanic\_praetorian.constants module
+sanic\_beskar.constants module
 ----------------------------------
 
-.. automodule:: sanic_praetorian.constants
+.. automodule:: sanic_beskar.constants
    :members:
    :undoc-members:
    :show-inheritance:
 
-sanic\_praetorian.decorators module
+sanic\_beskar.decorators module
 -----------------------------------
 
-.. automodule:: sanic_praetorian.decorators
+.. automodule:: sanic_beskar.decorators
    :members:
    :undoc-members:
    :show-inheritance:
 
-sanic\_praetorian.exceptions module
+sanic\_beskar.exceptions module
 -----------------------------------
 
-.. automodule:: sanic_praetorian.exceptions
+.. automodule:: sanic_beskar.exceptions
    :members:
    :undoc-members:
    :show-inheritance:
 
-sanic\_praetorian.utilities module
+sanic\_beskar.utilities module
 ----------------------------------
 
-.. automodule:: sanic_praetorian.utilities
+.. automodule:: sanic_beskar.utilities
    :members:
    :undoc-members:
    :show-inheritance:
 
-sanic\_praetorian.orm.tortoise\_user\_mixins module
+sanic\_beskar.orm.tortoise\_user\_mixins module
 ---------------------------------------------------
 
-.. automodule:: sanic_praetorian.orm.tortoise_user_mixins
+.. automodule:: sanic_beskar.orm.tortoise_user_mixins
    :members:
    :undoc-members:
    :show-inheritance:
 
-sanic\_praetorian.orm.umongo\_user\_mixins module
+sanic\_beskar.orm.umongo\_user\_mixins module
 -------------------------------------------------
 
-.. automodule:: sanic_praetorian.orm.umongo_user_mixins
+.. automodule:: sanic_beskar.orm.umongo_user_mixins
    :members:
    :undoc-members:
    :show-inheritance:
@@ -63,7 +63,7 @@ sanic\_praetorian.orm.umongo\_user\_mixins module
 Module contents
 ---------------
 
-.. automodule:: sanic_praetorian
+.. automodule:: sanic_beskar
    :members:
    :undoc-members:
    :show-inheritance:
