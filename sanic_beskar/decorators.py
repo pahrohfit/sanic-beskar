@@ -87,9 +87,11 @@ def roles_required(*required_rolenames):
                 "This feature is not available because roles are disabled",
             )
             await _verify_and_add_token(request)
+            role_set = set([str(n) for n in required_rolenames])
             try:
                 MissingRoleError.require_condition(
-                    not {*required_rolenames} - {*(await current_rolenames())},
+                    (await current_rolenames()).issuperset(role_set),
+                    #not {*required_rolenames} - {*(await current_rolenames())},
                     'This endpoint requires all the following roles: '
                     f'[{required_rolenames}]',
                 )
@@ -118,9 +120,11 @@ def roles_accepted(*accepted_rolenames):
                 "This feature is not available because roles are disabled",
             )
             await _verify_and_add_token(request)
+            role_set = set([str(n) for n in accepted_rolenames])
             try:
                 MissingRoleError.require_condition(
-                    not {*(await current_rolenames())}.isdisjoint(accepted_rolenames),
+                    #not {*(await current_rolenames())}.isdisjoint(accepted_rolenames),
+                    not (await current_rolenames()).isdisjoint(role_set),
                     'This endpoint requires one of the following roles: '
                     f'[{accepted_rolenames}]',
                 )

@@ -145,7 +145,7 @@ class TestBeskarDecorators:
             in response.json["message"]
         )
 
-        maude = await mock_users(username='maude', roles="operator;admin")
+        maude = await mock_users(username='maude', roles="operator,admin")
         # Has two of two required roles
         _, response = client.get(
             "/protected_admin_and_operator_required",
@@ -211,14 +211,14 @@ class TestBeskarDecorators:
         )
         assert response.status == 200
 
-        maude = await mock_users(username='maude', roles="operator;admin")
+        maude = await mock_users(username='maude', roles="operator,admin")
         _, response = client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(maude),
         )
         assert response.status == 200
 
-        jesus = await mock_users(username='jesus', roles="admin;god")
+        jesus = await mock_users(username='jesus', roles="admin,god")
         _, response = client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(jesus),

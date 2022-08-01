@@ -49,10 +49,12 @@ class TortoiseUserMixin:
         {'rolename', ['permissions'],}
 
         :returns: Provided :py:class:`User`'s current ``roles``
-        :rtype: dict
+        :rtype: list
         """
 
         try:
+            return self.roles.split(",")
+            """
             def split_perm(role):
                 _name, _value = None, []
                 if ':' in role:
@@ -66,8 +68,9 @@ class TortoiseUserMixin:
                     return _name, _value
                 return _name, _value.split(',')
             return dict(map(split_perm, self.roles.split(';')))
+            """
         except Exception:
-            return dict()
+            return list()
 
     @classmethod
     async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):

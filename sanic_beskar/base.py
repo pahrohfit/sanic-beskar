@@ -93,6 +93,7 @@ class Beskar():
         is_blacklisted: Callable = None,
         encode_token_hook: Callable = None,
         refresh_token_hook: Callable = None,
+        rbac_populate_hook: Callable = None,
     ):
         self.app: Sanic = None
         self.pwd_ctx = None
@@ -103,6 +104,7 @@ class Beskar():
         self.paseto_ctx = None
         self.paseto_key = None
         self.paseto_token = None
+        self.rbac_definitions = dict()
 
         if app is not None and user_class is not None:
             self.init_app(
@@ -111,6 +113,7 @@ class Beskar():
                 is_blacklisted,
                 encode_token_hook,
                 refresh_token_hook,
+                rbac_populate_hook,
             )
 
     async def open_session(self, request):
@@ -123,6 +126,7 @@ class Beskar():
         is_blacklisted: Callable = None,
         encode_token_hook: Callable = None,
         refresh_token_hook: Callable = None,
+        rbac_populate_hook: Callable = None,
     ):
         """
         Initializes the :py:class:`Beskar` extension
@@ -149,6 +153,10 @@ class Beskar():
                                         refreshed. Should take payload_parts
                                         which contains the ingredients for
                                         the jwt.
+        :param rbac_populate_hook:     A method that may optionally be called
+                                        at Beskar init time, or periodcally,
+                                        to populate a RBAC dictionary mapping
+                                        user Roles to RBAC rights.
         """
 
         """hook on request start etc."""
@@ -212,6 +220,7 @@ class Beskar():
         self.is_blacklisted = is_blacklisted or (lambda t: False)
         self.encode_token_hook = encode_token_hook
         self.refresh_token_hook = refresh_token_hook
+        self.rbac_populate_hook = rbac_populate_hook
 
         self.encode_key = app.config["SECRET_KEY"]
         self.allowed_algorithms = app.config.get(
@@ -374,8 +383,25 @@ class Beskar():
 
         self.is_testing = app.config.get("TESTING", False)
 
+        if self.rbac_populate_hook:
+            ConfigurationError.require_condition(
+                callable(self.rbac_populate_hook),
+                "rbac_populate_hook was configured, but doesn't appear callable",
+            )
+
+            @app.signal("beskar.rbac.update")
+            async def rbac_populate():
+                self.rbac_definitions = await self.rbac_populate_hook()
+                logger.debug(f"RBAC definitions updated: {self.rbac_definitions}")
+
+            @app.before_server_start
+            async def init_rbac_populate(app):
+                logger.info("Populating initial RBAC definitions")
+                await app.dispatch("beskar.rbac.update")
+            app.add_task(init_rbac_populate(app))
+
         if not hasattr(app.ctx, "extensions"):
-            app.ctx.extensions = {}
+            app.ctx.extensions = dict()
         app.ctx.extensions["beskar"] = self
 
         return app
@@ -734,7 +760,7 @@ class Beskar():
             "exp": access_expiration,
             "jti": str(uuid.uuid4()),
             "id": user.identity,
-            "rls": user.rolenames,
+            "rls": ",".join(user.rolenames),
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         if is_registration_token:
@@ -825,7 +851,7 @@ class Beskar():
             "exp": access_expiration,
             "jti": str(uuid.uuid4()),
             "id": user.identity,
-            "rls": user.rolenames,
+            "rls": ",".join(user.rolenames),
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         if is_registration_token:
@@ -991,7 +1017,7 @@ class Beskar():
             "exp": access_expiration,
             "jti": data["jti"],
             "id": data["id"],
-            "rls": user.rolenames,
+            "rls": ",".join(user.rolenames),
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         payload_parts.update(custom_claims)
@@ -1052,7 +1078,7 @@ class Beskar():
             "exp": access_expiration,
             "jti": data["jti"],
             "id": data["id"],
-            "rls": user.rolenames,
+            "rls": ",".join(user.rolenames),
             REFRESH_EXPIRATION_CLAIM: refresh_expiration,
         }
         payload_parts.update(custom_claims)
