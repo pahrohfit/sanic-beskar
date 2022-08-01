@@ -1,17 +1,17 @@
 [tool.poetry]
-name = "sanic-praetorian"
+name = "sanic-beskar"
 version = "2.0.0_rc4"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
 readme = "README.rst"
-homepage = "https://sanic-praetorian.readthedocs.io/en/latest/"
-documentation = "https://sanic-praetorian.readthedocs.io/en/latest/"
-repository = "https://github.com/pahrohfit/sanic-praetorian"
+homepage = "https://sanic-beskar.readthedocs.io/en/latest/"
+documentation = "https://sanic-beskar.readthedocs.io/en/latest/"
+repository = "https://github.com/pahrohfit/sanic-beskar"
 
 [project.urls]
-"Homepage" = "https://sanic-praetorian.readthedocs.io/en/latest/"
-"Bug Tracker" = "https://github.com/pahrohfit/sanic-praetorian/issues"
+"Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
+"Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
 
 [tool.poetry.dependencies]
 python = "^3.7"
