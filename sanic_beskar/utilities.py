@@ -7,11 +7,20 @@ import ujson
 
 import segno
 
-from sanic import Sanic
+from sanic import Sanic, Request
 import pendulum
 
 from sanic_beskar.constants import RESERVED_CLAIMS
 from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
+
+
+def get_request(request: Request) -> Request:
+    try:
+        if not request:
+            return Request.get_current()
+        return request
+    except Exception:
+        raise BeskarError("Could not identify current Sanic request")
 
 
 async def is_valid_json(data: str) -> ujson:
@@ -219,15 +228,9 @@ async def current_rolenames() -> set:
     token_data = get_token_data_from_app_context()
     if 'rls' not in token_data:
         # This is necessary so our set arithmetic works correctly
-        return dict()
+        return set(['non-empty-but-definitely-not-matching-subset'])
     else:
-        if isinstance(token_data['rls'], str):
-            try:
-                return ujson.loads(token_data['rls'])
-            except Exception as e:
-                warnings.warn(f"Error trying to process Roles String: {e}")
-                return dict()
-        return token_data['rls']
+        return set(r.strip() for r in token_data['rls'].split(','))
 
 
 def current_custom_claims() -> dict:

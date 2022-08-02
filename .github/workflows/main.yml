@@ -2,9 +2,9 @@ name: pahrohfit-python-ci
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, dev ]
 
 permissions:
   contents: read
@@ -77,3 +77,8 @@ jobs:
           verbose: true # optional (default = false)
           env_vars: OS,PYTHON
           file: ./coverage.xml
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: ./coverage.xml

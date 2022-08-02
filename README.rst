@@ -33,26 +33,27 @@
 Strong, Simple, and Precise security for Sanic APIs
 ---------------------------------------------------
 
-API security should be strong, simple, and precise like a Roman Legionary.
+This project's begining was fully lifted from the awesome
+`Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_.
+
+Why `beskar <https://starwars.fandom.com/wiki/Beskar>`? Why not -- what
+is better than star wars (provided you ignore the fact ~the mandolorian~
+was almost as lame as ~book of boba fett~)?
+Superior armour should be used if you want superior protection.
+
 This package aims to provide that. Using token implemented by either
 `PySETO <https://pyseto.readthedocs.io/en/latest/>`_ or
 `PyJWT <https://pyjwt.readthedocs.io/en/latest/>`_,
-*flask_praetorian* uses a very simple interface to make sure that the users
+*sanic-beskar* uses a very simple interface to make sure that the users
 accessing your API's endpoints are provisioned with the correct roles for
 access.
 
-This project was heavily influenced by
-`Flask-Security <https://pythonhosted.org/Flask-Security/>`_, but intends
-to supply only essential functionality. Instead of trying to anticipate the
-needs of all users, *sanic-beskar* will provide a simple and secure mechanism
-to provide security for APIs specifically.
-
-This project was heavily liftef from the awesome `Flask-Praetorian`.
-
-This extesion offers a batteries-included approach to security for your API.
-For essential security concerns for Sanic-based APIs,
-`sanic-beskar <https://github.com/pahrohfit/sanic-beskar>`_ should
-supply everything you need.
+The goal of this project is to offer simplistic protection, without
+forcing nonsense, excessivly complicatated implimentation, or
+mandated/opinionated ORM usage. Providing this usability for small
+scaled Sanic applications, while allowing the flexibility and
+scalability for enterprise grade solutions, seperates this from your
+other options.
 
 The *sanic-beskar* package can be used to:
 
