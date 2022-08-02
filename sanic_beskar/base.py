@@ -1,18 +1,16 @@
 from importlib import import_module
 from importlib.util import find_spec
 import datetime
-import io
-from turtle import pen
+from collections.abc import Callable
+from typing import Union, Optional
+import re
+import textwrap
+
 import jinja2
 import jwt
 import pendulum
-import re
-import textwrap
 import uuid
 import ujson
-
-from collections.abc import Callable
-from typing import Union, Optional
 
 from sanic import Sanic
 from sanic.log import logger
@@ -155,11 +153,11 @@ class Beskar():
                 at Beskar init time, or periodcally, to populate a RBAC dictionary mapping
                 user Roles to RBAC rights. Defaults to `None`.
 
-        Raises:
-            ConfigurationError: Invalid/missing configuration value is detected.
-
         Returns:
             Object: Initialized sanic-beskar object.
+
+        Raises:
+            ConfigurationError: Invalid/missing configuration value is detected.
         """
 
         self.app = app
@@ -636,12 +634,12 @@ class Beskar():
             token (str, optional): TOTP Token value to validate against.
                 Defaults to None.
 
+        Returns:
+            :py:class:`User`: Authenticated `User` object.
+
         Raises:
             AuthenticationError: Failed password, TOTP, or password+TOTP attempt.
             TOTPRequired: Account is required to supply TOTP.
-
-        Returns:
-            :py:class:`User`: Authenticated `User` object.
         """
 
         BeskarError.require_condition(
@@ -731,8 +729,8 @@ class Beskar():
         override_access_lifespan: Optional[pendulum.Duration] = None,
         override_refresh_lifespan: Optional[pendulum.Duration] = None,
         bypass_user_check: Optional[bool] = False,
-        is_registration_token: Optional[bool] =False,
-        is_reset_token: Optional[bool] =False,
+        is_registration_token: Optional[bool] = False,
+        is_reset_token: Optional[bool] = False,
         **custom_claims
     ):
         """
@@ -983,7 +981,8 @@ class Beskar():
                 in the payload. Defaults to `None`.
 
         Returns:
-            str: Encoded, *never expiring*, token string of application configuration type `TOKEN_PROVIDER`.
+            str: Encoded, *never expiring*, token string of application configuration
+            type `TOKEN_PROVIDER`.
         """
 
         return await self.encode_token(
@@ -1365,12 +1364,12 @@ class Beskar():
         Args:
             request (sanic.Request): Sanic ``request`` object
 
-        Raises:
-            :py:exc:`~sanic_beskar.exceptions.MissingToken` if token is not found in any
-                :py:data:`~sanic_beskar.constants.TOKEN_PLACES`
-
         Returns:
             str: Token.
+
+        Raises:
+            :py:exc:`~sanic_beskar.exceptions.MissingToken`: Token is not found in any
+                :py:data:`~sanic_beskar.constants.TOKEN_PLACES`
         """
 
         _request = get_request(request)
@@ -1593,33 +1592,27 @@ class Beskar():
         which supports sanic-mailing's :py:class:`Message` object and
         a :py:meth:`send_message` method.
 
-        :returns: a :py:data:`dict` containing the information sent, along
-                  with the ``result`` from mail send.
-        :rtype: :py:data:`dict`
+        Args:
+            user (:py:class:`User`):  The user object to tie claim to (username, id, email, etc)
+            email (str): The email address to attempt to send to.
+            template (Optional, :py:data:`filehandle`): HTML Template for the email.
+                If not provided, a stock entry is used.
+            action_sender (str): The sender that should be attached to the email.
+            action_uri (str): The uri that should be visited to complete this notification
+                action.
+            subject (str): The email subject.
+            override_access_lifespan (Optional, :py:data:`pendulum`): Overrides the
+                :py:data:`TOKEN_ACCESS_LIFESPAN` to set an access lifespan for the registration token.
+                Defaults to :py:data:`TOKEN_ACCESS_LIFESPAN` config setting.
+            custom_token (str): The token to be carried as the email's payload.
 
-        :param email: The email address to use (username, id, email, etc)
-        :type email: str
-        :param user:  The user object to tie claim to (username, id, email, etc)
-        :type user: :py:class:`User`
-        :param template: HTML Template for confirmation email.
-                          If not provided, a stock entry is used
-        :type template: :py:data:`filehandle`
-        :param action_sender: The sender that should be attached
-                               to the confirmation email.
-        :type action_sender: str
-        :param action_uri: The uri that should be visited to complete the token action.
-        :type action_uri: str
-        :param subject: The email subject.
-        :type subject: str
-        :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
-                                          to set an access lifespan for the
-                                          registration token.
-        :type override_access_lifespan: :py:data:`pendulum`
-        :param custom_token: The token to be carried as the email's payload
-        :type custom_token: str
+        Returns:
+            dict: Summary of information sent, along with the `result` from mail send. (Essentually
+            the response of :py:func:`send_token_email`).
 
-        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` if missing
-                   required parameters
+        Raises:
+            :py:exc:`~sanic_beskar.exceptions.BeskarError`: Missing required parameters.
+
         """
         notification = {
             "result": None,
@@ -1677,14 +1670,13 @@ class Beskar():
         that the token is a regisration token and that the user can be properly
         retrieved
 
-        :param token: Registration token to validate
-        :type token: str
+        Args:
+            token (str): Registration token to validate.
 
-        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` if missing
-                   required parameters
-        :returns: :py:class:`User` object of looked up user after token validation
-        :rtype: :py:class:`User`
+        Returns:
+            :py:class:`User`: :py:class:`User` object of looked up user after token validation
         """
+
         data = await self.extract_token(token, access_type=AccessType.register)
         user_id = data.get("id")
         BeskarError.require_condition(
@@ -1704,14 +1696,16 @@ class Beskar():
         that is supplied. Verifies that the token is a reset token
         and that the user can be properly retrieved
 
-        :param token: Reset token to validate
-        :type token: str
+        Args:
+            token (str): Reset token to validate.
 
-        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` if missing
-                   required parameters
-        :returns: :py:class:`User` object of looked up user after token validation
-        :rtype: :py:class:`User`
+        Returns:
+            :py:class:`User`: object of looked up user after token validation
+
+        Raises:
+            :py:exc:`~sanic_beskar.exceptions.BeskarError`: Missing required parameters
         """
+
         data = await self.extract_token(token, access_type=AccessType.reset)
         user_id = data.get("id")
         BeskarError.require_condition(
@@ -1729,14 +1723,16 @@ class Beskar():
         """
         Hashes a plaintext password using the stored passlib password context
 
-        :param raw_password: cleartext password for the user
-        :type raw_password: str
+        Args:
+            raw_password (str): cleartext password for the user
 
-        :raises: :py:exc:`~sanic_beskareptions.BeskarError` if
-                    no password is provided
-        :returns: Properly hashed ciphertext of supplied :py:data:`raw_password`
-        :rtype: str
+        Returns:
+            str: Properly hashed ciphertext of supplied :py:data:`raw_password`
+
+        Raises:
+            :py:exc:`~sanic_beskareptions.BeskarError`: No password is provided
         """
+
         BeskarError.require_condition(
             self.pwd_ctx is not None,
             "Beskar must be initialized before this method is available",
@@ -1759,20 +1755,20 @@ class Beskar():
         updated :py:class:`User` will contain the users current password updated to the
         currently desired hash scheme (:py:exc:`~BESKAR_HASH_SCHEME`).
 
-        :param user:     The user object to tie claim to
-                              (username, id, email, etc). *MUST*
-                              include the password field,
-                              defined as :py:attr:`password`
-        :type user: object
-        :param password: The user's provide password from login.
-                              If present, this is used to validate
-                              and then attempt to update with the
-                              new :py:data:`BESKAR_HASH_SCHEME` scheme.
-        :type password: str
+        Args:
+            user (:py:class:`User`): The user object to tie claim to (username, id,
+                email, etc). *MUST* include the password field, defined as :py:attr:`password`.
+            password (str): The user's provide password from login.  If present, this is used
+                to validate and then attempt to update with the new :py:data:`BESKAR_HASH_SCHEME`
+                scheme.
 
-        :returns: Authenticated :py:class:`User`
-        :raises: :py:exc:`~sanic_beskar.exceptions.AuthenticationError` upon authentication failure
+        Returns:
+            :py:class:`User`: Authenticated :py:class:`User`
+
+        Raises:
+            :py:exc:`~sanic_beskar.exceptions.AuthenticationError`: Authentication failure
         """
+
         if self.pwd_ctx.needs_update(user.password):
             if password:
                 (rv, updated) = self.pwd_ctx.verify_and_update(
