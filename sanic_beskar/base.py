@@ -18,7 +18,11 @@ from sanic.log import logger
 from passlib.context import CryptContext
 from passlib.totp import TOTP
 
-from sanic_beskar.utilities import duration_from_string, is_valid_json, get_request
+from sanic_beskar.utilities import (
+    duration_from_string,
+    is_valid_json,
+    get_request,
+)
 
 from sanic_beskar.exceptions import (
     AuthenticationError,
@@ -130,39 +134,36 @@ class Beskar():
         """
         Initializes the :py:class:`Beskar` extension
 
-        :param app:                    The :py:mod:`Sanic` app to bind this
-                                        extension to
-        :param user_class:             The class used to interact with
-                                        user data
-        :param is_blacklisted:         A method that may optionally be
-                                        used to check the token against
-                                        a blacklist when access or refresh
-                                        is requested should take the jti
-                                        for the token to check as a single
-                                        argument. Returns True if the jti is
-                                        blacklisted, False otherwise. By
-                                        default, always returns False.
-        :param encode_token_hook:      A method that may optionally be
-                                        called right before an encoded jwt
-                                        is generated. Should take
-                                        payload_parts which contains the
-                                        ingredients for the jwt.
-        :param refresh_token_hook:     A method that may optionally be called
-                                        right before an encoded jwt is
-                                        refreshed. Should take payload_parts
-                                        which contains the ingredients for
-                                        the jwt.
-        :param rbac_populate_hook:     A method that may optionally be called
-                                        at Beskar init time, or periodcally,
-                                        to populate a RBAC dictionary mapping
-                                        user Roles to RBAC rights.
+        Args:
+            app (Sanic): The :py:mod:`Sanic` app to bind this extention. Defaults to None.
+            user_class (object): Class used to interact with a `User`. Defaults to None.
+            is_blacklisted (Callable, optional): A method that may optionally be
+                used to check the token against a blacklist when access or refresh
+                is requested should take the jti for the token to check as a single
+                argument. Returns True if the jti is blacklisted, False otherwise.
+                Defaults to `False`.
+            encode_token_hook (Callable, optional): A method that may optionally be
+                called right before an encoded jwt is generated. Should take
+                payload_parts which contains the ingredients for the jwt.
+                Defaults to `None`.
+            refresh_token_hook (Callable, optional): A method that may optionally be called
+                right before an encoded jwt is refreshed. Should take payload_parts
+                which contains the ingredients for the jwt. Defaults to `None`.
+            rbac_populate_hook (Callable, optional): A method that may optionally be called
+                at Beskar init time, or periodcally, to populate a RBAC dictionary mapping
+                user Roles to RBAC rights. Defaults to `None`.
+
+        Raises:
+            ConfigurationError: Invalid/missing configuration value is detected.
+
+        Returns:
+            Object: Initialized sanic-beskar object.
         """
 
-        """hook on request start etc."""
         self.app = app
         app.register_middleware(self.open_session, 'request')
 
-        BeskarError.require_condition(
+        ConfigurationError.require_condition(
             app.config.get("SECRET_KEY") is not None,
             "There must be a SECRET_KEY app config setting set",
         )
@@ -198,7 +199,7 @@ class Beskar():
         )
 
         valid_schemes = self.pwd_ctx.schemes()
-        BeskarError.require_condition(
+        ConfigurationError.require_condition(
             self.hash_scheme in valid_schemes or self.hash_scheme is None,
             f'If {"BESKAR_HASH_SCHEME"} is set, it must be one of the following schemes: {valid_schemes}'
         )
@@ -413,20 +414,22 @@ class Beskar():
         instance of the user class to test for the requisite attributes
 
         Requirements:
-
         - :py:meth:`lookup` method. Accepts a string parameter, returns instance
         - :py:meth:`identify` method. Accepts an identity parameter, returns instance
         - :py:attribue:`identity` attribute. Provides unique id for the instance
         - :py:attribute:`rolenames` attribute. Provides list of roles attached to instance
         - :py:attribute:`password` attribute. Provides hashed password for instance
 
-        :param user_class: `User` class to use for Beskar
-        :type user_class: class
+        Args:
+            user_class (:py:class:`User`): `User` class to use.
 
-        :returns: Validated `User` class
-        :rtype: class
-        :raises: :py:exc:`~sanic_beskar.exceptions.BeskarError` on missing requirements
+        Returns:
+            User: Validated `User` object
+
+        Raises:
+            :py:exc:`~sanic_beskar.exceptions.BeskarError`: Missing requirements
         """
+
         BeskarError.require_condition(
             getattr(user_class, "lookup", None) is not None,
             textwrap.dedent(
@@ -560,7 +563,19 @@ class Beskar():
         If automatically called by :py:func:`authenticate`,
         it accepts a :py:class:`User` object instead of :py:data:`username`
         and skips the :py:func:`lookup` call.
+
+        Args:
+            username (Union[str, object]): Username, or `User` object to
+                perform TOTP authentication against.
+            token (str): TOTP token value to validate.
+
+        Returns:
+            :py:class:`User`: Validated `User` object.
+
+        Raises:
+            AuthenticationError: Failed TOTP authentication attempt.
         """
+
         BeskarError.require_condition(
             self.user_class is not None,
             "Beskar must be initialized before this method is available",
@@ -612,7 +627,21 @@ class Beskar():
                   and not the users password.
 
                   **Choose your own adventure.**
+
+        Args:
+            username (str): Username to authenticate
+            password (str): Password to validate against
+            token (str, optional): TOTP Token value to validate against.
+                Defaults to None.
+
+        Raises:
+            AuthenticationError: Failed password, TOTP, or password+TOTP attempt.
+            TOTPRequired: Account is required to supply TOTP.
+
+        Returns:
+            :py:class:`User`: Authenticated `User` object.
         """
+
         BeskarError.require_condition(
             self.user_class is not None,
             "Beskar must be initialized before this method is available",
@@ -708,29 +737,35 @@ class Beskar():
         Encodes user data into a PASETO token that can be used for authorization
         at protected endpoints
 
-        :param override_access_lifespan:  Override's the instance's access
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           accessability will expire. May not
-                                           exceed the :py:data:`refresh_lifespan`
-        :param override_refresh_lifespan: Override's the instance's refresh
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           refreshability will expire.
-        :param bypass_user_check:         Override checking the user for
-                                           being real/active.  Used for
-                                           registration token generation.
-        :param is_registration_token:     Indicates that the token will be
-                                           used only for email-based
-                                           registration
-        :param custom_claims:             Additional claims that should
-                                           be packed in the payload. Note that
-                                           any claims supplied here must be
-                                           :py:mod:`json` compatible types
+        .. note:: Note that any claims supplied as `custom_claims` here must be
+          :py:mod:`json` compatible types.
 
-        :returns: encoded PASETO token
-        :rtype: str
+        Args:
+            user (:py:class:`User`): `User` to generate a token for.
+            override_access_lifespan (pendulum.Duration, optional): Override's the
+                instance's access lifespan to set a custom duration after which
+                the new token's accessability will expire. May not exceed the
+                :py:data:`refresh_lifespan`. Defaults to `None`.
+            override_refresh_lifespan (pendulum.Duration, optional): Override's the
+                instance's refresh lifespan to set a custom duration after which
+                the new token's refreshability will expire. Defaults to `None`.
+            bypass_user_check (bool, optional): Override checking the user for
+                being real/active.  Used for registration token generation.
+                Defaults to `False`.
+            is_registration_token (bool, optional): Indicates that the token will
+                be used only for email-based registration. Defaults to `False`.
+            is_reset_token (bool, optional): Indicates that the token will
+                be used only for lost password reset. Defaults to `False`.
+            custom_claims (dict, optional): Additional claims that should be packed
+                in the payload. Defaults to `None`.
+
+        Returns:
+            str: Encoded PASETO token string.
+
+        Raises:
+            ClaimCollisionError: Tried to supply a RESERVED_CLAIM in the `custom_claims`.
         """
+
         ClaimCollisionError.require_condition(
             set(custom_claims.keys()).isdisjoint(RESERVED_CLAIMS),
             "The custom claims collide with required claims",
