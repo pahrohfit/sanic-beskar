@@ -1,6 +1,8 @@
 from importlib import import_module
 from importlib.util import find_spec
 import datetime
+import io
+from turtle import pen
 import jinja2
 import jwt
 import pendulum
@@ -10,7 +12,7 @@ import uuid
 import ujson
 
 from collections.abc import Callable
-from typing import Union
+from typing import Union, Optional
 
 from sanic import Sanic
 from sanic.log import logger
@@ -726,11 +728,11 @@ class Beskar():
     async def encode_paseto_token(
         self,
         user,
-        override_access_lifespan: pendulum.Duration = None,
-        override_refresh_lifespan: pendulum.Duration = None,
-        bypass_user_check=False,
-        is_registration_token=False,
-        is_reset_token=False,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
+        override_refresh_lifespan: Optional[pendulum.Duration] = None,
+        bypass_user_check: Optional[bool] = False,
+        is_registration_token: Optional[bool] =False,
+        is_reset_token: Optional[bool] =False,
         **custom_claims
     ):
         """
@@ -822,40 +824,43 @@ class Beskar():
     async def encode_jwt_token(
         self,
         user,
-        override_access_lifespan=None,
-        override_refresh_lifespan=None,
-        bypass_user_check=False,
-        is_registration_token=False,
-        is_reset_token=False,
+        override_access_lifespan: Optional[pendulum.duration] = None,
+        override_refresh_lifespan: Optional[pendulum.duration] = None,
+        bypass_user_check: Optional[bool] = False,
+        is_registration_token: Optional[bool] = False,
+        is_reset_token: Optional[bool] = False,
         **custom_claims
     ):
         """
         Encodes user data into a jwt token that can be used for authorization
         at protected endpoints
 
-        :param override_access_lifespan:  Override's the instance's access
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           accessability will expire. May not
-                                           exceed the :py:data:`refresh_lifespan`
-        :param override_refresh_lifespan: Override's the instance's refresh
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           refreshability will expire.
-        :param bypass_user_check:         Override checking the user for
-                                           being real/active.  Used for
-                                           registration token generation.
-        :param is_registration_token:     Indicates that the token will be
-                                           used only for email-based
-                                           registration
-        :param custom_claims:             Additional claims that should
-                                           be packed in the payload. Note that
-                                           any claims supplied here must be
-                                           :py:mod:`json` compatible types
+        Args:
+            user (:py:class:`User`): `User` to generate a token for.
+            override_access_lifespan (pendulum.Duration, optional): Override's the
+                instance's access lifespan to set a custom duration after which
+                the new token's accessability will expire. May not exceed the
+                :py:data:`refresh_lifespan`. Defaults to `None`.
+            override_refresh_lifespan (pendulum.Duration, optional): Override's the
+                instance's refresh lifespan to set a custom duration after which
+                the new token's refreshability will expire. Defaults to `None`.
+            bypass_user_check (bool, optional): Override checking the user for
+                being real/active.  Used for registration token generation.
+                Defaults to `False`.
+            is_registration_token (bool, optional): Indicates that the token will
+                be used only for email-based registration. Defaults to `False`.
+            is_reset_token (bool, optional): Indicates that the token will
+                be used only for lost password reset. Defaults to `False`.
+            custom_claims (dict, optional): Additional claims that should be packed
+                in the payload. Defaults to `None`.
 
-        :returns: encoded JWT token
-        :rtype: str
+        Returns:
+            str: Encoded JWT token string.
+
+        Raises:
+            ClaimCollisionError: Tried to supply a RESERVED_CLAIM in the `custom_claims`.
         """
+
         ClaimCollisionError.require_condition(
             set(custom_claims.keys()).isdisjoint(RESERVED_CLAIMS),
             "The custom claims collide with required claims",
@@ -908,42 +913,44 @@ class Beskar():
     async def encode_token(
         self,
         user: object,
-        override_access_lifespan: pendulum.Duration = None,
-        override_refresh_lifespan: pendulum.Duration = None,
-        bypass_user_check: bool = False,
-        is_registration_token: bool = False,
-        is_reset_token: bool = False,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
+        override_refresh_lifespan: Optional[pendulum.Duration] = None,
+        bypass_user_check: Optional[bool] = False,
+        is_registration_token: Optional[bool] = False,
+        is_reset_token: Optional[bool] = False,
         **custom_claims
     ):
         """
-        Helper function to encode user data into a `insert_type_here` token
+        Wrapper function to encode user data into a `insert_type_here` token
         that can be used for authorization at protected endpoints.
 
         Calling this will allow your app configuration to automagically create
         the appropriate token type.
 
-        :param override_access_lifespan:  Override's the instance's access
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           accessability will expire. May not
-                                           exceed the :py:data:`refresh_lifespan`
-        :param override_refresh_lifespan: Override's the instance's refresh
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           refreshability will expire.
-        :param bypass_user_check:         Override checking the user for
-                                           being real/active.  Used for
-                                           registration token generation.
-        :param is_registration_token:     Indicates that the token will be
-                                           used only for email-based
-                                           registration
-        :param custom_claims:             Additional claims that should
-                                           be packed in the payload. Note that
-                                           any claims supplied here must be
-                                           :py:mod:`json` compatible types
+        Args:
+            user (:py:class:`User`): `User` to generate a token for.
+            override_access_lifespan (pendulum.Duration, optional): Override's the
+                instance's access lifespan to set a custom duration after which
+                the new token's accessability will expire. May not exceed the
+                :py:data:`refresh_lifespan`. Defaults to `None`.
+            override_refresh_lifespan (pendulum.Duration, optional): Override's the
+                instance's refresh lifespan to set a custom duration after which
+                the new token's refreshability will expire. Defaults to `None`.
+            bypass_user_check (bool, optional): Override checking the user for
+                being real/active.  Used for registration token generation.
+                Defaults to `False`.
+            is_registration_token (bool, optional): Indicates that the token will
+                be used only for email-based registration. Defaults to `False`.
+            is_reset_token (bool, optional): Indicates that the token will
+                be used only for lost password reset. Defaults to `False`.
+            custom_claims (dict, optional): Additional claims that should be packed
+                in the payload. Defaults to `None`.
 
-        :returns: encoded token of application configuration type
-        :rtype: str
+        Returns:
+            str: Encoded token string of application configuration type `TOKEN_PROVIDER`.
+
+        Raises:
+            ClaimCollisionError: Tried to supply a RESERVED_CLAIM in the `custom_claims`.
         """
 
         return await getattr(
@@ -970,9 +977,15 @@ class Beskar():
                   implements a blacklist so that a given token can be blocked
                   should it be lost or become a security concern
 
-        :returns: **never expiring** encoded token of application configuration type
-        :rtype: str
+        Args:
+            user (:py:class:`User`): `User` to generate a token for.
+            custom_claims (dict, optional): Additional claims that should be packed
+                in the payload. Defaults to `None`.
+
+        Returns:
+            str: Encoded, *never expiring*, token string of application configuration type `TOKEN_PROVIDER`.
         """
+
         return await self.encode_token(
             user,
             override_access_lifespan=VITAM_AETERNUM,
@@ -982,25 +995,24 @@ class Beskar():
 
     async def refresh_token(self, token: str, override_access_lifespan=None):
         """
-        Creates a new token for a user if and only if the old token's access
-        permission is expired but its refresh permission is not yet expired.
-        The new token's refresh expiration moment is the same as the old
+        Wrapper function to creates a new token for a user if and only if the old
+        token's access permission is expired but its refresh permission is not yet
+        expired. The new token's refresh expiration moment is the same as the old
         token's, but the new token's access expiration is refreshed.
 
         Token type is determined by application configuration, when using this
         helper function.
 
-        :param token:                     The existing token that needs to
-                                           be replaced with a new, refreshed
-                                           token
-        :param override_access_lifespan:  Override's the instance's access
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           accessability will expire. May not
-                                           exceed the :py:data:`refresh_lifespan`
+        Args:
+            token (str): The existing token that needs to be replaced with a new,
+                refreshed token.
+            override_access_lifespan (_type_, optional): Override's the instance's
+                access lifespan to set a custom duration after which the new
+                token's accessability will expire. May not exceed the
+                :py:data:`refresh_lifespan`. Defaults to `None`.
 
-        :returns: encoded token of application configuration type
-        :rtype: str
+        Returns:
+            str: Encoded token string of application configuration type `TOKEN_PROVIDER`.
         """
 
         return await getattr(
@@ -1010,23 +1022,23 @@ class Beskar():
 
     async def refresh_paseto_token(self, token: str, override_access_lifespan=None):
         """
-        Creates a new token for a user if and only if the old token's access
+        Creates a new PASETO token for a user if and only if the old token's access
         permission is expired but its refresh permission is not yet expired.
         The new token's refresh expiration moment is the same as the old
         token's, but the new token's access expiration is refreshed
 
-        :param token:                     The existing jwt token that needs to
-                                           be replaced with a new, refreshed
-                                           token
-        :param override_access_lifespan:  Override's the instance's access
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           accessability will expire. May not
-                                           exceed the :py:data:`refresh_lifespan`
+        Args:
+            token (str): The existing token that needs to be replaced with a new,
+                refreshed token.
+            override_access_lifespan (_type_, optional): Override's the instance's
+                access lifespan to set a custom duration after which the new
+                token's accessability will expire. May not exceed the
+                :py:data:`refresh_lifespan`. Defaults to `None`.
 
-        :returns: encoded PASETO token
-        :rtype: str
+        Returns:
+            str: Encoded PASETO token string.
         """
+
         moment = pendulum.now("UTC")
         data = await self.extract_token(token, access_type=AccessType.refresh)
 
@@ -1071,23 +1083,23 @@ class Beskar():
 
     async def refresh_jwt_token(self, token: str, override_access_lifespan=None):
         """
-        Creates a new token for a user if and only if the old token's access
+        Creates a new JWT token for a user if and only if the old token's access
         permission is expired but its refresh permission is not yet expired.
         The new token's refresh expiration moment is the same as the old
         token's, but the new token's access expiration is refreshed
 
-        :param token:                     The existing jwt token that needs to
-                                           be replaced with a new, refreshed
-                                           token
-        :param override_access_lifespan:  Override's the instance's access
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           accessability will expire. May not
-                                           exceed the :py:data:`refresh_lifespan`
+        Args:
+            token (str): The existing token that needs to be replaced with a new,
+                refreshed token.
+            override_access_lifespan (_type_, optional): Override's the instance's
+                access lifespan to set a custom duration after which the new
+                token's accessability will expire. May not exceed the
+                :py:data:`refresh_lifespan`. Defaults to `None`.
 
-        :returns: encoded JWT token
-        :rtype: str
+        Returns:
+            str: Encoded JWT token string.
         """
+
         moment = pendulum.now("UTC")
         data = await self.extract_token(token, access_type=AccessType.refresh)
 
@@ -1127,17 +1139,16 @@ class Beskar():
 
     async def extract_token(self, token: str, access_type=AccessType.access):
         """
-        Extracts a data dictionary from a token. This function will automagically
-        identify the token type based upon application configuration and process
-        it accordingly.
+        Wrapper funciton to extract a data dictionary from a token. This
+        function will automagically identify the token type based upon
+        application configuration and process it accordingly.
 
-        :param token: Token to be processed
-        :type token: str
-        :param access_type: Type of token being processed
-        :type access_type: AccessType
+        Args:
+            token (str): Token to be processed
+            access_type (AccessType): Type of token being processed
 
-        :returns: Extracted token as a dict
-        :rtype: dict
+        Returns:
+            dict: Extracted token as a `dict`
         """
         return await getattr(
             self,
@@ -1148,14 +1159,14 @@ class Beskar():
         """
         Extracts a data dictionary from a PASETO token.
 
-        :param token: Token to be processed
-        :type token: str
-        :param access_type: Type of token being processed
-        :type access_type: AccessType
+        Args:
+            token (str): Token to be processed
+            access_type (AccessType): Type of token being processed
 
-        :returns: Extracted token as a dict
-        :rtype: dict
+        Returns:
+            dict: Extracted token as a `dict`
         """
+
         # Note: we disable exp verification because we will do it ourselves
         failed = None
         keys = self.paseto_key if isinstance(self.paseto_key, list) else [self.paseto_key]
@@ -1186,14 +1197,14 @@ class Beskar():
         """
         Extracts a data dictionary from a JWT token.
 
-        :param token: Token to be processed
-        :type token: str
-        :param access_type: Type of token being processed
-        :type access_type: AccessType
+        Args:
+            token (str): Token to be processed
+            access_type (AccessType): Type of token being processed
 
-        :returns: Extracted token as a dict
-        :rtype: dict
+        Returns:
+            dict: Extracted token as a `dict`
         """
+
         # Note: we disable exp verification because we will do it ourselves
         with InvalidTokenHeader.handle_errors("failed to decode JWT token"):
             data = jwt.decode(
@@ -1307,8 +1318,15 @@ class Beskar():
 
     def read_token_from_header(self, request=None):
         """
-        Unpacks a jwt token from the current sanic request
+        Unpacks a token from the current sanic request
+
+        Args:
+            request (Request): Current Sanic `Request`.
+
+        Returns:
+            str: Unpacked token from header.
         """
+
         _request = get_request(request)
         return self._unpack_header(_request.headers)
 
@@ -1316,6 +1334,7 @@ class Beskar():
         """
         Unpacks a jwt token from a request cookies
         """
+
         token_cookie = cookies.get(self.cookie_name)
         MissingToken.require_condition(
             token_cookie is not None,
@@ -1325,8 +1344,15 @@ class Beskar():
 
     def read_token_from_cookie(self, request=None):
         """
-        Unpacks a jwt token from the current sanic request
+        Unpacks a token from the current sanic request
+
+        Args:
+            request (Request): Current Sanic `Request`.
+
+        Returns:
+            str: Unpacked token from cookie.
         """
+
         _request = get_request(request)
         return self._unpack_cookie(_request.cookies)
 
@@ -1336,15 +1362,17 @@ class Beskar():
         in the locations configured by :py:data:`TOKEN_PLACES`.
         Check-Order is defined by the value order in :py:data:`TOKEN_PLACES`.
 
-        :param request: Sanic ``request`` object
-        :type request: :py:func:`~sanic.request`
+        Args:
+            request (sanic.Request): Sanic ``request`` object
 
-        :raises: :py:exc:`~sanic_beskar.exceptions.MissingToken` if token
-                  is not found in any :py:data:`~sanic_beskar.constants.TOKEN_PLACES`
+        Raises:
+            :py:exc:`~sanic_beskar.exceptions.MissingToken` if token is not found in any
+                :py:data:`~sanic_beskar.constants.TOKEN_PLACES`
 
-        :returns: function to read the token based upon where the token was found
-        :rtype: function
+        Returns:
+            str: Token.
         """
+
         _request = get_request(request)
         for place in self.token_places:
             try:
@@ -1386,28 +1414,21 @@ class Beskar():
         """
         Encodes a jwt token and packages it into a header dict for a given user
 
-        :param user:                      The user to package the header for
-        :type user: :py:class:`User`
-        :param override_access_lifespan:  Override's the instance's access
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           accessability will expire. May not
-                                           exceed the :py:data:`refresh_lifespan`
-        :type override_access_lifespan: :py:data:`pendulum`
-        :param override_refresh_lifespan: Override's the instance's refresh
-                                           lifespan to set a custom duration
-                                           after which the new token's
-                                           refreshability will expire.
-        :type override_refresh_lifespan: :py:data:`pendulum`
-        :param custom_claims:             Additional claims that should
-                                           be packed in the payload. Note that
-                                           any claims supplied here must be
-                                           :py:mod:`json` compatible types
-        :type custom_claims: json
+        Args:
+            user (:py:class:`User`): The user to package the header for
+            override_access_lifespan (:py:data:`pendulum`):  Override's the instance's
+                access lifespan to set a custom duration after which the new token's
+                accessability will expire. May not exceed the :py:data:`refresh_lifespan`
+            override_refresh_lifespan (:py:data:`pendulum`): Override's the instance's
+                refresh lifespan to set a custom duration after which the new token's
+                refreshability will expire.
+            custom_claims (dict): Additional claims that should be packed in the payload. Note
+                that any claims supplied here must be :py:mod:`json` compatible types
 
-        :returns: updated header, including token
-        :rtype: json
+        Returns:
+            json: Updated header, including token
         """
+
         token = await self.encode_token(
             user,
             override_access_lifespan=override_access_lifespan,
@@ -1418,13 +1439,13 @@ class Beskar():
 
     async def send_registration_email(
         self,
-        email,
-        user=None,
-        template=None,
-        confirmation_sender=None,
-        confirmation_uri=None,
-        subject=None,
-        override_access_lifespan=None,
+        email: str,
+        user: object,
+        template: Optional[str] = None,
+        confirmation_sender: Optional[str] = None,
+        confirmation_uri: Optional[str] = None,
+        subject: Optional[str] = None,
+        override_access_lifespan: Optional[pendulum.duration] = None,
     ):
         """
         Sends a registration email to a new user, containing a time expiring
@@ -1433,40 +1454,29 @@ class Beskar():
         sanic-mailing's :py:class:`Message` object and a
         :py:meth:`send_message` method.
 
-        Returns a dict containing the information sent, along with the
-            `result` from mail send.
+        Args:
+            user (:py:class:`User`): The user object to tie claim to
+                (username, id, email, etc)
+            template (Optional, :py:data:`filehandle`): HTML Template for confirmation
+                email. If not provided, a stock entry is used.
+            confirmation_sender (Optional, str): The sender that shoudl be attached to the
+                confirmation email. Overrides the :py:data:`BESKAR_CONFIRMATION_SENDER`
+                config setting.
+            confirmation_uri (Optional, str): The uri that should be visited to complete email
+                registration. Should usually be a uri to a frontend or external service
+                that calls a 'finalize' method in the api to complete registration. Will
+                override the :py:data:`BESKAR_CONFIRMATION_URI` config setting.
+            subject (Optional, str): The registration email subject.  Will override the
+                :py:data:`BESKAR_CONFIRMATION_SUBJECT` config setting.
+            override_access_lifespan (Optional, :py:data:`pendulum`): Overrides the
+                :py:data:`TOKEN_ACCESS_LIFESPAN` to set an access lifespan for the
+                registration token.
 
-        :param user:                     The user object to tie claim to
-                                          (username, id, email, etc)
-        :type user: :py:class:`User`
-        :param template:                 HTML Template for confirmation email.
-                                          If not provided, a stock entry is
-                                          used
-        :type template: :py:data:`filehandle`
-        :param confirmation_sender:      The sender that shoudl be attached
-                                          to the confirmation email. Overrides
-                                          the :py:data:`BESKAR_CONFIRMATION_SENDER`
-                                          config setting
-        :type confirmation_sender: str
-        :param confirmation_uri:         The uri that should be visited to
-                                          complete email registration. Should
-                                          usually be a uri to a frontend or
-                                          external service that calls a
-                                          'finalize' method in the api to
-                                          complete registration. Will override
-                                          the :py:data:`BESKAR_CONFIRMATION_URI`
-                                          config setting
-        :type confirmation_uri: str
-        :param subject:                  The registration email subject.
-                                          Will override the
-                                          :py:data:`BESKAR_CONFIRMATION_SUBJECT`
-                                          config setting.
-        :type subject: str
-        :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
-                                          to set an access lifespan for the
-                                          registration token.
-        :type override_access_lifespan: :py:data:`pendulum`
+        Returns:
+            dict: Summary of information sent, along with the `result` from mail send. (Essentually
+            the response of :py:func:`send_token_email`).
         """
+
         if subject is None:
             subject = self.confirmation_subject
 
@@ -1497,12 +1507,12 @@ class Beskar():
 
     async def send_reset_email(
         self,
-        email,
-        template=None,
-        reset_sender=None,
-        reset_uri=None,
-        subject=None,
-        override_access_lifespan=None,
+        email: str,
+        template: Optional[str] = None,
+        reset_sender: Optional[str] = None,
+        reset_uri: Optional[str] = None,
+        subject: Optional[str] = None,
+        override_access_lifespan: Optional[pendulum.duration] = None,
     ):
         """
         Sends a password reset email to a user, containing a time expiring
@@ -1511,39 +1521,25 @@ class Beskar():
         sanic-mailing's :py:class:`Message` object and a
         :py:meth:`send_message()` method.
 
-        :returns: a :py:data:`dict` containing the information sent, along with the
-                  ``result`` from mail send.
+        Args:
+            email (str): The email address to attempt to send to.
+            template (Optional, :py:data:`filehandle`): HTML Template for reset email.
+                If not provided, a stock entry is used.
+            confirmation_sender (Optional, str): The sender that should be attached to the
+                reset email. Defaults to :py:data:`BESKAR_RESET_SENDER` config setting.
+            confirmation_uri (Optional, str): The uri that should be visited to complete password
+                reset. Should usually be a uri to a frontend or external service that calls
+                the 'validate_reset_token()' method in the api to complete reset. Defaults to
+                :py:data:`BESKAR_RESET_URI` config setting.
+            subject (Optional, str): The reset email subject. Defaults to
+                :py:data:`BESKAR_RESET_SUBJECT` config setting.
+            override_access_lifespan (Optional, :py:data:`pendulum`): Overrides the
+                :py:data:`TOKEN_ACCESS_LIFESPAN` to set an access lifespan for the registration token.
+                Defaults to :py:data:`TOKEN_ACCESS_LIFESPAN` config setting.
 
-        :param email:                    The email address to attempt to
-                                          send to
-        :type email: str
-        :param template:                 HTML Template for reset email.
-                                          If not provided, a stock entry is
-                                          used
-        :type template: :py:data:`filehandle`
-        :param confirmation_sender:      The sender that shoudl be attached
-                                          to the reset email. Overrides
-                                          the :py:data:`BESKAR_RESET_SENDER`
-                                          config setting
-        :type confirmation_sender: str
-        :param confirmation_uri:         The uri that should be visited to
-                                          complete password reset. Should
-                                          usually be a uri to a frontend or
-                                          external service that calls the
-                                          'validate_reset_token()' method in
-                                          the api to complete reset. Will
-                                          override the :py:data:`BESKAR_RESET_URI`
-                                          config setting
-        :type confirmation_uri: str
-        :param subject:                  The reset email subject.
-                                          Will override the
-                                          :py:data:`BESKAR_RESET_SUBJECT`
-                                          config setting.
-        :type subject: str
-        :param override_access_lifespan: Overrides the :py:data:`TOKEN_ACCESS_LIFESPAN`
-                                          to set an access lifespan for the
-                                          registration token.
-        :type override_access_lifespan: :py:data:`pendulum`
+        Returns:
+            dict: Summary of information sent, along with the `result` from mail send. (Essentually
+            the response of :py:func:`send_token_email`).
         """
         if subject is None:
             subject = self.reset_subject
