@@ -1655,8 +1655,8 @@ class Beskar():
             jinja_tmpl = jinja2.Template(template)
             notification["message"] = jinja_tmpl.render(notification).strip()
 
-            Mail = import_module(self.app.ctx.mail.__module__)
-            msg = Mail.Message(
+            _mail = import_module(self.app.ctx.mail.__module__)
+            msg = _mail.Message(
                 subject=notification["subject"],
                 to=[notification["email"]],
                 from_address=action_sender,
