@@ -23,7 +23,14 @@ async def _verify_and_add_token(request, optional=False):
 
     Will not add token data if it is already present.
 
-    Only use in this module
+    Only used in this module
+
+    Args:
+        request (sanic.Request): Current Sanic ``Request``
+        optional (bool, optional): Token is not required. Defaults to False.
+
+    Raises:
+        MissingToken: Token is required and not present.
     """
     if not app_context_has_token_data():
         guard = current_guard()
@@ -42,6 +49,15 @@ def auth_required(method):
     This decorator is used to ensure that a user is authenticated before
     being able to access a sanic route. It also adds the current user to the
     current sanic context.
+
+    Args:
+        method (Callable): Function or route to protect.
+
+    Returns:
+        NoReturn: Decorator
+
+    Raises:
+        MissingToken: No authenticated user token is available to authorize.
     """
 
     @functools.wraps(method)
@@ -60,6 +76,12 @@ def auth_accepted(method):
     This decorator is used to allow an authenticated user to be identified
     while being able to access a sanic route, and adds the current user to the
     current sanic context.
+
+    Args:
+        method (Callable): Function or route to protect.
+
+    Returns:
+        NoReturn: Decorator
     """
     @functools.wraps(method)
     async def wrapper(request, *args, **kwargs):
@@ -77,6 +99,18 @@ def roles_required(*required_rolenames):
     the needed roles to access it. If an :py:func:`auth_required` decorator is not
     supplied already, this decorator will implicitly check :py:func:`auth_required`
     first
+
+    Args:
+        required_rolenames (Union[list, set]): Role names required to be present
+            in the authenticated users ``roles`` attribute.
+
+    Returns:
+        NoReturn: Decorator
+
+    Raises:
+        sanic_beskar.BeskarError: `roles_disabled` for this application.
+        MissingRoleError: Missing required role names in user ``roles`` attribute.
+        MissingTokenError: Token missing in ``Sanic.Request``
     """
 
     def decorator(method):
@@ -91,9 +125,55 @@ def roles_required(*required_rolenames):
             try:
                 MissingRoleError.require_condition(
                     (await current_rolenames()).issuperset(role_set),
-                    #not {*required_rolenames} - {*(await current_rolenames())},
+                    # not {*required_rolenames} - {*(await current_rolenames())},
                     'This endpoint requires all the following roles: '
                     f'[{required_rolenames}]',
+                )
+                return await method(request, *args, **kwargs)
+            finally:
+                remove_token_data_from_app_context()
+
+        return wrapper
+
+    return decorator
+
+
+def rights_required(*required_rights):
+    """
+    This decorator ensures that any uses accessing the decorated route have all
+    the needed rights to access it. If an :py:func:`auth_required` decorator is not
+    supplied already, this decorator will implicitly check :py:func:`auth_required`
+    first.
+
+    Args:
+        required_rights (Union[list, set]): Right names required to be present,
+            based upon the implied rights in the authenticated users ``roles`` attribute
+            breakdown.
+
+    Returns:
+        NoReturn: Decorator
+
+    Raises:
+        sanic_beskar.BeskarError: `roles_disabled` for this application.
+        MissingRightsError: Missing required rights in user ``roles`` attribute breakdown.
+        MissingTokenError: Token missing in ``Sanic.Request``
+    """
+
+    def decorator(method):
+        @functools.wraps(method)
+        async def wrapper(request, *args, **kwargs):
+            BeskarError.require_condition(
+                not current_guard().roles_disabled,
+                "This feature is not available because roles are disabled",
+            )
+            await _verify_and_add_token(request)
+            role_set = set([str(n) for n in required_rights])
+            try:
+                MissingRoleError.require_condition(
+                    (await current_rolenames()).issuperset(role_set),
+                    # not {*required_rolenames} - {*(await current_rolenames())},
+                    'This endpoint requires all the following roles: '
+                    f'[{required_rights}]',
                 )
                 return await method(request, *args, **kwargs)
             finally:
@@ -110,6 +190,12 @@ def roles_accepted(*accepted_rolenames):
     of the needed roles to access it. If an :py:func:`auth_required` decorator is not
     supplied already, this decorator will implicitly check :py:func:`auth_required`
     first
+
+    Args:
+        method (Callable): Function or route to protect.
+
+    Returns:
+        NoReturn: Decorator
     """
 
     def decorator(method):
@@ -123,7 +209,7 @@ def roles_accepted(*accepted_rolenames):
             role_set = set([str(n) for n in accepted_rolenames])
             try:
                 MissingRoleError.require_condition(
-                    #not {*(await current_rolenames())}.isdisjoint(accepted_rolenames),
+                    # not {*(await current_rolenames())}.isdisjoint(accepted_rolenames),
                     not (await current_rolenames()).isdisjoint(role_set),
                     'This endpoint requires one of the following roles: '
                     f'[{accepted_rolenames}]',
