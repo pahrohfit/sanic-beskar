@@ -169,6 +169,11 @@ def rights_required(*required_rights):
             try:
                 current_roles = await current_rolenames()
                 for right in required_rights:
+                    BeskarError.require_condition(
+                        right in current_guard().rbac_definitions,
+                        'This endpoint requires a right which is not otherwise defined: '
+                        f'[{right}]',
+                    )
                     MissingRightError.require_condition(
                         not {*current_roles}.isdisjoint({*(current_guard().rbac_definitions[right])}),
                         'This endpoint requires all the following rights: '
