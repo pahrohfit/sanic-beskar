@@ -128,6 +128,7 @@ rbac_base = {
         'install_package',
         'remove_package',
     ],
+    'operator': ['update_rights'],
 }
 
 
@@ -233,8 +234,9 @@ def create_app(db_path=None):
     @sanic_beskar.roles_required("admin")
     async def update_rbac(request):
         """ update roles, call update signal """
-        rbac_base['admin'].remove('rights_protected')
-        sanic_app.dispatch("beskar.rbac.update")
+        rbac_base['admin'].remove('update_rights')
+        await sanic_app.dispatch("beskar.rbac.update")
+        return json({'message': 'success'})
 
     @sanic_app.route("/protected_admin_required")
     @sanic_beskar.roles_required("admin")
