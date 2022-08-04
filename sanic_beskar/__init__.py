@@ -5,6 +5,7 @@ from sanic_beskar.decorators import (
     auth_accepted,
     roles_required,
     roles_accepted,
+    rights_required,
 )
 from sanic_beskar.utilities import (
     current_user,

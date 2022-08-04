@@ -1,14 +1,34 @@
 import textwrap
 import pendulum
 import plummet
+import warnings
 
 from httpx import Cookies
 
-from sanic_beskar.exceptions import MissingRoleError
+from sanic_beskar.exceptions import MissingRoleError, MissingRightError
+from sanic_beskar import Beskar
 
 
 class TestBeskarDecorators:
-    async def test_auth_accepted(self, default_guard, mock_users, client):
+    async def test__verify_password(self, app, user_class, default_guard):
+        """
+        This test verifies that the _verify_password function can be used to
+        successfully compare a raw password against its hashed version
+        """
+        secret = default_guard.hash_password("some password")
+        assert default_guard._verify_password("some password", secret)
+        assert not default_guard._verify_password("not right", secret)
+
+        app.config["BESKAR_HASH_SCHEME"] = "pbkdf2_sha512"
+        specified_guard = Beskar(app, user_class)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            specified_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
+        secret = specified_guard.hash_password("some password")
+        assert specified_guard._verify_password("some password", secret)
+        assert not specified_guard._verify_password("not right", secret)
+
+    async def test_auth_accepted(self, default_guard, mock_users, client, app, user_class):
         """
         This test verifies that the @auth_accepted decorator can be used
         to optionally use a properly structured auth header including
@@ -16,7 +36,6 @@ class TestBeskarDecorators:
         """
 
         the_dude = await mock_users(username='the_dude')
-
         # Token is not in header or cookie
         _, response = client.get(
             "/kinda_protected",
@@ -224,3 +243,33 @@ class TestBeskarDecorators:
             headers=await default_guard.pack_header_for_user(jesus),
         )
         assert response.status == 200
+
+    async def test_rights_required(self, client, mock_users, default_guard):
+        """
+        This test verifies that the @rights_required decorator can be used
+        to ensure that any users attempting to access a given endpoint or
+        resource must have all of the rights listed.  If a rights failure,
+        a 401 error occurs with an informative error message.
+        """
+        from sanic.log import logger
+
+        the_dude = await mock_users(username='the_dude', roles="admin")
+        walter = await mock_users(username='walter', roles="not_admin")
+
+        _, response = client.get(
+            "/rbac_protected",
+            headers=await default_guard.pack_header_for_user(the_dude),
+        )
+        logger.critical(f"Response: {response.json}")
+        assert response.status == 200
+
+        _, response = client.get(
+            "/rbac_protected",
+            headers=await default_guard.pack_header_for_user(walter),
+        )
+        assert response.status == 403
+        assert MissingRightError.__name__ in response.json["message"]
+        assert (
+            "This endpoint requires all the following rights"
+            in response.json["message"]
+        )

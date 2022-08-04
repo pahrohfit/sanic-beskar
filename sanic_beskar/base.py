@@ -22,6 +22,7 @@ from sanic_beskar.utilities import (
     duration_from_string,
     is_valid_json,
     get_request,
+    normalize_rbac,
 )
 
 from sanic_beskar.exceptions import (
@@ -383,6 +384,14 @@ class Beskar():
 
         self.is_testing = app.config.get("TESTING", False)
 
+        """
+        If we are supporting RBAC, lets go pull the current, massage it, and store
+        it.  Additionally, setup a listener to know when to go pull updated RBAC
+        info whenever the application causes or detects a change.
+
+        Application owner must manually trigger this if there is a change, by sending
+        a tickle to the ``beskar.rbac.update`` signal watcher.
+        """
         if self.rbac_populate_hook:
             ConfigurationError.require_condition(
                 callable(self.rbac_populate_hook),
@@ -391,7 +400,8 @@ class Beskar():
 
             @app.signal("beskar.rbac.update")
             async def rbac_populate():
-                self.rbac_definitions = await self.rbac_populate_hook()
+                _rbac_dump = await self.rbac_populate_hook()
+                self.rbac_definitions = normalize_rbac(_rbac_dump)
                 logger.debug(f"RBAC definitions updated: {self.rbac_definitions}")
 
             @app.before_server_start

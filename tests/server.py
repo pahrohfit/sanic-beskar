@@ -36,15 +36,12 @@ def create_app(db_path=None):
     sanic_app.config['PYTESTING'] = True
     sanic_app.config.SECRET_KEY = "top secret"
 
-    sanic_app.config.MAIL_SERVER = 'localhost:25'
-    sanic_app.config.MAIL_USERNAME = ''
-    sanic_app.config.MAIL_PASSWORD = ''
-    sanic_app.config.MAIL_FROM = 'fake@fake.com'
-    sanic_app.config.TOKEN_PLACES = ['header', 'cookie']
-
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
+
     _guard.init_app(sanic_app, User)
+    _guard.rbac_definitions = {'sooper_access_right': ['admin', 'uber_admin'],
+                               'lame_access_right': ['not_admin'],}
     sanic_app.ctx.mail = _mail
 
     @sanic_app.route("/unprotected")
@@ -63,6 +60,12 @@ def create_app(db_path=None):
     @sanic_app.route("/protected")
     @sanic_beskar.auth_required
     async def protected(request):
+        return json({"message": "success"})
+
+    @sanic_app.route("/rbac_protected")
+    @sanic_beskar.auth_required
+    @sanic_beskar.rights_required('sooper_access_right')
+    async def rights_protected(request):
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_required")

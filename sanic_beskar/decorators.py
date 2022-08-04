@@ -3,6 +3,7 @@ import functools
 from sanic_beskar.exceptions import (
     BeskarError,
     MissingRoleError,
+    MissingRightError,
     MissingToken,
 )
 
@@ -121,11 +122,9 @@ def roles_required(*required_rolenames):
                 "This feature is not available because roles are disabled",
             )
             await _verify_and_add_token(request)
-            role_set = set([str(n) for n in required_rolenames])
             try:
                 MissingRoleError.require_condition(
-                    (await current_rolenames()).issuperset(role_set),
-                    # not {*required_rolenames} - {*(await current_rolenames())},
+                    not {*required_rolenames} - {*(await current_rolenames())},
                     'This endpoint requires all the following roles: '
                     f'[{required_rolenames}]',
                 )
@@ -155,7 +154,7 @@ def rights_required(*required_rights):
 
     Raises:
         sanic_beskar.BeskarError: `roles_disabled` for this application.
-        MissingRightsError: Missing required rights in user ``roles`` attribute breakdown.
+        MissingRightError: Missing required rights in user ``roles`` attribute breakdown.
         MissingTokenError: Token missing in ``Sanic.Request``
     """
 
@@ -163,18 +162,18 @@ def rights_required(*required_rights):
         @functools.wraps(method)
         async def wrapper(request, *args, **kwargs):
             BeskarError.require_condition(
-                not current_guard().roles_disabled,
-                "This feature is not available because roles are disabled",
+                current_guard().rbac_definitions != dict(),
+                "This feature is not available because RBAC is not enabled",
             )
             await _verify_and_add_token(request)
-            role_set = set([str(n) for n in required_rights])
             try:
-                MissingRoleError.require_condition(
-                    (await current_rolenames()).issuperset(role_set),
-                    # not {*required_rolenames} - {*(await current_rolenames())},
-                    'This endpoint requires all the following roles: '
-                    f'[{required_rights}]',
-                )
+                current_roles = await current_rolenames()
+                for right in required_rights:
+                    MissingRightError.require_condition(
+                        not {*current_roles}.isdisjoint({*(current_guard().rbac_definitions[right])}),
+                        'This endpoint requires all the following rights: '
+                        f'[{required_rights}]',
+                    )
                 return await method(request, *args, **kwargs)
             finally:
                 remove_token_data_from_app_context()
@@ -206,11 +205,9 @@ def roles_accepted(*accepted_rolenames):
                 "This feature is not available because roles are disabled",
             )
             await _verify_and_add_token(request)
-            role_set = set([str(n) for n in accepted_rolenames])
             try:
                 MissingRoleError.require_condition(
-                    # not {*(await current_rolenames())}.isdisjoint(accepted_rolenames),
-                    not (await current_rolenames()).isdisjoint(role_set),
+                    not {*(await current_rolenames())}.isdisjoint(accepted_rolenames),
                     'This endpoint requires one of the following roles: '
                     f'[{accepted_rolenames}]',
                 )
