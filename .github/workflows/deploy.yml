@@ -18,7 +18,7 @@ jobs:
     - name: get-poetry
       run: pip install poetry
     - name: login
-      run: poetry config http-basic.pypi pahrohfit ${{ secrets.PYPI_PASSWORD }}
+      run: poetry config http-basic.pypi __token__ ${{ secrets.PYPI_PASSWORD }}
     - name: build
       run: poetry build
     - name: publish
