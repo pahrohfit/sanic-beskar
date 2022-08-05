@@ -984,6 +984,18 @@ dev = ["sanic-testing (>=0.8)", "coverage", "pytest", "pytest-cov", "pytest-asyn
 test = ["sanic-testing (>=0.8)", "coverage", "pytest", "pytest-cov", "pytest-asyncio", "tox", "jinja2"]
 
 [[package]]
+name = "sanic-jinja2"
+version = "2022.1.13"
+description = "Jinja2 support for sanic"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+jinja2 = "*"
+sanic = ">=21.3"
+
+[[package]]
 name = "sanic-routing"
 version = "22.3.0"
 description = "Core routing component for Sanic"
@@ -1328,7 +1340,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "332da6a99e278f2320a9c78cba4ff44bbcc09734b0b65a45e4f161fc9e36e1d8"
+content-hash = "b7c490ac49880ff5699da524401d34399eb001486f54e022dd513f67fe2a67eb"
 
 [metadata.files]
 aiofiles = [
@@ -2072,6 +2084,10 @@ sanic = [
 sanic-ext = [
     {file = "sanic-ext-22.6.2.tar.gz", hash = "sha256:ec6be5c2c5dfeacc7e6acb16a8be2dc5396f8931b73dc72617230d0eeb85db69"},
     {file = "sanic_ext-22.6.2-py3-none-any.whl", hash = "sha256:f0790ab5bb1b6497f4ede72743c9b9b080627a01315ecfc2c994d38327595cab"},
+]
+sanic-jinja2 = [
+    {file = "sanic-jinja2-2022.1.13.tar.gz", hash = "sha256:13f5aafd74b3da52b60e7bb9e9ff2ff294b9d2b40d80af6513ad0ddfd993fe8b"},
+    {file = "sanic_jinja2-2022.1.13-py3-none-any.whl", hash = "sha256:bdfc36f58676ddc6dac3a17deb94f23f5aef95e9e87aa285fcecaaa6f335556d"},
 ]
 sanic-routing = [
     {file = "sanic-routing-22.3.0.tar.gz", hash = "sha256:fde5a7d4079794b585b9a2904accd0de5a70abf27c82d2658b40c551ef44f703"},
