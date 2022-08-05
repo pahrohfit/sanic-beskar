@@ -196,7 +196,8 @@ def roles_accepted(*accepted_rolenames):
     first
 
     Args:
-        method (Callable): Function or route to protect.
+        accepted_rolenames (Union[list, set]): Role names, at least one of which is
+            required to be present, in the authenticated users ``roles`` attribute.
 
     Returns:
         NoReturn: Decorator
