@@ -23,6 +23,33 @@ def get_request(request: Request) -> Request:
         raise BeskarError("Could not identify current Sanic request")
 
 
+def normalize_rbac(rbac_dump: dict) -> dict:
+    """
+    Normalize an RBAC dump into something usable.
+
+    Yes, I know this will produce duplicates in the role lists of a permission,
+    but its much faster than dealing with a set, so we don't care.
+
+    Example:
+        {'rolename': ['read', 'write', 'update'],}
+
+    Produces:
+        {'read': ['rolename'], 'write': ['rolename'], 'update': ['rolename']}
+
+    Args:
+        rbac_dump (dict): RBAC dump from config/storage.
+
+    Returns:
+        dict: Normalized (for our purposes) RBAC policy.
+    """
+    _inversed = {}
+    for k in rbac_dump:
+        for v in rbac_dump[k]:
+            _inversed.setdefault(v, []).append(k)
+
+    return _inversed
+
+
 async def is_valid_json(data: str) -> ujson:
     """
     Simple helper to validate if a value is valid json data
@@ -35,7 +62,7 @@ async def is_valid_json(data: str) -> ujson:
     """
     try:
         return ujson.loads(data)
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 

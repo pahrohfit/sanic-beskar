@@ -62,6 +62,34 @@ Core Configuration Settings
    * - ``BESKAR_ROLES_DISABLED``
      - If set, role decorators will not work but rolenames will not be a required field
      - ``None``
+   * - ``BESKAR_RBAC_POLICY``
+     - If set, can be used either as the source of RBAC config, or as the initial value.
+       This will be overwritten if a ``rbac_populate_hook`` is provided at Beskar init time.
+
+       .. code:: python
+
+         {
+          'rolename_1': [
+            'access_right_1',
+            'access_right_2',
+            'access_right_3'
+          ],
+          'rolename_2': [
+            'access_right_2',
+            'access_right_4'
+          ],
+          'rolename_3': [
+            'access_right_5',
+            'access_right_6'
+          ],
+         }
+
+       .. note::
+
+         Either ``BESKAR_RBAC_POLICY`` or ``rbac_populate_hook`` must be provided to enable
+         the use of the ``@rights_required()`` decorator.
+
+     - ``None``
 
 OTP Configuration Settings
 --------------------------

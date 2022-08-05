@@ -10,13 +10,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
-v2.0.0 - 2022-07-21
+v2.0.0 - 2022-08-05
 -------------------
-- Moved to Sanic
+- Moved to Sanic from Flask
+- Added async/await support
 - Added OTP
 - Added QR Code generation for OTP
 - Updated all the docs
 - Added a metric f*ton of docstrings
+- Added RBAC support
+- Provided updated and current examples
 
 v1.3.0 - 2021-11-25
 -------------------

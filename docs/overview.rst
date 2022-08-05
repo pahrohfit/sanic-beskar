@@ -34,6 +34,8 @@ The *sanic-beskar* package can be used to:
 * Parse user information from request headers for use in client route handlers
 * Support inclusion of custom user claims in tokens
 * Register new users using email verification
+* Support OTP authentication as a dual factor
+* Provide RBAC based protection of endpoints and resources
 
 All of this is provided in a very simple to configure and initialize flask
 extension. Though simple, the security provided by *sanic-beskar* is strong

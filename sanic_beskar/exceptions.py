@@ -97,6 +97,13 @@ class MissingRoleError(BeskarError):
     status = 403
 
 
+class MissingRightError(BeskarError):
+    """
+    The token is missing a required right based upon role breakdown
+    """
+    status = 403
+
+
 class MissingUserError(BeskarError):
     """
     The user could not be identified

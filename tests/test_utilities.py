@@ -1,8 +1,10 @@
-from sanic import Sanic
-import pendulum
+from io import StringIO, BytesIO
+from ujson import dumps
 import pytest
 
-from io import StringIO, BytesIO
+from sanic import Sanic
+import pendulum
+
 
 from sanic_beskar.utilities import (
     add_token_data_to_app_context,
@@ -14,6 +16,9 @@ from sanic_beskar.utilities import (
     current_rolenames,
     current_custom_claims,
     duration_from_string,
+    normalize_rbac,
+    is_valid_json,
+    current_guard,
 )
 from sanic_beskar.exceptions import (
     BeskarError,
@@ -173,3 +178,42 @@ class TestBeskarUtilities:
 
         with pytest.raises(TypeError):
             await generate_totp_qr(None)
+
+    async def test_rbac_normalization(self):
+        """
+        This test verifies we can turn a standard {rolename: [rights]} RBAC
+        dump into a form usable for efficient lookups in decorators.
+        """
+
+        test_rbac_dump = {
+            'role1': ['righta', 'rightb', 'rightc', 'rightd'],
+            'role2': ['rightc'],
+            'role3': ['rightb', 'righte', 'rightc'],
+            'role4': ['righte', 'righta', 'rightb'],
+        }
+
+        good_rbac = {
+            'righta': ['role1', 'role4'],
+            'rightb': ['role1', 'role3', 'role4'],
+            'rightc': ['role1', 'role2', 'role3'],
+            'rightd': ['role1'],
+            'righte': ['role3', 'role4'],
+        }
+
+        assert normalize_rbac(test_rbac_dump) == good_rbac
+
+    async def test_is_valid_json(self):
+        """
+        This test verifies we can identify proper JSON.
+        """
+
+        assert await is_valid_json(dumps({'foo': 'bar'}))
+        assert not await is_valid_json([None])
+        assert not await is_valid_json({"foo"})
+
+    async def test_current_guard(self, default_guard):
+        """
+        This test verifies we get back the proper guard object
+        """
+
+        assert current_guard() == default_guard

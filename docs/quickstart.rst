@@ -88,6 +88,9 @@ directory:
    * - `examples/register.py
        <https://github.com/pahrohfit/sanic-beskar/blob/master/example/register.py>`_
      - Simple example showing email based registration validation
+   * - `examples/basic_with_rbac.py
+       <https://github.com/pahrohfit/sanic-beskar/blob/master/example/basic_with_rbac.py>`_
+     - Simple example showing RBAC based usage and ``rbac_populate_hook``
 
 
 The most basic utilization of the :py:mod:`sanic_beskar` decorators is included:
