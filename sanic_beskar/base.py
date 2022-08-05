@@ -320,6 +320,13 @@ class Beskar():
             self.encode_key,
         )
 
+        # If the user provided a base RBAC policy, lets consume it
+        if app.config.get("RBAC_POLICY"):
+            try:
+                self.rbac_definitions = normalize_rbac(app.config.get("RBAC_POLICY"))
+            except Exception as e:
+                raise ConfigurationError(f'Failure loading supplied RBAC_POLICY from config: {e}')
+
         if isinstance(self.access_lifespan, dict):
             self.access_lifespan = pendulum.duration(**self.access_lifespan)
         elif isinstance(self.access_lifespan, str):

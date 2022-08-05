@@ -62,7 +62,7 @@ async def is_valid_json(data: str) -> ujson:
     """
     try:
         return ujson.loads(data)
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 
