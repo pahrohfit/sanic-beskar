@@ -162,17 +162,6 @@ def create_app(db_path=None):
         generate_schemas=True,
     )
 
-    """
-    @sanic_app.listener('after_server_start')
-    async def dispatch_some_shit(sanic):
-        logger.critical('starting sleep..')
-        await asyncio.sleep(10)
-        sanic_app.dispatch("beskar.rbac.update")
-        await asyncio.sleep(10)
-        sanic_app.dispatch("beskar.rbac.update")
-        logger.critical('..finished sleep')
-    """
-
     # Add users for the example
     @sanic_app.listener('before_server_start')
     async def populate_db(sanic):
@@ -264,7 +253,6 @@ def create_app(db_path=None):
         """
         user = await sanic_beskar.current_user()
         return json({"message": f"protected_operator_accepted endpoint (allowed usr {user.username}"})
-
 
     return sanic_app
 

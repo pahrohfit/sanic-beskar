@@ -58,31 +58,70 @@ class that should be used to check for authorization for decorated routes. The
 class itself may be implemented in any way that you see fit. It must, however,
 satisfy the following requirements:
 
-* Provide a ``lookup`` class method that:
+* Provide an `async` ``lookup`` class method that:
 
   * should take a single argument of the name of the user
 
   * should return an instance of the ``user_class`` or ``None``
 
-* Provide an ``identify`` class method
+* Provide an `async` ``identify`` class method
 
   * should take a single argument of the unique id of the user
 
   * should return an instance of the ``user_class`` or ``None``
 
-* Provide a ``rolenames`` instance attribute
+* Provide an `async` ``rolenames`` instance attribute
 
   * only applies if roles are not disabled. See ``BESKAR_ROLES_DISABLED`` setting
 
   * should return a list of string roles assigned to the user
 
-* Provide a ``password`` instance attribute
-
-  * should return the hashed password assigned to the user
-
-* Provide an ``identity`` instance attribute
+* Provide an `async` ``identity`` instance attribute
 
   * should return the unique id of the user
 
 Although the example given in the documentation uses a SQLAlchemy model for the
 userclass, this is not a requirement.
+
+.. _rbac-populate-hook-requirements:
+
+Requirements for the `rbac_populate_hook`
+-----------------------------------------
+
+The optional ``rbac_populate_hook`` argument supplied during initialization represents
+the `async` function that should be used to update the RBAC definitions for
+the application.
+
+This function, if provided, will be called at ``init_app()`` time to retreive and load
+the RBAC policy for your application, for use in the ``@rights_required()`` decorator.
+This is, essentially, a grouping of discrete rights or entitlements, tied back to a role,
+providing granular control over routes and resources.
+
+The expected output of this function is a ``dict()``, showing the grouping to use.
+
+.. code-block:: python
+
+  {
+   'rolename_1': [
+     'access_right_1',
+     'access_right_2',
+     'access_right_3'
+   ],
+   'rolename_2': [
+     'access_right_2',
+     'access_right_4'
+   ],
+   'rolename_3': [
+     'access_right_5',
+     'access_right_6'
+   ],
+  }
+
+Rights can be overlapping (contained in multiple role definitions).
+
+To trigger an update, a call to a Sanic signal ``beskar.rbac.update`` should be sent.
+This will cause Sanic-Beskar to re-run the ``rbac_populate_hook`` and update the policy
+without needing an application restart. This is most useful for when the policy can be
+modified, while the app is running, and pulled from a database::
+
+  await sanic_app.dispatch("beskar.rbac.update")
