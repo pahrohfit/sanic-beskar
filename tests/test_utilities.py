@@ -19,6 +19,7 @@ from sanic_beskar.utilities import (
     normalize_rbac,
     is_valid_json,
     current_guard,
+    get_request,
 )
 from sanic_beskar.exceptions import (
     BeskarError,
@@ -217,3 +218,10 @@ class TestBeskarUtilities:
         """
 
         assert current_guard() == default_guard
+
+    async def test_get_request(self):
+        """
+        This test verifies we get back the proper guard object
+        """
+        with pytest.raises(BeskarError):
+            get_request(request=None)

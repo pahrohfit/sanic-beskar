@@ -2,10 +2,6 @@
    :target: https://badge.fury.io/py/sanic-beskar
    :alt:    Latest Published Version
 
-.. image::  https://travis-ci.org/pahrohfit/sanic-beskar.svg?branch=master
-   :target: https://travis-ci.org/pahrohfit/sanic-beskar
-   :alt:    Build Status
-
 .. image::  https://readthedocs.org/projects/sanic-beskar/badge/?version=latest
    :target: http://sanic-beskar.readthedocs.io/en/latest/?badge=latest
    :alt:    Documentation Build Status
@@ -21,9 +17,6 @@
 ******************
  sanic-beskar
 ******************
-
-
-** WORK IN PROGRESS -- docs below are mostly correct, I think **
 
 * Stable branch: master
 * CBTE (coding by trial and error) branch: dev

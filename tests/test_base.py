@@ -32,6 +32,7 @@ from sanic_beskar.exceptions import (
     BeskarError,
     LegacyScheme,
     TOTPRequired,
+    ConfigurationError,
 )
 from sanic_beskar.constants import (
     AccessType,
@@ -1160,6 +1161,14 @@ class TestBeskar:
         with TOTP two factor authentication.
         """
 
+        with pytest.raises(ConfigurationError):
+            app.config.BESKAR_TOTP_SECRETS_TYPE = 'failwhale'
+            Beskar(app, totp_user_class)
+
+        with pytest.raises(ConfigurationError):
+            Beskar(app, totp_user_class, rbac_populate_hook='failwhale')
+
+        app.config.BESKAR_TOTP_SECRETS_TYPE = None
         totp_guard = Beskar(app, totp_user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -1261,3 +1270,13 @@ class TestBeskar:
         assert the_protected_dude_totp.get('enckey')
         # put away your toys
         await the_dude.delete()
+
+    async def test_rbac_policy_load(self, app, user_class):
+        """
+        This test verifies the authenticate_totp() function, for use
+        with TOTP two factor authentication.
+        """
+
+        app.config["BESKAR_RBAC_POLICY"] = "testing"
+        with pytest.raises(ConfigurationError):
+            Beskar(app, user_class)

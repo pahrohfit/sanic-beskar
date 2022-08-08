@@ -162,7 +162,7 @@ def rights_required(*required_rights):
         @functools.wraps(method)
         async def wrapper(request, *args, **kwargs):
             BeskarError.require_condition(
-                current_guard().rbac_definitions != dict(),
+                current_guard().rbac_definitions != {},
                 "This feature is not available because RBAC is not enabled",
             )
             await _verify_and_add_token(request)
@@ -175,7 +175,9 @@ def rights_required(*required_rights):
                         f'[{right}]',
                     )
                     MissingRightError.require_condition(
-                        not {*current_roles}.isdisjoint({*(current_guard().rbac_definitions[right])}),
+                        not {*current_roles}.isdisjoint(
+                            {*(current_guard().rbac_definitions[right])}
+                        ),
                         'This endpoint requires all the following rights: '
                         f'[{required_rights}]',
                     )
