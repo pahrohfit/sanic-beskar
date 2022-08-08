@@ -26,6 +26,7 @@ __all__ = [
     "auth_accepted",
     "roles_required",
     "roles_accepted",
+    "rights_required",
     "current_user",
     "current_user_id",
     "generate_totp_qr",
