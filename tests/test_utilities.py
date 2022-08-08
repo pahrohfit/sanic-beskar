@@ -217,3 +217,6 @@ class TestBeskarUtilities:
         """
 
         assert current_guard() == default_guard
+
+        with pytest.raises(BeskarError):
+            current_guard(request=None)
