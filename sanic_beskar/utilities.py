@@ -1,8 +1,6 @@
 import functools
-import inspect
 import re
 from typing import NoReturn, Optional
-import warnings
 import ujson
 
 import segno
