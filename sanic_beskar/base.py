@@ -325,7 +325,7 @@ class Beskar():
             try:
                 self.rbac_definitions = normalize_rbac(app.config.get("BESKAR_RBAC_POLICY"))
             except Exception as e:
-                raise ConfigurationError(f'Failure loading supplied BESKAR_RBAC_POLICY from config: {e}')
+                raise ConfigurationError(f'Failure loading supplied BESKAR_RBAC_POLICY from config: {e}') from e
 
         if isinstance(self.access_lifespan, dict):
             self.access_lifespan = pendulum.duration(**self.access_lifespan)
