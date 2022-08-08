@@ -23,6 +23,7 @@ sanic-ext = "^22.6.2"
 cryptography = "^37.0.4"
 sanic-jinja2 = "^2022.1.13"
 pyseto = "^1.6.9"
+py-buzz = "^3.2.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
