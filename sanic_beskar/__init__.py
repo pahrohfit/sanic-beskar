@@ -15,9 +15,6 @@ from sanic_beskar.utilities import (
     generate_totp_qr,
 )
 
-from sanic_beskar.orm.tortoise_user_mixins import TortoiseUserMixin
-from sanic_beskar.orm.umongo_user_mixins import UmongoUserMixin
-
 
 __all__ = [
     "Beskar",
@@ -32,6 +29,4 @@ __all__ = [
     "generate_totp_qr",
     "current_rolenames",
     "current_custom_claims",
-    "TortoiseUserMixin",
-    "UmongoUserMixin",
 ]
