@@ -3,7 +3,8 @@ import secrets, string
 from sanic import Sanic, json
 
 import sanic_beskar
-from sanic_beskar import Beskar, UmongoUserMixin
+from sanic_beskar import Beskar
+from sanic_beskar.orm import UmongoUserMixin
 from async_sender import Mail
 
 from umongo import Document, fields, validate

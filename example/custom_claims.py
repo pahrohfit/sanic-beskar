@@ -9,7 +9,7 @@ from sanic import Sanic, json
 
 import sanic_beskar
 from sanic_beskar import Beskar
-from async_mailer import Mail
+from async_sender import Mail
 
 
 _guard = Beskar()
