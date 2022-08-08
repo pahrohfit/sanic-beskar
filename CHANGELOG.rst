@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.0.1 - 2022-08-08
+-------------------
+- Swapped `jinja2` for `sanic-jinja2`
+- Linting cleanup and doc work
+- Fixed a typo preventing proper loading of `BESKAR_RBAC_POLICY`
+- Additional coverage and unit testing
+
 v2.0.0 - 2022-08-05
 -------------------
 - Moved to Sanic from Flask
