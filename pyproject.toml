@@ -20,11 +20,9 @@ pendulum = "^2.1"
 passlib = "^1.7"
 sanic = "^22.6.0"
 sanic-ext = "^22.6.2"
-simple-settings = "^1.2.0"
-segno = "^1.5.2"
 cryptography = "^37.0.4"
-pyseto = {version = "^1.6.9", extras = ["paseto"]}
 sanic-jinja2 = "^2022.1.13"
+pyseto = "^1.6.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -48,6 +46,7 @@ motor = "^3.0.0"
 pytest-profiling = "^1.7.0"
 fastpbkdf2 = "^0.2"
 async-sender = "^1.4.4"
+segno = "^1.5.2"
 
 [build-system]
 requires = ["poetry-core>=1.1"]

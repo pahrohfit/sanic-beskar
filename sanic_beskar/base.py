@@ -356,7 +356,14 @@ class Beskar():
         )
 
         if self.token_provider == 'paseto':
-            from pyseto import Key, Paseto, Token # noqa
+            try:
+                #globals()['Key'] = import_module('pyseto.Key')
+                #globals()['Paseto'] = import_module('pyseto.Paseto')
+                #globals()['Token'] = import_module('pyseto.Token')
+                from pyseto import Key, Paseto, Token # noqa
+            except (ImportError, ModuleNotFoundError) as e:
+                raise ConfigurationError("Trying to use PASETO, "
+                                         "but you did't install the `pyseto` module") from e
 
             self.paseto_key = Key.new(version=self.paseto_version, purpose="local", key=self.paseto_key)
             self.paseto_ctx = Paseto(exp=self.access_lifespan.seconds, include_iat=False)
