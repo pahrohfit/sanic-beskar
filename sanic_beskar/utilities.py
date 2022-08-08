@@ -3,8 +3,6 @@ import re
 from typing import NoReturn, Optional
 import ujson
 
-import segno
-
 from sanic import Sanic, Request
 import pendulum
 
@@ -210,7 +208,7 @@ def current_user_id() -> str:
     return user_id
 
 
-async def generate_totp_qr(user_totp: ujson) -> segno:
+async def generate_totp_qr(user_totp: ujson):
     """
     This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.
@@ -221,6 +219,12 @@ async def generate_totp_qr(user_totp: ujson) -> segno:
     :returns: ``Segno`` object based upon user's stored TOTP configuration
     :rtype: :py:class:`Segno`
     """
+    try:
+        import segno
+    except (ModuleNotFoundError, ImportError) as e:
+        raise ConfigurationError("Attempting to generate a TOTP QR code,"
+                                 "but you didn't install the necessary `segno` library!") from e
+
     return segno.make(user_totp)
 
 

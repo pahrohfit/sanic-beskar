@@ -20,6 +20,15 @@ The examples mainly utilize `Tortoise-ORM <https://tortoise.github.io>`_, a coup
 required, or even installed by default (except if you install from poetry with the `-D` flag).
 Any `async` ORM can be utilized.
 
+Optional Requirements
+---------------------
+
+If you would like to generate TOTP QR codes, you will also need to install `segno`::
+  pip install segno
+
+If you would like your PBKDF2 hashing to be quick, you should *really* install `fastpbkdf2`::
+  pip install fastpbkdf2
+
 Installation
 ------------
 
@@ -30,7 +39,7 @@ Installation
     about python packaging and the role pip plays in taking us into a bright
     new future of standardized and usable python packaging
 
-Install from pypi (**coming soon**)
+Install from pypi
 .........................................
 This will install the latest release of sanic-beskar from pypi via pip::
 
