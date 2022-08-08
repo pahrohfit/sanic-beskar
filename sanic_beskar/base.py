@@ -575,7 +575,7 @@ class Beskar():
 
         return verify
 
-    async def authenticate_totp(self, username: Union[str, object], token: str):
+    async def authenticate_totp(self, user: Union[str, object], token: str, lookup: Optional[str] = 'username'):
         """
         Verifies that a TOTP validates agains the stored TOTP for that
         username.
@@ -587,9 +587,11 @@ class Beskar():
         and skips the :py:func:`lookup` call.
 
         Args:
-            username (Union[str, object]): Username, or `User` object to
+            username (Union[str, object]): Username, email, or `User` object to
                 perform TOTP authentication against.
             token (str): TOTP token value to validate.
+            lookup (str, optional): Type of lookup to perform, either `username` or `email` based.
+                Defaults to 'username'.
 
         Returns:
             :py:class:`User`: Validated `User` object.
@@ -607,10 +609,15 @@ class Beskar():
         If we are called from `authenticate`, we already looked up the user,
             don't waste the DB call again.
         """
-        if isinstance(username, str):
-            user = await self.user_class.lookup(username=username)
+        if isinstance(user, str):
+            if lookup == 'username':
+                user = await self.user_class.lookup(username=user)
+            elif lookup == 'email':
+                user = await self.user_class.lookup(email=user)
+            else:
+                raise AuthenticationError('Lookup type *must* be either `username` or `email`')
         else:
-            user = username
+            user = user
 
         AuthenticationError.require_condition(
             user is not None
@@ -631,9 +638,11 @@ class Beskar():
 
         return user
 
-    async def authenticate(self, username: str, password: str, token: str = None):
+    async def authenticate(self, user: str, password: str, token: str = None, lookup: Optional[str] = 'username'):
+
         """
-        Verifies that a password matches the stored password for that username.
+        Verifies that a password matches the stored password for that username or
+        email.
         If verification passes, the matching user instance is returned
 
         .. note:: If :py:data:`BESKAR_TOTP_ENFORCE` is set to `True`
@@ -651,10 +660,12 @@ class Beskar():
                   **Choose your own adventure.**
 
         Args:
-            username (str): Username to authenticate
+            user (str): Username or email to authenticate
             password (str): Password to validate against
             token (str, optional): TOTP Token value to validate against.
                 Defaults to None.
+            lookup (str, optional): Type of lookup to perform, either `username` or `email` based.
+                Defaults to 'username'.
 
         Returns:
             :py:class:`User`: Authenticated `User` object.
@@ -668,7 +679,13 @@ class Beskar():
             self.user_class is not None,
             "Beskar must be initialized before this method is available",
         )
-        user = await self.user_class.lookup(username=username)
+        if lookup == 'username':
+            user = await self.user_class.lookup(username=user)
+        elif lookup == 'email':
+            user = await self.user_class.lookup(email=user)
+        else:
+            raise AuthenticationError('Lookup type *must* be either `username` or `email`')
+
         AuthenticationError.require_condition(
             user is not None
             and self._verify_password(
@@ -689,7 +706,7 @@ class Beskar():
         """
         if hasattr(user, 'totp') or token:
             if token:
-                user = await self.authenticate_totp(username, token)
+                user = await self.authenticate_totp(user, token)
             elif self.totp_enforce:
                 raise TOTPRequired("Password authentication successful -- "
                                    f"TOTP still *required* for user '{user.username}'.")
