@@ -5,8 +5,8 @@ This project's begining was fully lifted from the awesome
 `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_.
 
 Why `beskar <https://starwars.fandom.com/wiki/Beskar>`_? Why not -- what
-is better than star wars (provided you ignore the fact ~~the mandolorian~~
-was almost as lame as ~~book of boba fett~~)?
+is better than star wars (provided you ignore the fact *the mandolorian*
+was almost as lame as *book of boba fett*)?
 Superior armour should be used if you want superior protection.
 
 This package aims to provide that. Using token implemented by either
