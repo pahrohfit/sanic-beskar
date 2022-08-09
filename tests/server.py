@@ -63,7 +63,12 @@ def create_app(db_path=None):
         async def get(self, request):
             return json({"message": "success"})
 
-    sanic_app.add_route(ProtectedView.as_view(), "/protected")
+    sanic_app.add_route(ProtectedView.as_view(), "/protected_class")
+
+    @sanic_app.route("/protected_route")
+    @sanic_beskar.auth_required
+    async def protected_route(request):
+        return json({"message": "success"})
 
     @sanic_app.route("/rbac_protected")
     @sanic_beskar.auth_required
