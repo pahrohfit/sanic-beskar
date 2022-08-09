@@ -1,5 +1,7 @@
 import functools
 
+from sanic import Request
+
 from sanic_beskar.exceptions import (
     BeskarError,
     MissingRoleError,
@@ -63,7 +65,11 @@ def auth_required(method):
 
     @functools.wraps(method)
     async def wrapper(request, *args, **kwargs):
-        await _verify_and_add_token(request)
+        # TODO: hack to work around class based views
+        if not isinstance(request, Request):
+            if isinstance(args[0], Request):
+                request = args[0]
+        await _verify_and_add_token(request=request)
         try:
             return await method(request, *args, **kwargs)
         finally:
@@ -86,6 +92,10 @@ def auth_accepted(method):
     """
     @functools.wraps(method)
     async def wrapper(request, *args, **kwargs):
+        # TODO: hack to work around class based views
+        if not isinstance(request, Request):
+            if isinstance(args[0], Request):
+                request = args[0]
         try:
             await _verify_and_add_token(request, optional=True)
             return await method(request, *args, **kwargs)
@@ -121,6 +131,10 @@ def roles_required(*required_rolenames):
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",
             )
+            # TODO: hack to work around class based views
+            if not isinstance(request, Request):
+                if isinstance(args[0], Request):
+                    request = args[0]
             await _verify_and_add_token(request)
             try:
                 MissingRoleError.require_condition(
@@ -165,6 +179,10 @@ def rights_required(*required_rights):
                 current_guard().rbac_definitions != {},
                 "This feature is not available because RBAC is not enabled",
             )
+            # TODO: hack to work around class based views
+            if not isinstance(request, Request):
+                if isinstance(args[0], Request):
+                    request = args[0]
             await _verify_and_add_token(request)
             try:
                 current_roles = await current_rolenames()
@@ -212,6 +230,10 @@ def roles_accepted(*accepted_rolenames):
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",
             )
+            # TODO: hack to work around class based views
+            if not isinstance(request, Request):
+                if isinstance(args[0], Request):
+                    request = args[0]
             await _verify_and_add_token(request)
             try:
                 MissingRoleError.require_condition(

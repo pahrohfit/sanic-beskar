@@ -1425,10 +1425,10 @@ class Beskar():
                     textwrap.dedent(
                         f"""
                         Sanic_Beskar hasn't implemented reading tokens
-                        from location {place.lower()}.
+                        from location '{place.lower()}'.
                         Please reconfigure TOKEN_PLACES.
                         Values accepted in TOKEN_PLACES are:
-                        {DEFAULT_TOKEN_PLACES}
+                        {self.token_places}
                         """
                     )
                 )
