@@ -1,4 +1,4 @@
-import functools
+from functools import wraps
 
 from sanic import Request
 
@@ -19,7 +19,7 @@ from sanic_beskar.utilities import (
 )
 
 
-async def _verify_and_add_token(request, optional=False):
+async def _verify_and_add_token(request=None, optional=False):
     """
     This helper method just checks and adds token data to the app context.
     If optional is False and the header is missing the token, just returns.
@@ -63,7 +63,7 @@ def auth_required(method):
         MissingToken: No authenticated user token is available to authorize.
     """
 
-    @functools.wraps(method)
+    @wraps(method)
     async def wrapper(request, *args, **kwargs):
         # TODO: hack to work around class based views
         if not isinstance(request, Request):
@@ -90,7 +90,7 @@ def auth_accepted(method):
     Returns:
         NoReturn: Decorator
     """
-    @functools.wraps(method)
+    @wraps(method)
     async def wrapper(request, *args, **kwargs):
         # TODO: hack to work around class based views
         if not isinstance(request, Request):
@@ -125,7 +125,7 @@ def roles_required(*required_rolenames):
     """
 
     def decorator(method):
-        @functools.wraps(method)
+        @wraps(method)
         async def wrapper(request, *args, **kwargs):
             BeskarError.require_condition(
                 not current_guard().roles_disabled,
@@ -173,7 +173,7 @@ def rights_required(*required_rights):
     """
 
     def decorator(method):
-        @functools.wraps(method)
+        @wraps(method)
         async def wrapper(request, *args, **kwargs):
             BeskarError.require_condition(
                 current_guard().rbac_definitions != {},
@@ -224,7 +224,7 @@ def roles_accepted(*accepted_rolenames):
     """
 
     def decorator(method):
-        @functools.wraps(method)
+        @wraps(method)
         async def wrapper(request, *args, **kwargs):
             BeskarError.require_condition(
                 not current_guard().roles_disabled,
