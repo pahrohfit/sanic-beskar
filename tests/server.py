@@ -10,6 +10,7 @@ from models import User
 
 from sanic import Sanic, json
 from sanic.log import logger
+from sanic.views import HTTPMethodView
 
 from tortoise.contrib.sanic import register_tortoise
 
@@ -57,10 +58,12 @@ def create_app(db_path=None):
         except BeskarError:
             return json({"message": "success", "user": None})
 
-    @sanic_app.route("/protected")
-    @sanic_beskar.auth_required
-    async def protected(request):
-        return json({"message": "success"})
+    class ProtectedView(HTTPMethodView):
+        @sanic_beskar.auth_required
+        async def get(self, request):
+            return json({"message": "success"})
+
+    sanic_app.add_route(ProtectedView.as_view(), "/protected")
 
     @sanic_app.route("/rbac_protected")
     @sanic_beskar.auth_required
