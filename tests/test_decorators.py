@@ -66,61 +66,63 @@ class TestBeskarDecorators:
 
         the_dude = await mock_users(username='the_dude')
 
-        # Token is not in header or cookie
-        _, response = client.get(
-            "/protected",
-            headers={},
-        )
+        for route_name in ['/protected_class', '/protected_route']:
 
-        exc_msg = textwrap.dedent(
-                f"""
-                Could not find token in any
-                 of the given locations: {default_guard.token_places}
-                """
-        ).replace("\n", "")
-
-        assert exc_msg in response.json["message"]
-        assert response.status == 401
-
-        # Token has invalid structure
-        _, response = client.get(
-            "/protected",
-            headers={"Authorization": "bad_structure iamatoken"},
-        )
-        assert "Token header structure is invalid" in response.json["message"]
-        assert response.status == 401
-
-        # Token is expired
-        moment = pendulum.parse('2017-05-24 10:18:45')
-        with plummet.frozen_time(moment):
-            headers = await default_guard.pack_header_for_user(the_dude)
-        moment = (
-            moment
-            + default_guard.access_lifespan
-            + pendulum.Duration(seconds=1)
-        )
-        with plummet.frozen_time(moment):
+            # Token is not in header or cookie
             _, response = client.get(
-                "/protected",
-                headers=headers,
+                route_name,
+                headers={},
             )
+
+            exc_msg = textwrap.dedent(
+                    f"""
+                    Could not find token in any
+                     of the given locations: {default_guard.token_places}
+                    """
+            ).replace("\n", "")
+
+            assert exc_msg in response.json["message"]
             assert response.status == 401
-            assert "access permission has expired" in response.json["message"]
 
-        # Token is present and valid in header or cookie
-        with plummet.frozen_time('2017-05-24 10:38:45'):
+            # Token has invalid structure
             _, response = client.get(
-                "/protected",
-                headers=await default_guard.pack_header_for_user(the_dude),
+                route_name,
+                headers={"Authorization": "bad_structure iamatoken"},
             )
+            assert "Token header structure is invalid" in response.json["message"]
+            assert response.status == 401
 
-            assert response.status == 200
+            # Token is expired
+            moment = pendulum.parse('2017-05-24 10:18:45')
+            with plummet.frozen_time(moment):
+                headers = await default_guard.pack_header_for_user(the_dude)
+            moment = (
+                moment
+                + default_guard.access_lifespan
+                + pendulum.Duration(seconds=1)
+            )
+            with plummet.frozen_time(moment):
+                _, response = client.get(
+                    route_name,
+                    headers=headers,
+                )
+                assert response.status == 401
+                assert "access permission has expired" in response.json["message"]
 
-            cookies = Cookies()
-            token = await default_guard.encode_token(the_dude)
-            cookies[default_guard.cookie_name] = token
-            _, response = client.get("/protected", cookies=cookies)
-            assert response.status == 200
+            # Token is present and valid in header or cookie
+            with plummet.frozen_time('2017-05-24 10:38:45'):
+                _, response = client.get(
+                    route_name,
+                    headers=await default_guard.pack_header_for_user(the_dude),
+                )
+
+                assert response.status == 200
+
+                cookies = Cookies()
+                token = await default_guard.encode_token(the_dude)
+                cookies[default_guard.cookie_name] = token
+                _, response = client.get(route_name, cookies=cookies)
+                assert response.status == 200
 
     async def test_roles_required(self, default_guard, mock_users, client):
         """
@@ -200,7 +202,7 @@ class TestBeskarDecorators:
 
         the_dude = await mock_users(username='the_dude')
         _, response = client.get(
-            "/protected",
+            "/protected_class",
             headers=await default_guard.pack_header_for_user(the_dude),
         )
         assert response.status == 200

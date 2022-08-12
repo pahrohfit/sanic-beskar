@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.0.5 - 2022-08-09
+-------------------
+- Added a work around for some class-based view issues with Sanic
+- Removed some unneeded deps
+
 v2.0.1 - 2022-08-08
 -------------------
 - Swapped `jinja2` for `sanic-jinja2`
