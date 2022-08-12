@@ -793,7 +793,7 @@ python-versions = ">=3.7,<4.0"
 
 [[package]]
 name = "pyseto"
-version = "1.6.9"
+version = "1.6.10"
 description = "A Python implementation of PASETO/PASERK."
 category = "main"
 optional = false
@@ -810,11 +810,11 @@ docs = ["Sphinx[docs] (>=4.3.2,<6.0.0)", "sphinx-autodoc-typehints[docs] (==1.12
 
 [[package]]
 name = "pytest"
-version = "6.2.5"
+version = "7.1.2"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 atomicwrites = {version = ">=1.0", markers = "sys_platform == \"win32\""}
@@ -825,10 +825,10 @@ iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
 py = ">=1.8.2"
-toml = "*"
+tomli = ">=1.0.0"
 
 [package.extras]
-testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
+testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
 name = "pytest-asyncio"
@@ -889,7 +889,7 @@ six = ">=1.5"
 
 [[package]]
 name = "pytz"
-version = "2022.1"
+version = "2022.2"
 description = "World timezone definitions, modern and historical"
 category = "dev"
 optional = false
@@ -937,7 +937,7 @@ idna2008 = ["idna"]
 
 [[package]]
 name = "sanic"
-version = "22.6.1"
+version = "22.6.2"
 description = "A web server and web framework that's written to go fast. Build fast. Run fast."
 category = "main"
 optional = false
@@ -953,12 +953,12 @@ uvloop = {version = ">=0.5.3", markers = "sys_platform != \"win32\" and implemen
 websockets = ">=10.0"
 
 [package.extras]
-all = ["isort (>=5.0.0)", "pytest-sugar", "pytest-benchmark", "docutils", "towncrier", "cryptography", "mistune (<2.0.0)", "slotscheck (>=0.8.0,<1)", "flake8", "chardet (>=3.0.0,<4.0.0)", "m2r2", "bandit", "beautifulsoup4", "sanic-testing (>=22.3.0)", "mypy (>=0.901,<0.910)", "sphinx (>=2.1.2)", "tox", "uvicorn (<0.15.0)", "pygments", "black", "coverage (==5.3)", "pytest (==6.2.5)", "pytest-sanic", "pytest-cov", "enum-tools", "gunicorn (==20.0.4)", "sphinx-rtd-theme (>=0.4.3)", "types-ujson"]
-dev = ["sanic-testing (>=22.3.0)", "pytest (==6.2.5)", "coverage (==5.3)", "gunicorn (==20.0.4)", "pytest-cov", "beautifulsoup4", "pytest-sanic", "pytest-sugar", "pytest-benchmark", "chardet (>=3.0.0,<4.0.0)", "flake8", "black", "isort (>=5.0.0)", "bandit", "mypy (>=0.901,<0.910)", "docutils", "pygments", "uvicorn (<0.15.0)", "slotscheck (>=0.8.0,<1)", "cryptography", "tox", "towncrier", "types-ujson"]
-docs = ["sphinx (>=2.1.2)", "sphinx-rtd-theme (>=0.4.3)", "docutils", "pygments", "m2r2", "enum-tools", "mistune (<2.0.0)"]
-ext = ["sanic-ext"]
+test = ["types-ujson", "slotscheck (>=0.8.0,<1)", "uvicorn (<0.15.0)", "pygments", "docutils", "mypy (>=0.901,<0.910)", "bandit", "isort (>=5.0.0)", "black", "flake8", "chardet (>=3.0.0,<4.0.0)", "pytest-benchmark", "pytest-sugar", "pytest-sanic", "beautifulsoup4", "pytest-cov", "gunicorn (==20.0.4)", "coverage (==5.3)", "pytest (==6.2.5)", "sanic-testing (>=22.3.0)"]
 http3 = ["aioquic"]
-test = ["sanic-testing (>=22.3.0)", "pytest (==6.2.5)", "coverage (==5.3)", "gunicorn (==20.0.4)", "pytest-cov", "beautifulsoup4", "pytest-sanic", "pytest-sugar", "pytest-benchmark", "chardet (>=3.0.0,<4.0.0)", "flake8", "black", "isort (>=5.0.0)", "bandit", "mypy (>=0.901,<0.910)", "docutils", "pygments", "uvicorn (<0.15.0)", "slotscheck (>=0.8.0,<1)", "types-ujson"]
+ext = ["sanic-ext"]
+docs = ["mistune (<2.0.0)", "enum-tools", "m2r2", "pygments", "docutils", "sphinx-rtd-theme (>=0.4.3)", "sphinx (>=2.1.2)"]
+dev = ["types-ujson", "towncrier", "tox", "cryptography", "slotscheck (>=0.8.0,<1)", "uvicorn (<0.15.0)", "pygments", "docutils", "mypy (>=0.901,<0.910)", "bandit", "isort (>=5.0.0)", "black", "flake8", "chardet (>=3.0.0,<4.0.0)", "pytest-benchmark", "pytest-sugar", "pytest-sanic", "beautifulsoup4", "pytest-cov", "gunicorn (==20.0.4)", "coverage (==5.3)", "pytest (==6.2.5)", "sanic-testing (>=22.3.0)"]
+all = ["types-ujson", "tox", "enum-tools", "coverage (==5.3)", "sphinx-rtd-theme (>=0.4.3)", "beautifulsoup4", "mistune (<2.0.0)", "slotscheck (>=0.8.0,<1)", "uvicorn (<0.15.0)", "pytest-sanic", "cryptography", "chardet (>=3.0.0,<4.0.0)", "m2r2", "sanic-testing (>=22.3.0)", "sphinx (>=2.1.2)", "docutils", "gunicorn (==20.0.4)", "pytest-sugar", "bandit", "black", "pytest-benchmark", "pygments", "flake8", "isort (>=5.0.0)", "pytest (==6.2.5)", "mypy (>=0.901,<0.910)", "pytest-cov", "towncrier"]
 
 [[package]]
 name = "sanic-jinja2"
@@ -1146,8 +1146,8 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
-lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
+lint = ["docutils-stubs", "mypy", "flake8"]
 
 [[package]]
 name = "time-machine"
@@ -1299,7 +1299,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "0d281ceae01a75ef0af83fa7d901d3f575d05033242cb538f7c8ca3c5172c11f"
+content-hash = "2ebe6aac087f1a1597edd8350feeb0c0c118059f53e98a9359577c8c86f0e1cf"
 
 [metadata.files]
 aiofiles = [
@@ -1959,12 +1959,12 @@ pypika-tortoise = [
     {file = "pypika_tortoise-0.1.6-py3-none-any.whl", hash = "sha256:2d68bbb7e377673743cff42aa1059f3a80228d411fbcae591e4465e173109fd8"},
 ]
 pyseto = [
-    {file = "pyseto-1.6.9-py3-none-any.whl", hash = "sha256:1c01744e6e8bbc95706fe80fcddecec037f8aaa2ff54aa2c2e79831d12edae3d"},
-    {file = "pyseto-1.6.9.tar.gz", hash = "sha256:0d9f9bdc0116d2bd44aa88bc314b435c4ac50b345236183d184a43f37fe3ea4c"},
+    {file = "pyseto-1.6.10-py3-none-any.whl", hash = "sha256:b4d7b3f7766fc6c273b8c1f78374ceb41b4a5ea935bb67c6dd4b5443434e5e05"},
+    {file = "pyseto-1.6.10.tar.gz", hash = "sha256:861b62c9103c3c2e9e955603a41d566675adf6681293a621b58b64aac8d7cf21"},
 ]
 pytest = [
-    {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
-    {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
+    {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},
+    {file = "pytest-7.1.2.tar.gz", hash = "sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45"},
 ]
 pytest-asyncio = [
     {file = "pytest-asyncio-0.18.3.tar.gz", hash = "sha256:7659bdb0a9eb9c6e3ef992eef11a2b3e69697800ad02fb06374a210d85b29f91"},
@@ -1986,8 +1986,8 @@ python-dateutil = [
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
 ]
 pytz = [
-    {file = "pytz-2022.1-py2.py3-none-any.whl", hash = "sha256:e68985985296d9a66a881eb3193b0906246245294a881e7c8afe623866ac6a5c"},
-    {file = "pytz-2022.1.tar.gz", hash = "sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7"},
+    {file = "pytz-2022.2-py2.py3-none-any.whl", hash = "sha256:d9b245e63af49c4e51afdec5402f56b99c0cb483a84a12bb8b7db980386baade"},
+    {file = "pytz-2022.2.tar.gz", hash = "sha256:bc824559e43e8ab983426a49525079d186b25372ff63aa3430ccd527d95edc3a"},
 ]
 pytzdata = [
     {file = "pytzdata-2020.1-py2.py3-none-any.whl", hash = "sha256:e1e14750bcf95016381e4d472bad004eef710f2d6417240904070b3d6654485f"},
@@ -2002,8 +2002,8 @@ rfc3986 = [
     {file = "rfc3986-1.5.0.tar.gz", hash = "sha256:270aaf10d87d0d4e095063c65bf3ddbc6ee3d0b226328ce21e036f946e421835"},
 ]
 sanic = [
-    {file = "sanic-22.6.1-py3-none-any.whl", hash = "sha256:a6d684ff572a4a8cdba66a28d128c9693b05dac07954d8dab9e7150eaa6714bc"},
-    {file = "sanic-22.6.1.tar.gz", hash = "sha256:da50afbd0ae307fa371f0a7406070c790ef92547c813d8590ae02f0d2f528815"},
+    {file = "sanic-22.6.2-py3-none-any.whl", hash = "sha256:efc3e19eb8c43836ebfd424cb3efc762880b5e3f8fbc07bc125e6d469243a62c"},
+    {file = "sanic-22.6.2.tar.gz", hash = "sha256:0edb346455ab5fba4304288c40af31c394f3503458b835051694f2607979010b"},
 ]
 sanic-jinja2 = [
     {file = "sanic-jinja2-2022.1.13.tar.gz", hash = "sha256:13f5aafd74b3da52b60e7bb9e9ff2ff294b9d2b40d80af6513ad0ddfd993fe8b"},
