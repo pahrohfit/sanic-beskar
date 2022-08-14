@@ -180,7 +180,7 @@ class TestBeskar:
             Beskar(app, user_class)
 
         app.config = deepcopy(_default_config) # reset
-        # Test bad PASETO version
+        # Test weak failed attempt lockout policy
         app.config['BESKAR_PASSWORD_POLICY'] = {'attempt_lockout': 0}
-        with pytest.warns(match="A PASSWORD_POLICY['attempt_lockout'] value of 0 "):
+        with pytest.warns(UserWarning):
             Beskar(app, user_class)

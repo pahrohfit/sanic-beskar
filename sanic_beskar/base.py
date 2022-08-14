@@ -426,7 +426,7 @@ class Beskar():
             DEFAULT_PASSWORD_POLICY,
         )
         for setting in DEFAULT_PASSWORD_POLICY:
-            if not self.password_policy.get(setting):
+            if setting not in self.password_policy:
                 self.password_policy[setting] = DEFAULT_PASSWORD_POLICY[setting]
 
 
@@ -467,16 +467,11 @@ class Beskar():
         )
 
         logger.critical(f"Policy: {self.password_policy}")
-        if 0 == self.password_policy['attempt_lockout']:
-            #logger.warning(
+        if self.password_policy['attempt_lockout'] in [0, None, '']:
+            logger.critical(f"SHIT!!!!!!!!!!!!!!!!!!!!!!!")
             warnings.warn(
-                textwrap.dedent(
-                    """
-                    The PASSWORD_POLICY['attempt_lockout'] value is insecure,
-                      and should not be used. See https://pages.nist.gov/800-63-3/sp800-63b.html#throttle
-                    """
-                ),
-                UserWarning
+                "The PASSWORD_POLICY['attempt_lockout'] value is insecure, "
+                "and should not be used. See https://pages.nist.gov/800-63-3/sp800-63b.html#throttle"
             )
 
 
