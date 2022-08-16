@@ -1,13 +1,43 @@
 import functools
+from collections.abc import Iterable
 import re
+import datetime as dt
 from typing import NoReturn, Optional
+
+try:
+    from beanie import PydanticObjectId
+except:
+    pass
+
 import ujson
+from json import JSONEncoder
 
 from sanic import Sanic, Request
 import pendulum
 
 from sanic_beskar.constants import RESERVED_CLAIMS
 from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
+
+
+class JSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, '__json__'):
+            return obj.__json__()
+        elif isinstance(obj, Iterable):
+            return list(obj)
+        elif isinstance(obj, dt.datetime):
+            return obj.isoformat()
+        elif isinstance(obj, PydanticObjectId):
+            return str(obj)
+        elif hasattr(obj, '__getitem__') and hasattr(obj, 'keys'):
+            return dict(obj)
+        elif hasattr(obj, '__dict__'):
+            return {member: getattr(obj, member)
+                    for member in dir(obj)
+                    if not member.startswith('_') and
+                    not hasattr(getattr(obj, member), '__call__')}
+
+        return JSONEncoder.default(self, obj)
 
 
 def get_request(request: Request) -> Request:

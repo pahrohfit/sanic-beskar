@@ -25,6 +25,7 @@ from sanic_beskar.utilities import (
     is_valid_json,
     get_request,
     normalize_rbac,
+    JSONEncoder,
 )
 
 from sanic_beskar.exceptions import (
@@ -324,6 +325,9 @@ class Beskar():
         return app
 
     def set_config(self):
+        """
+        Simple helper to populate all the config settings, making `init_app()` easier to read
+        """
         self.encode_key = self.app.config["SECRET_KEY"]
         self.allowed_algorithms = self.app.config.get(
             "JWT_ALLOWED_ALGORITHMS",
@@ -431,6 +435,10 @@ class Beskar():
 
 
     def audit(self):
+        """
+        Perform some basic sanity check of settings to make sure the developer didn't
+        try to do some blatently lame stuff
+        """
         valid_schemes = self.pwd_ctx.schemes()
         ConfigurationError.require_condition(
             self.hash_scheme in valid_schemes or self.hash_scheme is None,
@@ -468,7 +476,6 @@ class Beskar():
 
         logger.critical(f"Policy: {self.password_policy}")
         if self.password_policy['attempt_lockout'] in [0, None, '']:
-            logger.critical(f"SHIT!!!!!!!!!!!!!!!!!!!!!!!")
             warnings.warn(
                 "The PASSWORD_POLICY['attempt_lockout'] value is insecure, "
                 "and should not be used. See https://pages.nist.gov/800-63-3/sp800-63b.html#throttle"
@@ -994,6 +1001,7 @@ class Beskar():
             payload_parts,
             self.encode_key,
             self.encode_algorithm,
+            json_encoder=JSONEncoder,
         )
 
     async def encode_token(

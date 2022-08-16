@@ -12,3 +12,9 @@ try:
 except (ModuleNotFoundError, ImportError) as e:
     # this is ok, this is optional
     pass
+
+try:
+    from .beanie_user_mixins import BeanieUserMixin
+except (ModuleNotFoundError, ImportError) as e:
+    # this is ok, this is optional
+    pass
