@@ -57,7 +57,7 @@ def auth_required(method):
         method (Callable): Function or route to protect.
 
     Returns:
-        NoReturn: Decorator
+        None: Decorator
 
     Raises:
         MissingToken: No authenticated user token is available to authorize.
@@ -88,7 +88,7 @@ def auth_accepted(method):
         method (Callable): Function or route to protect.
 
     Returns:
-        NoReturn: Decorator
+        None: Decorator
     """
     @wraps(method)
     async def wrapper(request, *args, **kwargs):
@@ -116,7 +116,7 @@ def roles_required(*required_rolenames):
             in the authenticated users ``roles`` attribute.
 
     Returns:
-        NoReturn: Decorator
+        None: Decorator
 
     Raises:
         sanic_beskar.BeskarError: `roles_disabled` for this application.
@@ -164,7 +164,7 @@ def rights_required(*required_rights):
             breakdown.
 
     Returns:
-        NoReturn: Decorator
+        None: Decorator
 
     Raises:
         sanic_beskar.BeskarError: `roles_disabled` for this application.
@@ -220,7 +220,7 @@ def roles_accepted(*accepted_rolenames):
             required to be present, in the authenticated users ``roles`` attribute.
 
     Returns:
-        NoReturn: Decorator
+        None: Decorator
     """
 
     def decorator(method):

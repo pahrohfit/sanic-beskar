@@ -35,7 +35,7 @@ def create_app(db_path=None):
     sanic_app.state.mode = 'Mode.DEBUG'
     sanic_app.config.TESTING = True
     sanic_app.config['PYTESTING'] = True
-    sanic_app.config.SECRET_KEY = "top secret"
+    sanic_app.config.SECRET_KEY = "top secret 4nd comPLex radness!!"
 
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 

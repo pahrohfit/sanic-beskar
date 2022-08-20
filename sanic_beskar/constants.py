@@ -17,6 +17,12 @@ DEFAULT_ROLES_DISABLED: bool = False
 
 DEFAULT_USER_CLASS_VALIDATION_METHOD: str = "is_valid"
 
+DEFAULT_PASSWORD_POLICY: dict = {
+    'length': 8,
+    'allow_reuse': False,
+    'attempt_lockout': 6,
+}
+
 DEFAULT_CONFIRMATION_TEMPLATE = (
     "{}/sanic_beskar/templates/registration_email.html".format(
         dirname(dirname(abspath(__file__))),

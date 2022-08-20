@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Union, Optional
 import re
 import textwrap
+import warnings
 
 import jinja2
 import jwt
@@ -23,6 +24,7 @@ from sanic_beskar.utilities import (
     is_valid_json,
     get_request,
     normalize_rbac,
+    JSONEncoder,
 )
 
 from sanic_beskar.exceptions import (
@@ -78,6 +80,7 @@ from sanic_beskar.constants import (
     DEFAULT_TOTP_SECRETS_DATA,
     DEFAULT_TOKEN_PROVIDER,
     DEFAULT_PASETO_VERSION,
+    DEFAULT_PASSWORD_POLICY,
     AccessType,
 )
 
@@ -164,10 +167,6 @@ class Beskar():
         self.app = app
         app.register_middleware(self.open_session, 'request')
 
-        ConfigurationError.require_condition(
-            app.config.get("SECRET_KEY") is not None,
-            "There must be a SECRET_KEY app config setting set",
-        )
 
         self.roles_disabled = app.config.get(
             "BESKAR_ROLES_DISABLED",
@@ -199,22 +198,18 @@ class Beskar():
             ),
         )
 
-        valid_schemes = self.pwd_ctx.schemes()
-        ConfigurationError.require_condition(
-            self.hash_scheme in valid_schemes or self.hash_scheme is None,
-            f'If {"BESKAR_HASH_SCHEME"} is set, it must be one of the following schemes: {valid_schemes}'
-        )
-
         if self.pwd_ctx.default_scheme().startswith('pbkdf2_'):
             if not find_spec('fastpbkdf2'):
-                logger.warning(
+                #logger.warning(
+                warnings.warn(
                     textwrap.dedent(
                         """
                         You are using a `pbkdf2` hashing scheme, but didn't instll
                           the `fastpbkdf2` module, which will give you like 40%
                           speed improvements. you should go do that now.
                         """
-                    )
+                    ),
+                    UserWarning
                 )
 
         self.user_class = self._validate_user_class(user_class)
@@ -223,102 +218,11 @@ class Beskar():
         self.refresh_token_hook = refresh_token_hook
         self.rbac_populate_hook = rbac_populate_hook
 
-        self.encode_key = app.config["SECRET_KEY"]
-        self.allowed_algorithms = app.config.get(
-            "JWT_ALLOWED_ALGORITHMS",
-            DEFAULT_JWT_ALLOWED_ALGORITHMS,
-        )
-        self.encode_algorithm = app.config.get(
-            "JWT_ALGORITHM",
-            DEFAULT_JWT_ALGORITHM,
-        )
-        self.access_lifespan = app.config.get(
-            "TOKEN_ACCESS_LIFESPAN",
-            DEFAULT_TOKEN_ACCESS_LIFESPAN,
-        )
-        self.refresh_lifespan = app.config.get(
-            "TOKEN_REFRESH_LIFESPAN",
-            DEFAULT_TOKEN_REFRESH_LIFESPAN,
-        )
-        self.reset_lifespan = app.config.get(
-            "TOKEN_RESET_LIFESPAN",
-            DEFAULT_TOKEN_RESET_LIFESPAN,
-        )
-        self.token_places = app.config.get(
-            "TOKEN_PLACES",
-            DEFAULT_TOKEN_PLACES,
-        )
-        self.cookie_name = app.config.get(
-            "TOKEN_COOKIE_NAME",
-            DEFAULT_TOKEN_COOKIE_NAME,
-        )
-        self.header_name = app.config.get(
-            "TOKEN_HEADER_NAME",
-            DEFAULT_TOKEN_HEADER_NAME,
-        )
-        self.header_type = app.config.get(
-            "TOKEN_HEADER_TYPE",
-            DEFAULT_TOKEN_HEADER_TYPE,
-        )
-        self.user_class_validation_method = app.config.get(
-            "USER_CLASS_VALIDATION_METHOD",
-            DEFAULT_USER_CLASS_VALIDATION_METHOD,
-        )
+        # Populate our config defaults
+        self.set_config()
 
-        self.confirmation_template = app.config.get(
-            "BESKAR_CONFIRMATION_TEMPLATE",
-            DEFAULT_CONFIRMATION_TEMPLATE,
-        )
-        self.confirmation_uri = app.config.get(
-            "BESKAR_CONFIRMATION_URI",
-        )
-        self.confirmation_sender = app.config.get(
-            "BESKAR_CONFIRMATION_SENDER",
-        )
-        self.confirmation_subject = app.config.get(
-            "BESKAR_CONFIRMATION_SUBJECT",
-            DEFAULT_CONFIRMATION_SUBJECT,
-        )
-
-        self.reset_template = app.config.get(
-            "BESKAR_RESET_TEMPLATE",
-            DEFAULT_RESET_TEMPLATE,
-        )
-        self.reset_uri = app.config.get(
-            "BESKAR_RESET_URI",
-        )
-        self.reset_sender = app.config.get(
-            "BESKAR_RESET_SENDER",
-        )
-        self.reset_subject = app.config.get(
-            "BESKAR_RESET_SUBJECT",
-            DEFAULT_RESET_SUBJECT,
-        )
-        self.totp_enforce = app.config.get(
-            "BESKAR_TOTP_ENFORCE",
-            DEFAULT_TOTP_ENFORCE,
-        )
-        self.totp_secrets_type = app.config.get(
-            "BESKAR_TOTP_SECRETS_TYPE",
-            DEFAULT_TOTP_SECRETS_TYPE,
-        )
-        self.totp_secrets_data = app.config.get(
-            "BESKAR_TOTP_SECRETS_DATA",
-            DEFAULT_TOTP_SECRETS_DATA,
-        )
-        self.token_provider = app.config.get(
-            "BESKAR_TOKEN_PROVIDER",
-            DEFAULT_TOKEN_PROVIDER,
-        )
-        self.token_provider = self.token_provider.lower()
-        self.paseto_version = app.config.get(
-            "BESKAR_PASETO_VERSION",
-            DEFAULT_PASETO_VERSION,
-        )
-        self.paseto_key = app.config.get(
-            "BESKAR_PASETO_KEY",
-            self.encode_key,
-        )
+        # Run config security checks
+        self.audit()
 
         # If the user provided a base RBAC policy, lets consume it
         if app.config.get("BESKAR_RBAC_POLICY"):
@@ -344,15 +248,6 @@ class Beskar():
         ConfigurationError.require_condition(
             isinstance(self.refresh_lifespan, datetime.timedelta),
             "refresh lifespan was not configured",
-        )
-
-        ConfigurationError.require_condition(
-            getattr(self, f"encode_{self.token_provider}_token"),
-            "Invalid `token_provider` configured. Please check docs and try again.",
-        )
-        ConfigurationError.require_condition(
-            self.paseto_version > 0 < 4,
-            "Invalid `paseto_version` configured. Valid are [1, 2, 3, 4] only.",
         )
 
         if self.token_provider == 'paseto':
@@ -427,6 +322,164 @@ class Beskar():
         app.ctx.extensions["beskar"] = self
 
         return app
+
+    def set_config(self):
+        """
+        Simple helper to populate all the config settings, making `init_app()` easier to read
+        """
+        self.encode_key = self.app.config["SECRET_KEY"]
+        self.allowed_algorithms = self.app.config.get(
+            "JWT_ALLOWED_ALGORITHMS",
+            DEFAULT_JWT_ALLOWED_ALGORITHMS,
+        )
+        self.encode_algorithm = self.app.config.get(
+            "JWT_ALGORITHM",
+            DEFAULT_JWT_ALGORITHM,
+        )
+        self.access_lifespan = self.app.config.get(
+            "TOKEN_ACCESS_LIFESPAN",
+            DEFAULT_TOKEN_ACCESS_LIFESPAN,
+        )
+        self.refresh_lifespan = self.app.config.get(
+            "TOKEN_REFRESH_LIFESPAN",
+            DEFAULT_TOKEN_REFRESH_LIFESPAN,
+        )
+        self.reset_lifespan = self.app.config.get(
+            "TOKEN_RESET_LIFESPAN",
+            DEFAULT_TOKEN_RESET_LIFESPAN,
+        )
+        self.token_places = self.app.config.get(
+            "TOKEN_PLACES",
+            DEFAULT_TOKEN_PLACES,
+        )
+        self.cookie_name = self.app.config.get(
+            "TOKEN_COOKIE_NAME",
+            DEFAULT_TOKEN_COOKIE_NAME,
+        )
+        self.header_name = self.app.config.get(
+            "TOKEN_HEADER_NAME",
+            DEFAULT_TOKEN_HEADER_NAME,
+        )
+        self.header_type = self.app.config.get(
+            "TOKEN_HEADER_TYPE",
+            DEFAULT_TOKEN_HEADER_TYPE,
+        )
+        self.user_class_validation_method = self.app.config.get(
+            "USER_CLASS_VALIDATION_METHOD",
+            DEFAULT_USER_CLASS_VALIDATION_METHOD,
+        )
+
+        self.confirmation_template = self.app.config.get(
+            "BESKAR_CONFIRMATION_TEMPLATE",
+            DEFAULT_CONFIRMATION_TEMPLATE,
+        )
+        self.confirmation_uri = self.app.config.get(
+            "BESKAR_CONFIRMATION_URI",
+        )
+        self.confirmation_sender = self.app.config.get(
+            "BESKAR_CONFIRMATION_SENDER",
+        )
+        self.confirmation_subject = self.app.config.get(
+            "BESKAR_CONFIRMATION_SUBJECT",
+            DEFAULT_CONFIRMATION_SUBJECT,
+        )
+
+        self.reset_template = self.app.config.get(
+            "BESKAR_RESET_TEMPLATE",
+            DEFAULT_RESET_TEMPLATE,
+        )
+        self.reset_uri = self.app.config.get(
+            "BESKAR_RESET_URI",
+        )
+        self.reset_sender = self.app.config.get(
+            "BESKAR_RESET_SENDER",
+        )
+        self.reset_subject = self.app.config.get(
+            "BESKAR_RESET_SUBJECT",
+            DEFAULT_RESET_SUBJECT,
+        )
+        self.totp_enforce = self.app.config.get(
+            "BESKAR_TOTP_ENFORCE",
+            DEFAULT_TOTP_ENFORCE,
+        )
+        self.totp_secrets_type = self.app.config.get(
+            "BESKAR_TOTP_SECRETS_TYPE",
+            DEFAULT_TOTP_SECRETS_TYPE,
+        )
+        self.totp_secrets_data = self.app.config.get(
+            "BESKAR_TOTP_SECRETS_DATA",
+            DEFAULT_TOTP_SECRETS_DATA,
+        )
+        self.token_provider = self.app.config.get(
+            "BESKAR_TOKEN_PROVIDER",
+            DEFAULT_TOKEN_PROVIDER,
+        )
+        self.token_provider = self.token_provider.lower()
+        self.paseto_version = self.app.config.get(
+            "BESKAR_PASETO_VERSION",
+            DEFAULT_PASETO_VERSION,
+        )
+        self.paseto_key = self.app.config.get(
+            "BESKAR_PASETO_KEY",
+            self.encode_key,
+        )
+
+        self.password_policy = self.app.config.get(
+            "BESKAR_PASSWORD_POLICY",
+            DEFAULT_PASSWORD_POLICY,
+        )
+        for setting in DEFAULT_PASSWORD_POLICY:
+            if setting not in self.password_policy:
+                self.password_policy[setting] = DEFAULT_PASSWORD_POLICY[setting]
+
+
+    def audit(self):
+        """
+        Perform some basic sanity check of settings to make sure the developer didn't
+        try to do some blatently lame stuff
+        """
+        valid_schemes = self.pwd_ctx.schemes()
+        ConfigurationError.require_condition(
+            self.hash_scheme in valid_schemes or self.hash_scheme is None,
+            f'If {"BESKAR_HASH_SCHEME"} is set, it must be one of the following schemes: {valid_schemes}'
+        )
+
+        ConfigurationError.require_condition(
+            self.app.config.get("SECRET_KEY") is not None,
+            "There must be a SECRET_KEY app config setting set",
+        )
+
+        ConfigurationError.require_condition(
+            len(self.app.config.SECRET_KEY) >= int(self.password_policy['length'])
+            or self.app.config.get('I_MAKE_POOR_CHOICES', False),
+            f"your SECRET_KEY is weak in legnth [{len(self.app.config.SECRET_KEY)} < "
+            f"{self.password_policy['length']}]! fix it, or set 'I_MAKE_POOR_CHOICES' to True."
+        )
+
+        ConfigurationError.require_condition(
+            self.password_policy['length'] >= 8
+            or self.app.config.get('I_MAKE_POOR_CHOICES', False),
+            "your password policy secret key legnth is weak! fix it, or set 'I_MAKE_POOR_CHOICES' to True. "
+            "See https://pages.nist.gov/800-63-3/sp800-63b.html#appA for more information."
+        )
+
+        ConfigurationError.require_condition(
+            getattr(self, f"encode_{self.token_provider}_token"),
+            "Invalid `token_provider` configured. Please check docs and try again.",
+        )
+
+        ConfigurationError.require_condition(
+            0 < self.paseto_version < 5,
+            "Invalid `paseto_version` configured. Valid are [1, 2, 3, 4] only.",
+        )
+
+        logger.critical(f"Policy: {self.password_policy}")
+        if self.password_policy['attempt_lockout'] in [0, None, '']:
+            warnings.warn(
+                "The PASSWORD_POLICY['attempt_lockout'] value is insecure, "
+                "and should not be used. See https://pages.nist.gov/800-63-3/sp800-63b.html#throttle"
+            )
+
 
     def _validate_user_class(self, user_class):
         """
@@ -526,7 +579,8 @@ class Beskar():
         :returns: New :py:mod:`passlib` TOTP secret object
         """
         if not self.app.config.get("BESKAR_TOTP_SECRETS_TYPE"):
-            logger.warning(
+            #logger.warning(
+            warnings.warn(
                 textwrap.dedent(
                     """
                     Sanic_Beskar is attempting to generate a new TOTP
@@ -534,7 +588,8 @@ class Beskar():
                     value, which means you aren't properly encrypting these stored
                     TOTP secrets. *tsk*tsk*
                     """
-                )
+                ),
+                UserWarning
             )
 
         return self.totp_ctx.new()
@@ -945,6 +1000,7 @@ class Beskar():
             payload_parts,
             self.encode_key,
             self.encode_algorithm,
+            json_encoder=JSONEncoder,
         )
 
     async def encode_token(
@@ -1421,7 +1477,8 @@ class Beskar():
             except MissingToken:
                 pass
             except AttributeError:
-                logger.warning(
+                #logger.warning(
+                warnings.warn(
                     textwrap.dedent(
                         f"""
                         Sanic_Beskar hasn't implemented reading tokens
@@ -1430,7 +1487,8 @@ class Beskar():
                         Values accepted in TOKEN_PLACES are:
                         {self.token_places}
                         """
-                    )
+                    ),
+                    UserWarning
                 )
 
         raise MissingToken(

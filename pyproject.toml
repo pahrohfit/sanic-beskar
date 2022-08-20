@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.0.6"
+version = "2.1.0"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -46,6 +46,7 @@ fastpbkdf2 = "^0.2"
 async-sender = "^1.4.4"
 segno = "^1.5.2"
 pytest = "^7.1.2"
+beanie = "^1.11.7"
 
 [build-system]
 requires = ["poetry-core>=1.1"]

@@ -1,13 +1,44 @@
 import functools
+from collections.abc import Iterable
 import re
-from typing import NoReturn, Optional
+import datetime as dt
+from typing import Optional
+
+# If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
+try:
+    from beanie import PydanticObjectId as ObjectId
+except (ImportError, ModuleNotFoundError):
+    from bson.objectid import ObjectId
+
 import ujson
+from json import JSONEncoder
 
 from sanic import Sanic, Request
 import pendulum
 
 from sanic_beskar.constants import RESERVED_CLAIMS
 from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
+
+
+class JSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, '__json__'):
+            return obj.__json__()
+        elif isinstance(obj, Iterable):
+            return list(obj)
+        elif isinstance(obj, dt.datetime):
+            return obj.isoformat()
+        elif isinstance(obj, ObjectId):
+            return str(obj)
+        elif hasattr(obj, '__getitem__') and hasattr(obj, 'keys'):
+            return dict(obj)
+        elif hasattr(obj, '__dict__'):
+            return {member: getattr(obj, member)
+                    for member in dir(obj)
+                    if not member.startswith('_') and
+                    not hasattr(getattr(obj, member), '__call__')}
+
+        return JSONEncoder.default(self, obj)
 
 
 def get_request(request: Request) -> Request:
@@ -149,7 +180,7 @@ def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     return hasattr(ctx, 'token_data')
 
 
-def add_token_data_to_app_context(token_data) -> NoReturn:
+def add_token_data_to_app_context(token_data) -> None:
     """
     Adds a dictionary of token data (presumably unpacked from a token) to the
     top of the sanic app's context
@@ -181,7 +212,7 @@ def get_token_data_from_app_context() -> str:
     return token_data
 
 
-def remove_token_data_from_app_context() -> NoReturn:
+def remove_token_data_from_app_context() -> None:
     """
     Removes the dict of token data from the top of the sanic app's context
     """

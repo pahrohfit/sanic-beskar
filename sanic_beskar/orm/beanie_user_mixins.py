@@ -1,9 +1,11 @@
 from typing import Optional
 
-from tortoise.exceptions import DoesNotExist
+from bson.objectid import ObjectId
+
+from beanie.exceptions import DocumentNotFound
 
 
-class TortoiseUserMixin:
+class BeanieUserMixin:
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `tortoise-orm <https://tortoise.github.io/>`_. Makes
@@ -77,12 +79,12 @@ class TortoiseUserMixin:
         """
         try:
             if username:
-                return await cls.filter(username=username).get()
+                return await cls.find({'username': username}).first_or_none()
             elif email:
-                return await cls.filter(email=email).get()
+                return await cls.find({'email': email}).first_or_none()
             else:
                 return None
-        except DoesNotExist:
+        except DocumentNotFound:
             return None
 
     @classmethod
@@ -102,6 +104,6 @@ class TortoiseUserMixin:
         :rtype: str, None
         """
         try:
-            return await cls.filter(id=id).get()
-        except DoesNotExist:
+            return await cls.find({'_id': ObjectId(id)}).first_or_none()
+        except DocumentNotFound:
             return None

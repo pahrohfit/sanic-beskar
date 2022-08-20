@@ -105,72 +105,6 @@ class TestBeskar:
     ):
         assert default_guard._validate_user_class(user_class)
 
-    def test__validate_user_class__fails_if_class_has_no_lookup_classmethod(
-        self,
-        default_guard,
-    ):
-        class NoLookupUser:
-            @classmethod
-            def identify(cls, id):
-                pass
-
-        with pytest.raises(BeskarError) as err_info:
-            default_guard._validate_user_class(NoLookupUser)
-        assert "must have a lookup class method" in err_info.value.message
-
-    def test__validate_user_class__fails_if_class_has_no_identify_classmethod(
-        self,
-        default_guard,
-    ):
-        class NoIdentifyUser:
-            @classmethod
-            def lookup(cls, username):
-                pass
-
-        with pytest.raises(BeskarError) as err_info:
-            default_guard._validate_user_class(NoIdentifyUser)
-        assert "must have an identify class method" in err_info.value.message
-
-    def test__validate_user_class__fails_if_class_has_no_identity_attribute(
-        self,
-        default_guard,
-    ):
-        class NoIdentityUser:
-            rolenames = []
-            password = ""
-
-            @classmethod
-            def identify(cls, id):
-                pass
-
-            @classmethod
-            def lookup(cls, username):
-                pass
-
-        with pytest.raises(BeskarError) as err_info:
-            default_guard._validate_user_class(NoIdentityUser)
-        assert "must have an identity attribute" in err_info.value.message
-
-    def test__validate_user_class__fails_if_class_has_no_rolenames_attribute(
-        self,
-        default_guard,
-    ):
-        class NoRolenamesUser:
-            identity = 0
-            password = ""
-
-            @classmethod
-            def identify(cls, id):
-                pass
-
-            @classmethod
-            def lookup(cls, username):
-                pass
-
-        with pytest.raises(BeskarError) as err_info:
-            default_guard._validate_user_class(NoRolenamesUser)
-        assert "must have a rolenames attribute" in err_info.value.message
-
     def test__validate_user_class__skips_rolenames_check_if_roles_are_disabled(
         self,
         app,
@@ -191,26 +125,6 @@ class TestBeskar:
         app.config["BESKAR_ROLES_DISABLED"] = True
         guard = Beskar(app, user_class)
         assert guard._validate_user_class(NoRolenamesUser)
-
-    def test__validate_user_class__fails_if_class_has_no_password_attribute(
-        self,
-        default_guard,
-    ):
-        class NoPasswordUser:
-            identity = 0
-            rolenames = []
-
-            @classmethod
-            def identify(cls, id):
-                pass
-
-            @classmethod
-            def lookup(cls, username):
-                pass
-
-        with pytest.raises(BeskarError) as err_info:
-            default_guard._validate_user_class(NoPasswordUser)
-        assert "must have a password attribute" in err_info.value.message
 
     def test__validate_user_class__skips_inst_check_if_constructor_req_params(
         self,
@@ -1270,13 +1184,3 @@ class TestBeskar:
         assert the_protected_dude_totp.get('enckey')
         # put away your toys
         await the_dude.delete()
-
-    async def test_rbac_policy_load(self, app, user_class):
-        """
-        This test verifies the authenticate_totp() function, for use
-        with TOTP two factor authentication.
-        """
-
-        app.config["BESKAR_RBAC_POLICY"] = "testing"
-        with pytest.raises(ConfigurationError):
-            Beskar(app, user_class)
