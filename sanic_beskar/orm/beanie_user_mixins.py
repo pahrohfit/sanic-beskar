@@ -1,5 +1,4 @@
 from typing import Optional
-from sanic.log import logger
 
 from bson.objectid import ObjectId
 

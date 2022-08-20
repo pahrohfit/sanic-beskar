@@ -7,7 +7,7 @@ from typing import Optional
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
 try:
     from beanie import PydanticObjectId as ObjectId
-except:
+except (ImportError, ModuleNotFoundError):
     from bson.objectid import ObjectId
 
 import ujson
