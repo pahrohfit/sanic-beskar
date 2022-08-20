@@ -6,7 +6,6 @@ from typing import Union, Optional
 import re
 import textwrap
 import warnings
-#from webbrowser import get
 
 import jinja2
 import jwt
