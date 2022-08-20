@@ -2,12 +2,13 @@ import functools
 from collections.abc import Iterable
 import re
 import datetime as dt
-from typing import NoReturn, Optional
+from typing import Optional
 
+# If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
 try:
-    from beanie import PydanticObjectId
+    from beanie import PydanticObjectId as ObjectId
 except:
-    pass
+    from bson.objectid import ObjectId
 
 import ujson
 from json import JSONEncoder
@@ -27,7 +28,7 @@ class JSONEncoder(JSONEncoder):
             return list(obj)
         elif isinstance(obj, dt.datetime):
             return obj.isoformat()
-        elif isinstance(obj, PydanticObjectId):
+        elif isinstance(obj, ObjectId):
             return str(obj)
         elif hasattr(obj, '__getitem__') and hasattr(obj, 'keys'):
             return dict(obj)
@@ -179,7 +180,7 @@ def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     return hasattr(ctx, 'token_data')
 
 
-def add_token_data_to_app_context(token_data) -> NoReturn:
+def add_token_data_to_app_context(token_data) -> None:
     """
     Adds a dictionary of token data (presumably unpacked from a token) to the
     top of the sanic app's context
@@ -211,7 +212,7 @@ def get_token_data_from_app_context() -> str:
     return token_data
 
 
-def remove_token_data_from_app_context() -> NoReturn:
+def remove_token_data_from_app_context() -> None:
     """
     Removes the dict of token data from the top of the sanic app's context
     """

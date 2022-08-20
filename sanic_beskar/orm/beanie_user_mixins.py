@@ -57,21 +57,6 @@ class BeanieUserMixin:
 
         try:
             return self.roles.split(",")
-            """
-            def split_perm(role):
-                _name, _value = None, []
-                if ':' in role:
-                    _name, _value = role.split(':', 2)
-                elif ',' in role:
-                    return role.split(",")
-                else:
-                    return role, []
-
-                if ',' not in _value:
-                    return _name, _value
-                return _name, _value.split(',')
-            return dict(map(split_perm, self.roles.split(';')))
-            """
         except Exception:
             return list()
 
