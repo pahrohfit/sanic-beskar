@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.1.0 - 2022-08-20
+-------------------
+- Added support for `beanie` ORM
+
 v2.0.5 - 2022-08-09
 -------------------
 - Added a work around for some class-based view issues with Sanic
