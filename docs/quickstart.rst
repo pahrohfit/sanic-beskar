@@ -16,7 +16,8 @@ Note on Requirements
 Older versions of `Sanic <https://sanic.dev>`_ may work, but are not supported. Stay current.
 
 The examples mainly utilize `Tortoise-ORM <https://tortoise.github.io>`_, a couple also show support
-`uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_, but neither are
+of `uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_ and
+`beanie <https://github.com/roman-right/beanie>`_, but none are
 required, or even installed by default (except if you install from poetry with the `-D` flag).
 Any `async` ORM can be utilized.
 
