@@ -85,6 +85,10 @@ directory:
        <https://github.com/pahrohfit/sanic-beskar/blob/master/example/basic_with_umongo_mixin.py>`_
      - Same simple example, using the provided
        :py:mod:`~sanic_beskar.orm.tortoise_user_mixins`
+   * - `examples/basic_with_beanie_mixin.py
+       <https://github.com/pahrohfit/sanic-beskar/blob/master/example/basic_with_beanie_mixin.py>`_
+     - Same simple example, using the provided
+       :py:mod:`~sanic_beskar.orm.beanie_user_mixins`
    * - `examples/blacklist.py
        <https://github.com/pahrohfit/sanic-beskar/blob/master/example/blacklist.py>`_
      - Simple example utilizing the blacklist functionality
