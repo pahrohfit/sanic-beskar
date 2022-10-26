@@ -200,7 +200,6 @@ class Beskar():
 
         if self.pwd_ctx.default_scheme().startswith('pbkdf2_'):
             if not find_spec('fastpbkdf2'):
-                #logger.warning(
                 warnings.warn(
                     textwrap.dedent(
                         """
@@ -473,7 +472,6 @@ class Beskar():
             "Invalid `paseto_version` configured. Valid are [1, 2, 3, 4] only.",
         )
 
-        logger.critical(f"Policy: {self.password_policy}")
         if self.password_policy['attempt_lockout'] in [0, None, '']:
             warnings.warn(
                 "The PASSWORD_POLICY['attempt_lockout'] value is insecure, "
@@ -579,7 +577,6 @@ class Beskar():
         :returns: New :py:mod:`passlib` TOTP secret object
         """
         if not self.app.config.get("BESKAR_TOTP_SECRETS_TYPE"):
-            #logger.warning(
             warnings.warn(
                 textwrap.dedent(
                     """
@@ -1477,7 +1474,6 @@ class Beskar():
             except MissingToken:
                 pass
             except AttributeError:
-                #logger.warning(
                 warnings.warn(
                     textwrap.dedent(
                         f"""

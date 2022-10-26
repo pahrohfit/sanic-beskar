@@ -16,7 +16,8 @@ Note on Requirements
 Older versions of `Sanic <https://sanic.dev>`_ may work, but are not supported. Stay current.
 
 The examples mainly utilize `Tortoise-ORM <https://tortoise.github.io>`_, a couple also show support
-`uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_, but neither are
+of `uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_ and
+`beanie <https://github.com/roman-right/beanie>`_, but none are
 required, or even installed by default (except if you install from poetry with the `-D` flag).
 Any `async` ORM can be utilized.
 
@@ -85,6 +86,10 @@ directory:
        <https://github.com/pahrohfit/sanic-beskar/blob/master/example/basic_with_umongo_mixin.py>`_
      - Same simple example, using the provided
        :py:mod:`~sanic_beskar.orm.tortoise_user_mixins`
+   * - `examples/basic_with_beanie_mixin.py
+       <https://github.com/pahrohfit/sanic-beskar/blob/master/example/basic_with_beanie_mixin.py>`_
+     - Same simple example, using the provided
+       :py:mod:`~sanic_beskar.orm.beanie_user_mixins`
    * - `examples/blacklist.py
        <https://github.com/pahrohfit/sanic-beskar/blob/master/example/blacklist.py>`_
      - Simple example utilizing the blacklist functionality
