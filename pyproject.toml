@@ -29,8 +29,10 @@ mongomock-motor = "^0.0.13"
 mongomock = "^4.1.2"
 async-sender = "^1.4.4"
 ipdb = "^0.13.9"
-flake8 = "^5.0.4"
 sphinx-rtd-theme = "^1.1.1"
+sphinx = "^5.3.0"
+bandit = "^1.7.4"
+flake8-async = "^22.11.6"
 
 
 [project.urls]
@@ -38,7 +40,7 @@ sphinx-rtd-theme = "^1.1.1"
 "Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 pyjwt = "^2.0"
 pendulum = "^2.1"
 passlib = "^1.7"
