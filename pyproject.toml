@@ -9,6 +9,30 @@ homepage = "https://sanic-beskar.readthedocs.io/en/latest/"
 documentation = "https://sanic-beskar.readthedocs.io/en/latest/"
 repository = "https://github.com/pahrohfit/sanic-beskar"
 
+[tool.poetry.group.dev.dependencies]
+bcrypt = "^4.0.1"
+plummet = {version = "^1.1", extras = ["time-machine"]}
+sanic-testing = "^22.6.0"
+pytest-asyncio = "^0.20.2"
+tortoise-orm = "^0.19.2"
+nest-asyncio = "^1.5.5"
+pytest-cov = "^4.0.0"
+toml = "^0.10.2"
+umongo = "3.1.0"
+motor = "^3.0.0"
+pytest-profiling = "^1.7.0"
+fastpbkdf2 = "^0.2"
+segno = "^1.5.2"
+pytest = "^7.2.0"
+beanie = "^1.11.7"
+mongomock-motor = "^0.0.13"
+mongomock = "^4.1.2"
+async-sender = "^1.4.4"
+ipdb = "^0.13.9"
+flake8 = "^5.0.4"
+sphinx-rtd-theme = "^1.1.1"
+
+
 [project.urls]
 "Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
 "Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
@@ -19,35 +43,11 @@ pyjwt = "^2.0"
 pendulum = "^2.1"
 passlib = "^1.7"
 sanic = "^22.6.0"
-cryptography = "^37.0.4"
 sanic-jinja2 = "^2022.1.13"
 pyseto = "^1.6.9"
 py-buzz = "^3.2.1"
-
-[tool.poetry.dev-dependencies]
-flake8 = "^3.7"
-bcrypt = "^3.1"
-ipdb = "^0.12.0"
-plummet = {version = "^1.1", extras = ["time-machine"]}
-sanic-testing = "^22.6.0"
-pytest-asyncio = "^0.18.3"
-tortoise-orm = "^0.19.2"
-nest-asyncio = "^1.5.5"
-pytest-cov = "^3.0.0"
-toml = "^0.10.2"
-sphinx-rtd-theme = "^1.0.0"
-sphinx = "^5"
-umongo = "3.1.0"
-mongomock = "4.1.1"
-mongomock-motor = "^0.0.12"
-motor = "^3.0.0"
-pytest-profiling = "^1.7.0"
-fastpbkdf2 = "^0.2"
-async-sender = "^1.4.4"
-segno = "^1.5.2"
-pytest = "^7.1.2"
-beanie = "^1.11.7"
+cryptography = "^38.0.3"
 
 [build-system]
-requires = ["poetry-core>=1.1"]
+requires = ["poetry-core>=1.2"]
 build-backend = "poetry.core.masonry.api"
