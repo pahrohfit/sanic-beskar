@@ -11,7 +11,7 @@ except (ImportError, ModuleNotFoundError):
     from bson.objectid import ObjectId
 
 import ujson
-from json import JSONEncoder
+from json import JSONEncoder as json_JSONEncoder
 
 from sanic import Sanic, Request
 import pendulum
@@ -20,7 +20,7 @@ from sanic_beskar.constants import RESERVED_CLAIMS
 from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
 
 
-class JSONEncoder(JSONEncoder):
+class JSONEncoder(json_JSONEncoder):
     def default(self, obj):
         if hasattr(obj, '__json__'):
             return obj.__json__()
