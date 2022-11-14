@@ -107,7 +107,7 @@ class Beskar():
         self.totp_ctx = None
         self.hash_scheme = None
         self.salt = None
-        self.token_provider = 'jwt'
+        self.token_provider = 'jwt'  # nosec B105
         self.paseto_ctx = None
         self.paseto_key = None
         self.paseto_token = None
@@ -249,7 +249,7 @@ class Beskar():
             "refresh lifespan was not configured",
         )
 
-        if self.token_provider == 'paseto':
+        if self.token_provider == 'paseto':  # nosec B105
             try:
                 from pyseto import Key, Paseto, Token # noqa
             except (ImportError, ModuleNotFoundError) as e:
