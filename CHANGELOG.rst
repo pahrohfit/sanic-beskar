@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.2.2 - 2022-11-14
+-------------------
+- Dependancy updates
+- Added `bandit` for additional security testing
+
 v2.2.1 - 2022-11-14
 -------------------
 - Dependancy updates

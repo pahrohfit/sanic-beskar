@@ -107,7 +107,7 @@ class Beskar():
         self.totp_ctx = None
         self.hash_scheme = None
         self.salt = None
-        self.token_provider = 'jwt'
+        self.token_provider = 'jwt'  # nosec B105
         self.paseto_ctx = None
         self.paseto_key = None
         self.paseto_token = None
@@ -166,7 +166,6 @@ class Beskar():
 
         self.app = app
         app.register_middleware(self.open_session, 'request')
-
 
         self.roles_disabled = app.config.get(
             "BESKAR_ROLES_DISABLED",
@@ -249,7 +248,7 @@ class Beskar():
             "refresh lifespan was not configured",
         )
 
-        if self.token_provider == 'paseto':
+        if self.token_provider == 'paseto':  # nosec B105
             try:
                 from pyseto import Key, Paseto, Token # noqa
             except (ImportError, ModuleNotFoundError) as e:
@@ -431,7 +430,6 @@ class Beskar():
             if setting not in self.password_policy:
                 self.password_policy[setting] = DEFAULT_PASSWORD_POLICY[setting]
 
-
     def audit(self):
         """
         Perform some basic sanity check of settings to make sure the developer didn't
@@ -477,7 +475,6 @@ class Beskar():
                 "The PASSWORD_POLICY['attempt_lockout'] value is insecure, "
                 "and should not be used. See https://pages.nist.gov/800-63-3/sp800-63b.html#throttle"
             )
-
 
     def _validate_user_class(self, user_class):
         """

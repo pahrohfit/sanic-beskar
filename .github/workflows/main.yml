@@ -61,6 +61,9 @@ jobs:
       - name: test
         run: |
           poetry run pytest -x --cov=sanic_beskar --cov-report=xml
+      - name: bandit security testing
+        run: |
+          poetry run bandit -r sanic_beskar/
       - name: lint-src
         run: |
           poetry run flake8 sanic_beskar --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
