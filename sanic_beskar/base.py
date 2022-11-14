@@ -167,7 +167,6 @@ class Beskar():
         self.app = app
         app.register_middleware(self.open_session, 'request')
 
-
         self.roles_disabled = app.config.get(
             "BESKAR_ROLES_DISABLED",
             DEFAULT_ROLES_DISABLED,
@@ -431,7 +430,6 @@ class Beskar():
             if setting not in self.password_policy:
                 self.password_policy[setting] = DEFAULT_PASSWORD_POLICY[setting]
 
-
     def audit(self):
         """
         Perform some basic sanity check of settings to make sure the developer didn't
@@ -477,7 +475,6 @@ class Beskar():
                 "The PASSWORD_POLICY['attempt_lockout'] value is insecure, "
                 "and should not be used. See https://pages.nist.gov/800-63-3/sp800-63b.html#throttle"
             )
-
 
     def _validate_user_class(self, user_class):
         """
