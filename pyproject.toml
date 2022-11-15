@@ -8,6 +8,8 @@ readme = "README.rst"
 homepage = "https://sanic-beskar.readthedocs.io/en/latest/"
 documentation = "https://sanic-beskar.readthedocs.io/en/latest/"
 repository = "https://github.com/pahrohfit/sanic-beskar"
+
+[project]
 requires-python = ">=3.8"
 
 [tool.poetry.group.dev.dependencies]
