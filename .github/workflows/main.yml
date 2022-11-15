@@ -88,5 +88,4 @@ jobs:
           repo-directory: './'
           requirements-path: 'requirements.txt'
           infer-types: true
-          include-default-sapp-filters: true
-          #sapp-filters-directory: path/to/custom-filters
+          include-default-sapp-filters: false
