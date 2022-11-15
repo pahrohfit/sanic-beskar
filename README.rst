@@ -22,9 +22,9 @@
  sanic-beskar
 ******************
 
-* Stable branch: master
-* CBTE (coding by trial and error) branch: dev
-* Working example(s): `examples/*.py`
+* Stable branch: `master <https://github.com/pahrohfit/sanic-beskar/tree/master/sanic_beskar>`_
+* CBTE (coding by trial and error) branch: `dev <https://github.com/pahrohfit/sanic-beskar/tree/dev/sanic_beskar>`_
+* Working example(s): `examples/*.py <https://github.com/pahrohfit/sanic-beskar/tree/master/example>`_
 
 ---------------------------------------------------
 Strong, Simple, and Precise security for Sanic APIs
