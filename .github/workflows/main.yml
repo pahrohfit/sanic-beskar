@@ -83,7 +83,7 @@ jobs:
         run: |
           poetry export -o requirements.txt
       - name: Run Pysa Action
-        uses: facebook/pysa-action
+        uses: facebook/pysa-action@0.0.1
         with:
           repo-directory: './'
           requirements-path: 'requirements.txt'
