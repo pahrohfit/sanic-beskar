@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
       - name: get-poetry
         uses: snok/install-poetry@v1
         with:
@@ -42,12 +43,6 @@ jobs:
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-        #----------------------------------------------
-        # install dependencies if cache does not exist
-        #----------------------------------------------
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
 
         #----------------------------------------------
         # install your root project, if required
@@ -67,9 +62,6 @@ jobs:
       - name: lint-src
         run: |
           poetry run flake8 sanic_beskar --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: lint-tests
-        run: |
-          poetry run flake8 tests --exit-zero --count --max-line-length=127 --statistics
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
