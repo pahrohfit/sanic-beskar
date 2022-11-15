@@ -1735,7 +1735,7 @@ class Beskar():
                 template = fh.read()
 
         with BeskarError.handle_errors("fail sending email"):
-            jinja_tmpl = jinja2.Template(template)
+            jinja_tmpl = jinja2.Template(template, autoescape=True, enable_async=True)
             notification["message"] = jinja_tmpl.render(notification).strip()
 
             _mail = import_module(self.app.ctx.mail.__module__)
