@@ -18,7 +18,7 @@
    :target: https://codecov.io/gh/pahrohfit/sanic-beskar
    :alt:    Codecov Report
 
-.. image:: https://static.pepy.tech/personalized-badge/sanic-beskar?period=total&units=international_system&left_color=lightgrey&right_color=orange&left_text=Downloads
+.. image:: https://static.pepy.tech/personalized-badge/sanic-beskar?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads
   :target: https://pepy.tech/project/sanic-beskar
 
 .. image::  https://api.codacy.com/project/badge/Grade/55f9192c1f584ae294bc1642b0fcc70c
