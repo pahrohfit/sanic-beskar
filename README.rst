@@ -3,9 +3,11 @@
    :alt:    Latest Published Version
 
 .. image::  https://github.com/pahrohfit/sanic-beskar/actions/workflows/main.yml/badge.svg
+   :target: https://github.com/pahrohfit/sanic-beskar/actions/workflows/main.yml
    :alt:    Build Testing Status
 
 .. image::  https://img.shields.io/pypi/pyversions/sanic-beskar.svg
+   :target: https://img.shields.io/pypi/pyversions/sanic-beskar
    :alt:    Supported Python versions
 
 .. image::  https://readthedocs.org/projects/sanic-beskar/badge/?version=latest
