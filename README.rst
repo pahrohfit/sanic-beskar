@@ -14,7 +14,7 @@
    :target: http://sanic-beskar.readthedocs.io/en/latest/?badge=latest
    :alt:    Documentation Build Status
 
-.. image::  https://codecov.io/gh/pahrohfit/sanic-beskar/branch/main/graph/badge.svg
+.. image::  https://codecov.io/gh/pahrohfit/sanic-beskar/branch/master/graph/badge.svg?token=24WAYX4OMT
    :target: https://codecov.io/gh/pahrohfit/sanic-beskar
    :alt:    Codecov Report
 
