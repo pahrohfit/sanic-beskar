@@ -82,10 +82,12 @@ jobs:
       - name: Generate requirements.txt for Pysa
         run: |
           poetry export -o requirements.txt
-      - name: Run Pysa Action
-        uses: facebook/pysa-action@0.0.1
-        with:
-          repo-directory: './'
-          requirements-path: 'requirements.txt'
-          infer-types: true
-          include-default-sapp-filters: false
+      #- name: Run Pysa Action
+      #  uses: facebook/pysa-action@0.0.1
+      #  with:
+      #    repo-directory: './'
+      #    requirements-path: 'requirements.txt'
+      #    infer-types: true
+      #    include-default-sapp-filters: false
+      - name: PyCharm Python Security Scanner
+        uses: tonybaloney/pycharm-security@1.25.1
