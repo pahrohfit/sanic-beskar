@@ -33,7 +33,7 @@ Strong, Simple, and Precise security for Sanic APIs
 This project's begining was fully lifted from the awesome
 `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_.
 
-Why `beskar <https://starwars.fandom.com/wiki/Beskar>`? Why not -- what
+Why `beskar <https://starwars.fandom.com/wiki/Beskar>`_? Why not -- what
 is better than star wars (provided you ignore the fact ~the mandolorian~
 was almost as lame as ~book of boba fett~)?
 Superior armour should be used if you want superior protection.
