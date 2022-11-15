@@ -2,21 +2,34 @@
    :target: https://badge.fury.io/py/sanic-beskar
    :alt:    Latest Published Version
 
+.. image::  https://github.com/pahrohfit/sanic-beskar/actions/workflows/main.yml/badge.svg
+   :alt:    Build Testing Status
+
+.. image::  https://img.shields.io/pypi/pyversions/sanic-beskar.svg
+   :alt:    Supported Python versions
+
 .. image::  https://readthedocs.org/projects/sanic-beskar/badge/?version=latest
    :target: http://sanic-beskar.readthedocs.io/en/latest/?badge=latest
    :alt:    Documentation Build Status
 
-.. image:: https://api.codacy.com/project/badge/Grade/55f9192c1f584ae294bc1642b0fcc70c
-   :alt: Codacy Badge
+.. image::  https://codecov.io/gh/pahrohfit/sanic-beskar/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/pahrohfit/sanic-beskar
+   :alt:    Codecov Report
+
+.. image:: https://static.pepy.tech/personalized-badge/sanic-beskar?period=total&units=international_system&left_color=black&right_color=orange&left_text=Downloads
+  :target: https://pepy.tech/project/sanic-beskar
+
+.. image::  https://api.codacy.com/project/badge/Grade/55f9192c1f584ae294bc1642b0fcc70c
+   :alt:    Codacy Badge
    :target: https://app.codacy.com/gh/pahrohfit/sanic-beskar?utm_source=github.com&utm_medium=referral&utm_content=pahrohfit/sanic-beskar&utm_campaign=Badge_Grade_Settings
 
-.. image:: https://mayhem4api.forallsecure.com/api/v1/api-target/pahrohfit/pahrohfit-sanic-beskar/badge/icon.svg?scm_branch=master
-   :alt: Mayhem for API
+.. image::  https://mayhem4api.forallsecure.com/api/v1/api-target/pahrohfit/pahrohfit-sanic-beskar/badge/icon.svg?scm_branch=master
+   :alt:    Mayhem for API
    :target: https://mayhem4api.forallsecure.com/pahrohfit/pahrohfit-sanic-beskar/latest-job?scm_branch=master
 
-.. image:: https://img.shields.io/badge/security-bandit-yellow.svg
+.. image::   https://img.shields.io/badge/security-bandit-yellow.svg
     :target: https://github.com/PyCQA/bandit
-    :alt: Security Status
+    :alt:    Security Status
 
 ******************
  sanic-beskar
