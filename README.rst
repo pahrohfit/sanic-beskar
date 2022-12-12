@@ -2,29 +2,44 @@
    :target: https://badge.fury.io/py/sanic-beskar
    :alt:    Latest Published Version
 
+.. image::  https://github.com/pahrohfit/sanic-beskar/actions/workflows/main.yml/badge.svg
+   :target: https://github.com/pahrohfit/sanic-beskar/actions/workflows/main.yml
+   :alt:    Build Testing Status
+
+.. image::  https://img.shields.io/pypi/pyversions/sanic-beskar.svg
+   :target: https://img.shields.io/pypi/pyversions/sanic-beskar
+   :alt:    Supported Python versions
+
 .. image::  https://readthedocs.org/projects/sanic-beskar/badge/?version=latest
    :target: http://sanic-beskar.readthedocs.io/en/latest/?badge=latest
    :alt:    Documentation Build Status
 
-.. image:: https://api.codacy.com/project/badge/Grade/55f9192c1f584ae294bc1642b0fcc70c
-   :alt: Codacy Badge
+.. image::  https://codecov.io/gh/pahrohfit/sanic-beskar/branch/master/graph/badge.svg?token=24WAYX4OMT
+   :target: https://codecov.io/gh/pahrohfit/sanic-beskar
+   :alt:    Codecov Report
+
+.. image:: https://static.pepy.tech/personalized-badge/sanic-beskar?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Downloads
+  :target: https://pepy.tech/project/sanic-beskar
+
+.. image::  https://api.codacy.com/project/badge/Grade/55f9192c1f584ae294bc1642b0fcc70c
+   :alt:    Codacy Badge
    :target: https://app.codacy.com/gh/pahrohfit/sanic-beskar?utm_source=github.com&utm_medium=referral&utm_content=pahrohfit/sanic-beskar&utm_campaign=Badge_Grade_Settings
 
-.. image:: https://mayhem4api.forallsecure.com/api/v1/api-target/pahrohfit/pahrohfit-sanic-beskar/badge/icon.svg?scm_branch=master
-   :alt: Mayhem for API
+.. image::  https://mayhem4api.forallsecure.com/api/v1/api-target/pahrohfit/pahrohfit-sanic-beskar/badge/icon.svg?scm_branch=master
+   :alt:    Mayhem for API
    :target: https://mayhem4api.forallsecure.com/pahrohfit/pahrohfit-sanic-beskar/latest-job?scm_branch=master
 
-.. image:: https://img.shields.io/badge/security-bandit-yellow.svg
+.. image::   https://img.shields.io/badge/security-bandit-yellow.svg
     :target: https://github.com/PyCQA/bandit
-    :alt: Security Status
+    :alt:    Security Status
 
 ******************
  sanic-beskar
 ******************
 
-* Stable branch: master
-* CBTE (coding by trial and error) branch: dev
-* Working example(s): `examples/*.py`
+* Stable branch: `master <https://github.com/pahrohfit/sanic-beskar/tree/master/sanic_beskar>`_
+* CBTE (coding by trial and error) branch: `dev <https://github.com/pahrohfit/sanic-beskar/tree/dev/sanic_beskar>`_
+* Working example(s): `examples/*.py <https://github.com/pahrohfit/sanic-beskar/tree/master/example>`_
 
 ---------------------------------------------------
 Strong, Simple, and Precise security for Sanic APIs
@@ -33,7 +48,7 @@ Strong, Simple, and Precise security for Sanic APIs
 This project's begining was fully lifted from the awesome
 `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_.
 
-Why `beskar <https://starwars.fandom.com/wiki/Beskar>`? Why not -- what
+Why `beskar <https://starwars.fandom.com/wiki/Beskar>`_? Why not -- what
 is better than star wars (provided you ignore the fact ~the mandolorian~
 was almost as lame as ~book of boba fett~)?
 Superior armour should be used if you want superior protection.
