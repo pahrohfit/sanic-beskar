@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.2.2"
+version = "2.2.3"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -30,7 +30,6 @@ pytest = "^7.2.0"
 beanie = "^1.11.7"
 mongomock-motor = "^0.0.13"
 mongomock = "^4.1.2"
-async-sender = "^1.4.4"
 ipdb = "^0.13.9"
 sphinx-rtd-theme = "^1.1.1"
 sphinx = "^5.3.0"
@@ -43,9 +42,14 @@ safety = "^2.3.1"
 "Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
 "Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
 
+
+
+
+
+
 [tool.poetry.dependencies]
 python = "^3.8"
-pyjwt = "^2.0"
+pyjwt = "^2.6"
 pendulum = "^2.1"
 passlib = "^1.7"
 sanic = "^22.6.0"

@@ -8,14 +8,14 @@ python-versions = ">=3.7,<4.0"
 
 [[package]]
 name = "aiosmtplib"
-version = "1.1.6"
+version = "1.1.7"
 description = "asyncio SMTP client"
 category = "dev"
 optional = false
 python-versions = ">=3.5.2,<4.0.0"
 
 [package.extras]
-docs = ["sphinx (>=2,<4)", "sphinx_autodoc_typehints (>=1.7.0,<2.0.0)"]
+docs = ["jinja2 (>=2.0,<3.1)", "sphinx (>=2,<4)", "sphinx_autodoc_typehints (>=1.7.0,<2.0.0)"]
 uvloop = ["uvloop (>=0.13,<0.15)"]
 
 [[package]]
@@ -114,9 +114,16 @@ description = "AsyncSender is a tiny module for SMTP mail sending, Inspired by S
 category = "dev"
 optional = false
 python-versions = "*"
+develop = false
 
 [package.dependencies]
-aiosmtplib = "1.1.6"
+aiosmtplib = "1.1.7"
+
+[package.source]
+type = "git"
+url = "https://github.com/theruziev/async_sender.git"
+reference = "HEAD"
+resolved_reference = "1dda574e12c8f0944c9e25b5e87643b9a6c7f203"
 
 [[package]]
 name = "attrs"
@@ -1577,7 +1584,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "dcd6d8a4946bbe5373463f9035319aa7711177e8d8b51afd29599ca5e567f6d4"
+content-hash = "0148f8a84d2f3491e9eb531bbc4e006db9599a319d8a8d7bdde33ce7c5611584"
 
 [metadata.files]
 aiofiles = [
@@ -1585,8 +1592,8 @@ aiofiles = [
     {file = "aiofiles-22.1.0.tar.gz", hash = "sha256:9107f1ca0b2a5553987a94a3c9959fe5b491fdf731389aa5b7b1bd0733e32de6"},
 ]
 aiosmtplib = [
-    {file = "aiosmtplib-1.1.6-py3-none-any.whl", hash = "sha256:84174765778b2c5e0e207fbce0a769202fcf0c3de81faa87cc03551a6333bfa9"},
-    {file = "aiosmtplib-1.1.6.tar.gz", hash = "sha256:d138fe6ffecbc9e6320269690b9ac0b75e540ef96e8f5c77d4a306760014dce2"},
+    {file = "aiosmtplib-1.1.7-py3-none-any.whl", hash = "sha256:c1403e70fce769643820cb2c5bf0bd4f7ea83a01c60e854c81a6f5d7ccff2656"},
+    {file = "aiosmtplib-1.1.7.tar.gz", hash = "sha256:5810657a86b19476c93fa280c499ca3ef88ce26f2b74dae202989ae06377d107"},
 ]
 aiosqlite = [
     {file = "aiosqlite-0.17.0-py3-none-any.whl", hash = "sha256:6c49dc6d3405929b1d08eeccc72306d3677503cc5e5e43771efc1e00232e8231"},
@@ -1635,10 +1642,7 @@ asttokens = [
     {file = "asttokens-2.2.1-py2.py3-none-any.whl", hash = "sha256:6b0ac9e93fb0335014d382b8fa9b3afa7df546984258005da0b9e7095b3deb1c"},
     {file = "asttokens-2.2.1.tar.gz", hash = "sha256:4622110b2a6f30b77e1473affaa97e711bc2f07d3f10848420ff1898edbe94f3"},
 ]
-async-sender = [
-    {file = "async_sender-1.4.4-py2.py3-none-any.whl", hash = "sha256:29a5489a298725cb7b09c483a25b3789cf8059eb7f0eba769d921e21b9927926"},
-    {file = "async_sender-1.4.4.tar.gz", hash = "sha256:b0ce0c87b0952cb41cff9b7510d0eec4723eeba11b8b111e2a1edc352b934547"},
-]
+async-sender = []
 attrs = [
     {file = "attrs-22.1.0-py2.py3-none-any.whl", hash = "sha256:86efa402f67bf2df34f51a335487cf46b1ec130d02b8d39fd248abfd30da551c"},
     {file = "attrs-22.1.0.tar.gz", hash = "sha256:29adc2665447e5191d0e7c568fde78b21f9672d344281d0c6e1ab085429b22b6"},
