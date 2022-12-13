@@ -1210,18 +1210,6 @@ http3 = ["aioquic"]
 test = ["bandit", "beautifulsoup4", "black", "chardet (>=3.0.0,<4.0.0)", "coverage", "docutils", "flake8", "isort (>=5.0.0)", "mypy (>=0.901,<0.910)", "pygments", "pytest (>=7.1.0,<7.2.0)", "pytest-benchmark", "pytest-sanic", "sanic-testing (>=22.9.0)", "slotscheck (>=0.8.0,<1)", "types-ujson", "uvicorn (<0.15.0)"]
 
 [[package]]
-name = "sanic-jinja2"
-version = "2022.11.11"
-description = "Jinja2 support for sanic"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-jinja2 = "*"
-sanic = ">=21.3"
-
-[[package]]
 name = "sanic-routing"
 version = "22.8.0"
 description = "Core routing component for Sanic"
@@ -1611,7 +1599,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "a6ebe6fad1ca688a226f6254f8732a1813d843a2dc85f498fdf9ea31e85eb428"
+content-hash = "4edb3edd0f879892a6e62759fe7a80bd35fe8dcc651c9498d2aeebd65523eeba"
 
 [metadata.files]
 aiofiles = [
@@ -2537,10 +2525,6 @@ safety = [
 sanic = [
     {file = "sanic-22.9.1-py3-none-any.whl", hash = "sha256:d8905ee1c72759c7b37b1638c3b2b6656573d38156a82a85fd020532749029c1"},
     {file = "sanic-22.9.1.tar.gz", hash = "sha256:9793919827f3753fd16433c8750625472f1a08e2147d6870bb7ff94ab12caaea"},
-]
-sanic-jinja2 = [
-    {file = "sanic-jinja2-2022.11.11.tar.gz", hash = "sha256:b410ec88854d4c938de26fd9de95b1f3e7391f2f008b217868faab76afda294f"},
-    {file = "sanic_jinja2-2022.11.11-py3-none-any.whl", hash = "sha256:ce8fc220087e9dc71370f1698eab9f4d53e5636791c87ceac7a13f10da8af714"},
 ]
 sanic-routing = [
     {file = "sanic-routing-22.8.0.tar.gz", hash = "sha256:305729b4e0bf01f074044a2a315ff401fa7eeffb009eec1d2c81d35e1038ddfc"},
