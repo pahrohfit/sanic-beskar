@@ -37,6 +37,7 @@ bandit = "^1.7.4"
 flake8-async = "^22.11.6"
 safety = "^2.3.1"
 async-sender = { git = "https://github.com/theruziev/async_sender.git" }
+pytest-xdist = "^3.0.2"
 
 [project.urls]
 "Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
@@ -56,3 +57,17 @@ cryptography = "^38.0.3"
 [build-system]
 requires = ["poetry-core>=1.2"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "7.1"
+testpaths = [
+    "tests",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+]
+log_format = "%(asctime)-15s | %(levelname)-6s | %(threadName)-12s | %(filename)s:%(lineno)d | %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = "false"
+log_level = "DEBUG"
+addopts = "--color=auto --code-highlight=yes -n auto"
