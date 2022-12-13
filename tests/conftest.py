@@ -125,7 +125,7 @@ def clean_sanic_app_config(app):
 
 @pytest.fixture
 def client(app):
-    return app.asgi_client
+    yield app.asgi_client
 
 
 """
