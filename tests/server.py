@@ -125,8 +125,3 @@ def create_app(db_path=None):
     )
 
     return sanic_app
-
-
-if __name__ == "__main__":
-    _app = create_app()
-    _app.run(host="127.0.0.1", port=8000, workers=1, debug=True)

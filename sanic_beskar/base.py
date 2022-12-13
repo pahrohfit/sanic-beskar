@@ -1,3 +1,4 @@
+import aiofiles
 from importlib import import_module
 from importlib.util import find_spec
 import datetime
@@ -1731,12 +1732,12 @@ class Beskar():
         )
 
         if template is None:
-            with open(self.confirmation_template) as fh:
-                template = fh.read()
+            async with aiofiles.open(self.confirmation_template, mode='r') as fh:
+                template = await fh.read()
 
         with BeskarError.handle_errors("fail sending email"):
             jinja_tmpl = jinja2.Template(template, autoescape=True, enable_async=True)
-            notification["message"] = jinja_tmpl.render(notification).strip()
+            notification["message"] = (await jinja_tmpl.render_async(notification)).strip()
 
             _mail = import_module(self.app.ctx.mail.__module__)
             msg = _mail.Message(

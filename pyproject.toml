@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.2.3"
+version = "2.2.4"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -22,7 +22,7 @@ nest-asyncio = "^1.5.5"
 pytest-cov = "^4.0.0"
 toml = "^0.10.2"
 umongo = "3.1.0"
-motor = "^3.0.0"
+motor = "^3.1.0"
 pytest-profiling = "^1.7.0"
 fastpbkdf2 = "^0.2"
 segno = "^1.5.2"
@@ -37,10 +37,13 @@ bandit = "^1.7.4"
 flake8-async = "^22.11.6"
 safety = "^2.3.1"
 async-sender = { git = "https://github.com/theruziev/async_sender.git" }
+pytest-xdist = "^3.0.2"
 
 [project.urls]
 "Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
 "Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
+
+
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -48,11 +51,23 @@ pyjwt = "^2.6"
 pendulum = "^2.1"
 passlib = "^1.7"
 sanic = "^22.6.0"
-sanic-jinja2 = "^2022.1.13"
 pyseto = "^1.6.9"
 py-buzz = "^3.2.1"
 cryptography = "^38.0.3"
+jinja2 = "^3.1.2"
 
 [build-system]
 requires = ["poetry-core>=1.2"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "7.1"
+testpaths = [
+    "tests",
+]
+asyncio_mode = "auto"
+#log_format = "%(asctime)-15s | %(levelname)-6s | %(threadName)-12s | %(filename)s:%(lineno)d | %(message)s"
+#log_date_format = "%Y-%m-%d %H:%M:%S"
+#log_cli = "false"
+#log_level = "DEBUG"
+addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"

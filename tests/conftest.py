@@ -9,6 +9,7 @@ import copy
 from tortoise import Tortoise, run_async
 from sanic.log import logger
 from sanic_testing.reusable import ReusableClient
+from sanic_testing import TestManager
 from sanic.exceptions import SanicException
 
 from sanic_beskar.base import Beskar
@@ -45,8 +46,10 @@ def app(tmpdir_factory, request, monkeypatch):
     monkeypatch.setenv('SANIC_BESKAR_TOKEN_PROVIDER', request.param)
 
     sanic_app = create_app(db_path=f'sqlite://{str(db_path)}')
+    TestManager(sanic_app)
     # Hack to do some poor code work in the app for some workarounds for broken fucntions under pytest
     sanic_app.config['PYTESTING'] = True
+    sanic_app.prepare()
 
     sanic_app.config.SUPPRESS_SEND = 1  # Don't actually send mails
     #_mail.init_app(sanic_app)
@@ -122,9 +125,7 @@ def clean_sanic_app_config(app):
 
 @pytest.fixture
 def client(app):
-    _client = ReusableClient(app, host='127.0.0.1', port='8000')
-    with _client:
-        yield _client
+    yield app.asgi_client
 
 
 """
