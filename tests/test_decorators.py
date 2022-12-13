@@ -37,7 +37,7 @@ class TestBeskarDecorators:
 
         the_dude = await mock_users(username='the_dude')
         # Token is not in header or cookie
-        _, response = client.get(
+        _, response = await client.get(
             "/kinda_protected",
             headers={},
         )
@@ -47,7 +47,7 @@ class TestBeskarDecorators:
 
         # Token is present and valid
         with plummet.frozen_time('2017-05-24 10:38:45'):
-            _, response = client.get(
+            _, response = await client.get(
                 "/kinda_protected",
                 headers=await default_guard.pack_header_for_user(the_dude),
             )
@@ -69,7 +69,7 @@ class TestBeskarDecorators:
         for route_name in ['/protected_class', '/protected_route']:
 
             # Token is not in header or cookie
-            _, response = client.get(
+            _, response = await client.get(
                 route_name,
                 headers={},
             )
@@ -85,7 +85,7 @@ class TestBeskarDecorators:
             assert response.status == 401
 
             # Token has invalid structure
-            _, response = client.get(
+            _, response = await client.get(
                 route_name,
                 headers={"Authorization": "bad_structure iamatoken"},
             )
@@ -102,7 +102,7 @@ class TestBeskarDecorators:
                 + pendulum.Duration(seconds=1)
             )
             with plummet.frozen_time(moment):
-                _, response = client.get(
+                _, response = await client.get(
                     route_name,
                     headers=headers,
                 )
@@ -111,7 +111,7 @@ class TestBeskarDecorators:
 
             # Token is present and valid in header or cookie
             with plummet.frozen_time('2017-05-24 10:38:45'):
-                _, response = client.get(
+                _, response = await client.get(
                     route_name,
                     headers=await default_guard.pack_header_for_user(the_dude),
                 )
@@ -121,7 +121,7 @@ class TestBeskarDecorators:
                 cookies = Cookies()
                 token = await default_guard.encode_token(the_dude)
                 cookies[default_guard.cookie_name] = token
-                _, response = client.get(route_name, cookies=cookies)
+                _, response = await client.get(route_name, cookies=cookies)
                 assert response.status == 200
 
     async def test_roles_required(self, default_guard, mock_users, client):
@@ -136,7 +136,7 @@ class TestBeskarDecorators:
 
         the_dude = await mock_users(username='the_dude')
         # Lacks one of one required roles
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_required",
             headers=await default_guard.pack_header_for_user(the_dude),
         )
@@ -148,14 +148,14 @@ class TestBeskarDecorators:
 
         walter = await mock_users(username='walter', roles="admin")
         # Has one of one required roles
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_required",
             headers=await default_guard.pack_header_for_user(walter),
         )
         assert response.status == 200
 
         # Lacks one of two required roles
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_and_operator_required",
             headers=await default_guard.pack_header_for_user(walter),
         )
@@ -168,25 +168,25 @@ class TestBeskarDecorators:
 
         maude = await mock_users(username='maude', roles="operator,admin")
         # Has two of two required roles
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_and_operator_required",
             headers=await default_guard.pack_header_for_user(maude),
         )
         assert response.status == 200
 
-        _, response = client.get(
+        _, response = await client.get(
             "/undecorated_admin_required",
             headers=await default_guard.pack_header_for_user(maude),
         )
         assert response.status == 200
 
-        _, response = client.get(
+        _, response = await client.get(
             "/undecorated_admin_accepted",
             headers=await default_guard.pack_header_for_user(maude),
         )
         assert response.status == 200
 
-        _, response = client.get(
+        _, response = await client.get(
             "/reversed_decorators",
             headers=await default_guard.pack_header_for_user(maude),
         )
@@ -201,13 +201,13 @@ class TestBeskarDecorators:
         """
 
         the_dude = await mock_users(username='the_dude')
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_class",
             headers=await default_guard.pack_header_for_user(the_dude),
         )
         assert response.status == 200
 
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(the_dude),
         )
@@ -219,28 +219,28 @@ class TestBeskarDecorators:
         )
 
         walter = await mock_users(username='walter', roles="admin")
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(walter),
         )
         assert response.status == 200
 
         donnie = await mock_users(username='donnie', roles="operator")
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(donnie),
         )
         assert response.status == 200
 
         maude = await mock_users(username='maude', roles="operator,admin")
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(maude),
         )
         assert response.status == 200
 
         jesus = await mock_users(username='jesus', roles="admin,god")
-        _, response = client.get(
+        _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(jesus),
         )
@@ -258,14 +258,14 @@ class TestBeskarDecorators:
         the_dude = await mock_users(username='the_dude', roles="admin")
         walter = await mock_users(username='walter', roles="not_admin")
 
-        _, response = client.get(
+        _, response = await client.get(
             "/rbac_protected",
             headers=await default_guard.pack_header_for_user(the_dude),
         )
         logger.critical(f"Response: {response.json}")
         assert response.status == 200
 
-        _, response = client.get(
+        _, response = await client.get(
             "/rbac_protected",
             headers=await default_guard.pack_header_for_user(walter),
         )

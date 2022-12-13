@@ -689,7 +689,7 @@ class TestBeskar:
             token = await default_guard.encode_token(the_dude)
             logger.critical(f'Token: {token}')
 
-        request, _ = client.get(
+        request, _ = await client.get(
             "/unprotected",
             headers={
                 "Content-Type": "application/json",
@@ -714,7 +714,7 @@ class TestBeskar:
         with plummet.frozen_time('2017-05-21 18:39:55'):
             token = await default_guard.encode_token(the_dude)
             cookies[default_guard.cookie_name] = token
-            request, _ = client.get(
+            request, _ = await client.get(
                 "/unprotected",
                 cookies=cookies
             )
