@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.2.6"
+version = "2.2.7"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -36,7 +36,7 @@ sphinx = "^5.3.0"
 bandit = "^1.7.4"
 flake8-async = "^22.11.6"
 safety = "^2.3.1"
-async-sender = { git = "https://github.com/theruziev/async_sender.git" }
+async-sender = "^2.0.0"
 pytest-xdist = "^3.0.2"
 
 [project.urls]
