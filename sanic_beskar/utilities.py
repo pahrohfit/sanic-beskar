@@ -4,6 +4,7 @@ import re
 import datetime as dt
 from typing import Optional
 
+
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
 try:
     from beanie import PydanticObjectId as ObjectId
@@ -142,14 +143,14 @@ def duration_from_string(text: str) -> pendulum:
 @functools.lru_cache(maxsize=None)
 def current_guard(ctx: Optional[Sanic] = None):
     """
-    Fetches the current instance of :py:class:`Beskar`
+    Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
     that is attached to the current sanic app
 
     :param ctx: Application Context
-    :type ctx: Optional[Sanic]
+    :type ctx: Optional[:py:class:`sanic.Sanic`]
 
     :returns: Current Beskar Guard object for this app context
-    :rtype: :py:class:`~sanic_beskar.Beskar`
+    :rtype: :py:class:`~sanic_beskar.base.Beskar`
 
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no guard found
     """
@@ -259,13 +260,13 @@ async def generate_totp_qr(user_totp: ujson):
     return segno.make(user_totp)
 
 
-async def current_user() -> object:
+async def current_user():
     """
     This method returns a user instance for token data attached to the
     current sanic app's context
 
     :returns: Current logged in ``User`` object
-    :rtype: ``User``
+    :rtype: populated :py:attr:`user_class` attribute of the logged in :py:class:`~sanic_beskar.Beskar` instance
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no user identified
     """
     user_id = current_user_id()
