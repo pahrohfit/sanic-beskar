@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.2.7 - 2023-03-09
+-------------------
+- Dependancy updates
+
 v2.2.6 - 2023-01-03
 -------------------
 - Dependancy updates

@@ -3,19 +3,18 @@ version: 2
 build:
   os: ubuntu-22.04
   tools:
-    python: '3.8'
+    python: '3.10'
   jobs:
-    pre_create_environment:
-      - asdf plugin add poetry
-      - asdf install poetry latest
-      - asdf global poetry latest
+    post_create_environment:
+      # Install poetry
+      # https://python-poetry.org/docs/#installing-manually
+      - pip install poetry
+      # Tell poetry to not use a virtual environment
       - poetry config virtualenvs.create false
     post_install:
-      - |
-        . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate"
-        && cd sanic_beskar
-        && poetry install --no-interaction --no-root
-        && pwd
+      # Install dependencies with 'docs' dependency group
+      # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
+      - poetry install --with docs
 
 sphinx:
   builder: html
