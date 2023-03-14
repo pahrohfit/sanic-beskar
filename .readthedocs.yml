@@ -11,11 +11,13 @@ build:
       - asdf global poetry latest
       - poetry config virtualenvs.create false
     post_install:
-      - |
-        . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate"
-        && cd sanic_beskar
-        && poetry install --no-interaction --no-root
-        && pwd
+      #- |
+      #  . "$(pwd | rev | sed 's/stuokcehc/svne/' | rev)/bin/activate" \
+      #  && cd sanic_beskar \
+      #  && poetry install --no-interaction --no-root \
+      #  && pwd
+      - poetry install --no-interaction --no-root
+
 
 sphinx:
   builder: html
