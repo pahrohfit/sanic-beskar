@@ -3,7 +3,7 @@ from importlib import import_module
 from importlib.util import find_spec
 import datetime
 from collections.abc import Callable
-from typing import Union, Optional, Self
+from typing import Union, Optional
 import re
 import textwrap
 import warnings
@@ -95,14 +95,14 @@ class Beskar():
     """
 
     def __init__(
-        self: Self,
+        self: 'Beskar',
         app: Sanic = None,
         user_class: object = None,
         is_blacklisted: Callable = None,
         encode_token_hook: Callable = None,
         refresh_token_hook: Callable = None,
         rbac_populate_hook: Callable = None,
-    ) -> Self:
+    ) -> 'Beskar':
         self.app: Sanic = None
         self.pwd_ctx = None
         self.totp_ctx = None
