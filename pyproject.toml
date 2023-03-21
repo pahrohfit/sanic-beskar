@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.2.7.1"
+version = "2.2.8"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -27,7 +27,7 @@ fastpbkdf2 = "^0.2"
 segno = "^1.5.2"
 pytest = "^7.2.0"
 beanie = "^1.11.7"
-mongomock-motor = "^0.0.13"
+mongomock-motor = "^0.0.17"
 mongomock = "^4.1.2"
 ipdb = "^0.13.9"
 bandit = "^1.7.4"
@@ -38,7 +38,7 @@ pytest-xdist = "^3.0.2"
 
 [tool.poetry.group.docs.dependencies]
 toml = "^0.10.2"
-sphinx = "^5.3.0"
+sphinx = "^6.0.0"
 sphinx-rtd-theme = "^1.1.1"
 
 
@@ -54,7 +54,7 @@ passlib = "^1.7"
 sanic = "^22.6.0"
 pyseto = "^1.6.9"
 py-buzz = "^3.2.1"
-cryptography = "^39.0.1"
+cryptography = "^39.0.2"
 jinja2 = "^3.1.2"
 
 [build-system]

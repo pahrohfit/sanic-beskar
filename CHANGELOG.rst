@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.2.8 - 2023-03-21
+-------------------
+- Dependancy updates
+- Linting cleanups
+- Upgraded `Cryptography` requirement to >39.0.1 due to security concerns
+
 v2.2.7 - 2023-03-09
 -------------------
 - Dependancy updates
