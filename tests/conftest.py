@@ -1,3 +1,5 @@
+from sanic_testing import TestManager
+
 from sys import path as sys_path
 from os import path as os_path
 sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
@@ -8,8 +10,6 @@ import copy
 
 from tortoise import Tortoise, run_async
 from sanic.log import logger
-from sanic_testing.reusable import ReusableClient
-from sanic_testing import TestManager
 from sanic.exceptions import SanicException
 
 from sanic_beskar.base import Beskar
@@ -126,36 +126,6 @@ def clean_sanic_app_config(app):
 @pytest.fixture
 def client(app):
     yield app.asgi_client
-
-
-"""
-@pytest.fixture(autouse=True)
-def use_cookie(app, default_guard):
-    class withCookie:
-        guard = default_guard
-        #_client = ReusableClient(app, host='127.0.0.1', port='8000')
-        _client = app.test_client
-        server_name = "localhost.localdomain"
-
-        def __init__(self, token):
-            self.token = token
-
-        def __enter__(self):
-            self._client.set_cookie(
-                self.server_name,
-                self.guard.cookie_name,
-                self.token,
-                expires=None,
-            )
-            return self
-
-        def __exit__(self, *_):
-            self._client.delete_cookie(
-                self.server_name, self.guard.cookie_name
-            )
-
-    return withCookie
-"""
 
 
 @pytest.fixture()
