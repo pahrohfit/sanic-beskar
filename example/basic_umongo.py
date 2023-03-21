@@ -132,7 +132,7 @@ def create_app(db_path=None):
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
-    async def setup_example_db(sanic, loop):
+    async def setup_example_db(*kwargs):
         await User.ensure_indexes()
 
         await User(username="the_dude",
@@ -220,7 +220,8 @@ def create_app(db_path=None):
     return sanic_app
 
 
+app = create_app()
+
 # Run the example
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)

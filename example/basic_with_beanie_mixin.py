@@ -55,14 +55,14 @@ def create_app(db_path=None):
     client = AsyncMongoMockClient()['mock']
 
     @sanic_app.listener('before_server_start')
-    async def beanie_launch(app_inner, loop):
+    async def beanie_launch(*kwargs):
         await init_beanie(database=client, document_models=[User])
 
     #modules={"models": ['__main__']},
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
-    async def populate_db(sanic):
+    async def populate_db(*kwargs):
         await User(username="the_dude",
                    email="the_dude@beskar.test.io",
                    password=_guard.hash_password("abides"),).save()
@@ -142,7 +142,8 @@ def create_app(db_path=None):
     return sanic_app
 
 
+app = create_app()
+
 # Run the example
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)
