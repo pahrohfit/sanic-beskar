@@ -112,7 +112,7 @@ class Beskar():
         self.paseto_ctx = None
         self.paseto_key = None
         self.paseto_token = None
-        self.rbac_definitions = dict()
+        self.rbac_definitions = {}
 
         if app is not None and user_class is not None:
             self.init_app(
@@ -317,7 +317,7 @@ class Beskar():
             app.add_task(init_rbac_populate(app))
 
         if not hasattr(app.ctx, "extensions"):
-            app.ctx.extensions = dict()
+            app.ctx.extensions = {}
         app.ctx.extensions["beskar"] = self
 
         return app
@@ -331,38 +331,47 @@ class Beskar():
             "JWT_ALLOWED_ALGORITHMS",
             DEFAULT_JWT_ALLOWED_ALGORITHMS,
         )
+
         self.encode_algorithm = self.app.config.get(
             "JWT_ALGORITHM",
             DEFAULT_JWT_ALGORITHM,
         )
+
         self.access_lifespan = self.app.config.get(
             "TOKEN_ACCESS_LIFESPAN",
             DEFAULT_TOKEN_ACCESS_LIFESPAN,
         )
+
         self.refresh_lifespan = self.app.config.get(
             "TOKEN_REFRESH_LIFESPAN",
             DEFAULT_TOKEN_REFRESH_LIFESPAN,
         )
+
         self.reset_lifespan = self.app.config.get(
             "TOKEN_RESET_LIFESPAN",
             DEFAULT_TOKEN_RESET_LIFESPAN,
         )
+
         self.token_places = self.app.config.get(
             "TOKEN_PLACES",
             DEFAULT_TOKEN_PLACES,
         )
+
         self.cookie_name = self.app.config.get(
             "TOKEN_COOKIE_NAME",
             DEFAULT_TOKEN_COOKIE_NAME,
         )
+
         self.header_name = self.app.config.get(
             "TOKEN_HEADER_NAME",
             DEFAULT_TOKEN_HEADER_NAME,
         )
+
         self.header_type = self.app.config.get(
             "TOKEN_HEADER_TYPE",
             DEFAULT_TOKEN_HEADER_TYPE,
         )
+
         self.user_class_validation_method = self.app.config.get(
             "USER_CLASS_VALIDATION_METHOD",
             DEFAULT_USER_CLASS_VALIDATION_METHOD,
@@ -372,12 +381,15 @@ class Beskar():
             "BESKAR_CONFIRMATION_TEMPLATE",
             DEFAULT_CONFIRMATION_TEMPLATE,
         )
+
         self.confirmation_uri = self.app.config.get(
             "BESKAR_CONFIRMATION_URI",
         )
+
         self.confirmation_sender = self.app.config.get(
             "BESKAR_CONFIRMATION_SENDER",
         )
+
         self.confirmation_subject = self.app.config.get(
             "BESKAR_CONFIRMATION_SUBJECT",
             DEFAULT_CONFIRMATION_SUBJECT,
@@ -387,37 +399,47 @@ class Beskar():
             "BESKAR_RESET_TEMPLATE",
             DEFAULT_RESET_TEMPLATE,
         )
+
         self.reset_uri = self.app.config.get(
             "BESKAR_RESET_URI",
         )
+
         self.reset_sender = self.app.config.get(
             "BESKAR_RESET_SENDER",
         )
+
         self.reset_subject = self.app.config.get(
             "BESKAR_RESET_SUBJECT",
             DEFAULT_RESET_SUBJECT,
         )
+
         self.totp_enforce = self.app.config.get(
             "BESKAR_TOTP_ENFORCE",
             DEFAULT_TOTP_ENFORCE,
         )
+
         self.totp_secrets_type = self.app.config.get(
             "BESKAR_TOTP_SECRETS_TYPE",
             DEFAULT_TOTP_SECRETS_TYPE,
         )
+
         self.totp_secrets_data = self.app.config.get(
             "BESKAR_TOTP_SECRETS_DATA",
             DEFAULT_TOTP_SECRETS_DATA,
         )
+
         self.token_provider = self.app.config.get(
             "BESKAR_TOKEN_PROVIDER",
             DEFAULT_TOKEN_PROVIDER,
         )
+
         self.token_provider = self.token_provider.lower()
+
         self.paseto_version = self.app.config.get(
             "BESKAR_PASETO_VERSION",
             DEFAULT_PASETO_VERSION,
         )
+
         self.paseto_key = self.app.config.get(
             "BESKAR_PASETO_KEY",
             self.encode_key,
@@ -427,6 +449,8 @@ class Beskar():
             "BESKAR_PASSWORD_POLICY",
             DEFAULT_PASSWORD_POLICY,
         )
+
+        # Catch anything remaining unset and default
         for setting in DEFAULT_PASSWORD_POLICY:
             if setting not in self.password_policy:
                 self.password_policy[setting] = DEFAULT_PASSWORD_POLICY[setting]

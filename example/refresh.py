@@ -1,4 +1,5 @@
-import secrets, string
+import secrets
+import string
 
 from tortoise.contrib.sanic import register_tortoise
 from tortoise.models import Model
@@ -99,7 +100,7 @@ class User(Model):
         return self.id
 
 
-def create_app(db_path=None):
+def create_app():
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -129,7 +130,7 @@ def create_app(db_path=None):
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
-    async def populate_db(*kwargs):
+    async def populate_db(*args):
         await User.create(username="the_dude",
                           email="the_dude@beskar.test.io",
                           password=_guard.hash_password("abides"),)
@@ -168,7 +169,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected")
     @sanic_beskar.auth_required
-    async def protected(request):
+    async def protected(*args):
         """
         A protected endpoint. The auth_required decorator will require a header
         containing a valid token
@@ -180,7 +181,7 @@ def create_app(db_path=None):
         return json({"message": f"protected endpoint (allowed user {user.username})"})
 
     @sanic_app.route('/refresh', methods=['GET'])
-    async def refresh(request):
+    async def refresh(*args):
         """
         Refreshes an existing token by creating a new one that is a copy of the old
         except that it has a refrehsed access expiration.

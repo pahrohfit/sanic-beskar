@@ -57,7 +57,7 @@ class BeanieUserMixin:
         try:
             return self.roles.split(",")
         except Exception:
-            return list()
+            return []
 
     @classmethod
     async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
@@ -80,10 +80,11 @@ class BeanieUserMixin:
         try:
             if username:
                 return await cls.find({'username': username}).first_or_none()
-            elif email:
+            if email:
                 return await cls.find({'email': email}).first_or_none()
-            else:
-                return None
+
+            return None
+
         except DocumentNotFound:
             return None
 

@@ -55,7 +55,7 @@ class TortoiseUserMixin:
         try:
             return self.roles.split(",")
         except Exception:
-            return list()
+            return []
 
     @classmethod
     async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
@@ -78,10 +78,9 @@ class TortoiseUserMixin:
         try:
             if username:
                 return await cls.filter(username=username).get()
-            elif email:
+            if email:
                 return await cls.filter(email=email).get()
-            else:
-                return None
+            return None
         except DoesNotExist:
             return None
 

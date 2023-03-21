@@ -1,4 +1,5 @@
-import secrets, string
+import secrets
+import string
 
 from tortoise.contrib.sanic import register_tortoise
 from tortoise.models import Model
@@ -37,7 +38,7 @@ class User(Model, TortoiseUserMixin):
         return f"User {self.id}: {self.username}"
 
 
-def create_app(db_path=None):
+def create_app():
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -65,7 +66,7 @@ def create_app(db_path=None):
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
-    async def populate_db(*kwargs):
+    async def populate_db(*args):
         await User.create(username="the_dude",
                           email="the_dude@beskar.test.io",
                           password=_guard.hash_password("abides"),)
@@ -104,7 +105,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected")
     @sanic_beskar.auth_required
-    async def protected(request):
+    async def protected(*args):
         """
         A protected endpoint. The auth_required decorator will require a header
         containing a valid token
@@ -117,7 +118,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected_admin_required")
     @sanic_beskar.roles_required("admin")
-    async def protected_admin_required(request):
+    async def protected_admin_required(*args):
         """
         A protected endpoint that requires a role. The roles_required decorator
         will require that the supplied token includes the required roles
@@ -130,7 +131,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected_operator_accepted")
     @sanic_beskar.roles_accepted("operator", "admin")
-    async def protected_operator_accepted(request):
+    async def protected_operator_accepted(*args):
         """
         A protected endpoint that accepts any of the listed roles. The
         roles_accepted decorator will require that the supplied token includes at

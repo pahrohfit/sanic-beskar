@@ -22,24 +22,24 @@ from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
 
 
 class JSONEncoder(json_JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, '__json__'):
-            return obj.__json__()
-        elif isinstance(obj, Iterable):
-            return list(obj)
-        elif isinstance(obj, dt.datetime):
-            return obj.isoformat()
-        elif isinstance(obj, ObjectId):
-            return str(obj)
-        elif hasattr(obj, '__getitem__') and hasattr(obj, 'keys'):
-            return dict(obj)
-        elif hasattr(obj, '__dict__'):
-            return {member: getattr(obj, member)
-                    for member in dir(obj)
+    def default(self, o):
+        if hasattr(o, '__json__'):
+            return o.__json__()
+        if isinstance(o, Iterable):
+            return list(o)
+        if isinstance(o, dt.datetime):
+            return o.isoformat()
+        if isinstance(o, ObjectId):
+            return str(o)
+        if hasattr(o, '__getitem__') and hasattr(o, 'keys'):
+            return dict(o)
+        if hasattr(o, '__dict__'):
+            return {member: getattr(o, member)
+                    for member in dir(o)
                     if not member.startswith('_') and
-                    not hasattr(getattr(obj, member), '__call__')}
+                    not hasattr(getattr(o, member), '__call__')}
 
-        return JSONEncoder.default(self, obj)
+        return JSONEncoder.default(self, o)
 
 
 def get_request(request: Request) -> Request:
@@ -290,8 +290,8 @@ async def current_rolenames() -> set:
     if 'rls' not in token_data:
         # This is necessary so our set arithmetic works correctly
         return set(['non-empty-but-definitely-not-matching-subset'])
-    else:
-        return set(r.strip() for r in token_data['rls'].split(','))
+
+    return set(r.strip() for r in token_data['rls'].split(','))
 
 
 def current_custom_claims() -> dict:

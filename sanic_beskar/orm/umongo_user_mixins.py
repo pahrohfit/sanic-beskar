@@ -41,7 +41,7 @@ class UmongoUserMixin():
         try:
             return self.roles.split(",")
         except Exception:
-            return list()
+            return []
 
     @classmethod
     async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
@@ -64,10 +64,9 @@ class UmongoUserMixin():
         try:
             if username:
                 return await cls.find_one({'username': username})
-            elif email:
+            if email:
                 return await cls.find_one({'email': email})
-            else:
-                return None
+            return None
         except NotCreatedError:
             return None
 

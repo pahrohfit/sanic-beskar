@@ -1,5 +1,6 @@
-import secrets, string
-from typing import Optional, List
+import secrets
+import string
+from typing import Optional
 
 from beanie import init_beanie, Document, Indexed
 from mongomock_motor import AsyncMongoMockClient
@@ -33,7 +34,7 @@ class User(Document, BeanieUserMixin):
         return f"User {self.id}: {self.username}"
 
 
-def create_app(db_path=None):
+def create_app():
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -57,8 +58,6 @@ def create_app(db_path=None):
     @sanic_app.listener('before_server_start')
     async def beanie_launch(*kwargs):
         await init_beanie(database=client, document_models=[User])
-
-    #modules={"models": ['__main__']},
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
