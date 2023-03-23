@@ -46,6 +46,13 @@ toml = "^0.10.2"
 sphinx = "^6.0.0"
 sphinx-rtd-theme = "^1.1.1"
 
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+    'if TYPE_CHECKING:',
+    'def __repr__',
+]
+
 [tool.mypy]
 python_version = "3.8"
 disallow_untyped_defs = true

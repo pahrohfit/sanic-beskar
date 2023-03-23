@@ -87,7 +87,7 @@ from sanic_beskar.constants import (
 )
 
 
-if TYPE_CHECKING: # pragma: no cover
+if TYPE_CHECKING:
     from pyseto import KeyInterface, Token, Paseto
 
 

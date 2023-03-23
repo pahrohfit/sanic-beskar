@@ -12,7 +12,7 @@ except (ImportError, ModuleNotFoundError):
     from bson.objectid import ObjectId # type: ignore
 
 ## If we are using `segno`, import for typing
-if TYPE_CHECKING: # pragma: no cover
+if TYPE_CHECKING:
     from segno import QRCode
     from sanic_beskar import Beskar as BeskarType
 
