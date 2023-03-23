@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import Callable, Any, Union
 
 from sanic import Request
 
@@ -19,7 +20,7 @@ from sanic_beskar.utilities import (
 )
 
 
-async def _verify_and_add_token(request=None, optional=False):
+async def _verify_and_add_token(request: Request, optional: bool = False) -> None:
     """
     This helper method just checks and adds token data to the app context.
     If optional is False and the header is missing the token, just returns.
@@ -47,7 +48,7 @@ async def _verify_and_add_token(request=None, optional=False):
         add_token_data_to_app_context(token_data)
 
 
-def auth_required(method):
+def auth_required(method: Callable) -> Callable[..., Any]:
     """
     This decorator is used to ensure that a user is authenticated before
     being able to access a sanic route. It also adds the current user to the
@@ -64,7 +65,7 @@ def auth_required(method):
     """
 
     @wraps(method)
-    async def wrapper(request, *args, **kwargs):
+    async def wrapper(request: Request, *args: tuple, **kwargs: dict) -> Any:
         # TODO: hack to work around class based views
         if not isinstance(request, Request):
             if isinstance(args[0], Request):
@@ -78,7 +79,7 @@ def auth_required(method):
     return wrapper
 
 
-def auth_accepted(method):
+def auth_accepted(method: Callable) -> Callable[..., Any]:
     """
     This decorator is used to allow an authenticated user to be identified
     while being able to access a sanic route, and adds the current user to the
@@ -91,7 +92,7 @@ def auth_accepted(method):
         None: Decorator
     """
     @wraps(method)
-    async def wrapper(request, *args, **kwargs):
+    async def wrapper(request: Request, *args: tuple, **kwargs: dict) -> Any:
         # TODO: hack to work around class based views
         if not isinstance(request, Request):
             if isinstance(args[0], Request):
@@ -104,7 +105,7 @@ def auth_accepted(method):
     return wrapper
 
 
-def roles_required(*required_rolenames):
+def roles_required(*required_rolenames: Union[list, set]) -> Callable[..., Any]:
     """
     This decorator ensures that any uses accessing the decorated route have all
     the needed roles to access it. If an :py:func:`auth_required` decorator is not
@@ -124,9 +125,9 @@ def roles_required(*required_rolenames):
         MissingTokenError: Token missing in ``Sanic.Request``
     """
 
-    def decorator(method):
+    def decorator(method: Callable) -> Callable:
         @wraps(method)
-        async def wrapper(request, *args, **kwargs):
+        async def wrapper(request: Request, *args: tuple, **kwargs: dict) -> Any:
             BeskarError.require_condition(
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",
@@ -151,7 +152,7 @@ def roles_required(*required_rolenames):
     return decorator
 
 
-def rights_required(*required_rights):
+def rights_required(*required_rights: Union[list, set]) -> Callable[..., Any]:
     """
     This decorator ensures that any uses accessing the decorated route have all
     the needed rights to access it. If an :py:func:`auth_required` decorator is not
@@ -172,9 +173,9 @@ def rights_required(*required_rights):
         MissingTokenError: Token missing in ``Sanic.Request``
     """
 
-    def decorator(method):
+    def decorator(method: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(method)
-        async def wrapper(request, *args, **kwargs):
+        async def wrapper(request: Request, *args: tuple, **kwargs: dict) -> Any:
             BeskarError.require_condition(
                 current_guard().rbac_definitions != {},
                 "This feature is not available because RBAC is not enabled",
@@ -208,7 +209,7 @@ def rights_required(*required_rights):
     return decorator
 
 
-def roles_accepted(*accepted_rolenames):
+def roles_accepted(*accepted_rolenames: Union[list, set]) -> Callable[..., Any]:
     """
     This decorator ensures that any uses accessing the decorated route have one
     of the needed roles to access it. If an :py:func:`auth_required` decorator is not
@@ -223,9 +224,9 @@ def roles_accepted(*accepted_rolenames):
         None: Decorator
     """
 
-    def decorator(method):
+    def decorator(method: Callable) -> Callable[..., Any]:
         @wraps(method)
-        async def wrapper(request, *args, **kwargs):
+        async def wrapper(request: Request, *args: tuple, **kwargs: dict) -> Any:
             BeskarError.require_condition(
                 not current_guard().roles_disabled,
                 "This feature is not available because roles are disabled",

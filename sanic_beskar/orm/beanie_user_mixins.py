@@ -1,11 +1,12 @@
-from typing import Optional
+from typing import Optional, Union
 
 from bson.objectid import ObjectId
 
 from beanie.exceptions import DocumentNotFound
+from beanie import Document, PydanticObjectId
 
 
-class BeanieUserMixin:
+class BeanieUserMixin(Document):
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `tortoise-orm <https://tortoise.github.io/>`_. Makes
@@ -22,7 +23,7 @@ class BeanieUserMixin:
     """
 
     @property
-    def identity(self):
+    def identity(self) -> Optional[PydanticObjectId]:
         """
         *Required Attribute or Property*
 
@@ -36,7 +37,7 @@ class BeanieUserMixin:
         return self.id
 
     @property
-    def rolenames(self):
+    def rolenames(self) -> list:
         """
         *Required Attribute or Property*
 
@@ -55,12 +56,13 @@ class BeanieUserMixin:
         """
 
         try:
-            return self.roles.split(",")
+            _roles: list = self.roles.split(",")
+            return _roles
         except Exception:
-            return list()
+            return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
+    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Union[object, None]:
         """
         *Required Method*
 
@@ -80,15 +82,16 @@ class BeanieUserMixin:
         try:
             if username:
                 return await cls.find({'username': username}).first_or_none()
-            elif email:
+            if email:
                 return await cls.find({'email': email}).first_or_none()
-            else:
-                return None
+
+            return None
+
         except DocumentNotFound:
             return None
 
     @classmethod
-    async def identify(cls, id):
+    async def identify(cls, id: str) -> Optional[str]:
         """
         *Required Attribute or Property*
 

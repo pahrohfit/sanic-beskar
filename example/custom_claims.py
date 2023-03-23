@@ -1,4 +1,5 @@
-import secrets, string
+import secrets
+import string
 
 from tortoise.contrib.sanic import register_tortoise
 from tortoise.models import Model
@@ -9,7 +10,7 @@ from sanic import Sanic, json
 
 import sanic_beskar
 from sanic_beskar import Beskar
-from async_sender import Mail
+from async_sender import Mail # type: ignore
 
 
 _guard = Beskar()
@@ -100,7 +101,7 @@ class User(Model):
         return self.id
 
 
-def create_app(db_path=None):
+def create_app():
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -130,7 +131,7 @@ def create_app(db_path=None):
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
-    async def populate_db(sanic):
+    async def populate_db(*args):
         await User.create(username="the_dude",
                           nickname="The Dude",
                           email="the_dude@beskar.test.io",
@@ -178,7 +179,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected")
     @sanic_beskar.auth_required
-    async def protected(request):
+    async def protected(*args):
         """
         A protected endpoint. The auth_required decorator will require a header
         containing a valid token
@@ -195,7 +196,8 @@ def create_app(db_path=None):
     return sanic_app
 
 
+app = create_app()
+
 # Run the example
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)

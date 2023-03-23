@@ -1,23 +1,24 @@
-import secrets, string
+import secrets
+import string
 
 from sanic import Sanic, json
 
 import sanic_beskar
 from sanic_beskar import Beskar
 from sanic_beskar.orm import UmongoUserMixin
-from async_sender import Mail
+from async_sender import Mail # type: ignore
 
-from umongo import Document, fields, validate
+from umongo import Document, fields, validate # type: ignore
 
-from umongo.frameworks.motor_asyncio import MotorAsyncIOInstance
-from mongomock_motor import AsyncMongoMockClient
+from umongo.frameworks.motor_asyncio import MotorAsyncIOInstance # type: ignore
+from mongomock_motor import AsyncMongoMockClient # type: ignore
 
 
 _guard = Beskar()
 _mail = Mail()
 
 
-def create_app(db_path=None):
+def create_app():
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -64,7 +65,7 @@ def create_app(db_path=None):
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
-    async def setup_example_db(sanic, loop):
+    async def setup_example_db(*args):
         await User.ensure_indexes()
 
         await User(username="the_dude",
@@ -111,7 +112,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected")
     @sanic_beskar.auth_required
-    async def protected(request):
+    async def protected(*args):
         """
         A protected endpoint. The auth_required decorator will require a header
         containing a valid token
@@ -124,7 +125,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected_admin_required")
     @sanic_beskar.roles_required("admin")
-    async def protected_admin_required(request):
+    async def protected_admin_required(*args):
         """
         A protected endpoint that requires a role. The roles_required decorator
         will require that the supplied token includes the required roles
@@ -137,7 +138,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/protected_operator_accepted")
     @sanic_beskar.roles_accepted("operator", "admin")
-    async def protected_operator_accepted(request):
+    async def protected_operator_accepted(*args):
         """
         A protected endpoint that accepts any of the listed roles. The
         roles_accepted decorator will require that the supplied token includes at
@@ -152,7 +153,8 @@ def create_app(db_path=None):
     return sanic_app
 
 
+app = create_app()
+
 # Run the example
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)

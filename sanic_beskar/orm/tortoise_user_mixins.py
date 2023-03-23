@@ -1,9 +1,12 @@
-from typing import Optional
+from typing import Optional, Union
+
+from bson.objectid import ObjectId
 
 from tortoise.exceptions import DoesNotExist
+from tortoise.models import Model
 
 
-class TortoiseUserMixin:
+class TortoiseUserMixin(Model):
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `tortoise-orm <https://tortoise.github.io/>`_. Makes
@@ -20,7 +23,7 @@ class TortoiseUserMixin:
     """
 
     @property
-    def identity(self):
+    def identity(self) -> Union[str, ObjectId]:
         """
         *Required Attribute or Property*
 
@@ -31,10 +34,10 @@ class TortoiseUserMixin:
         :returns: Provided :py:class:`User.id`
         :rtype: str
         """
-        return self.id
+        return getattr(self, 'id') # type: ignore
 
     @property
-    def rolenames(self):
+    def rolenames(self) -> Optional[list]:
         """
         *Required Attribute or Property*
 
@@ -53,12 +56,12 @@ class TortoiseUserMixin:
         """
 
         try:
-            return self.roles.split(",")
+            return self.roles.split(",") # type: ignore
         except Exception:
-            return list()
+            return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
+    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Optional[object]:
         """
         *Required Method*
 
@@ -78,15 +81,14 @@ class TortoiseUserMixin:
         try:
             if username:
                 return await cls.filter(username=username).get()
-            elif email:
+            if email:
                 return await cls.filter(email=email).get()
-            else:
-                return None
+            return None
         except DoesNotExist:
             return None
 
     @classmethod
-    async def identify(cls, id):
+    async def identify(cls, id: ObjectId) -> Optional[object]:
         """
         *Required Attribute or Property*
 

@@ -1,8 +1,9 @@
-import secrets, string
-from typing import Optional, List
+import secrets
+import string
+from typing import Optional
 
-from beanie import init_beanie, Document, Indexed
-from mongomock_motor import AsyncMongoMockClient
+from beanie import init_beanie, Indexed
+from mongomock_motor import AsyncMongoMockClient # type: ignore
 
 from sanic import Sanic, json
 
@@ -10,7 +11,7 @@ import sanic_beskar
 from sanic_beskar import Beskar
 from sanic_beskar.orm import BeanieUserMixin
 
-from async_sender import Mail
+from async_sender import Mail # type: ignore
 
 
 _guard = Beskar()
@@ -18,22 +19,22 @@ _mail = Mail()
 
 
 # A generic user model that might be used by an app powered by sanic-beskar
-class User(Document, BeanieUserMixin):
+class User(BeanieUserMixin):
     """
     Provides a basic user model for use in the tests
     """
 
     username: Optional[str] = None
-    email: Indexed(str, unique=True)
+    email: str = Indexed(str, unique=True)
     password: str
     roles: Optional[str] = None
     is_active: bool = True
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"User {self.id}: {self.username}"
 
 
-def create_app(db_path=None):
+def create_app():
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -55,14 +56,12 @@ def create_app(db_path=None):
     client = AsyncMongoMockClient()['mock']
 
     @sanic_app.listener('before_server_start')
-    async def beanie_launch(app_inner, loop):
+    async def beanie_launch(*kwargs):
         await init_beanie(database=client, document_models=[User])
-
-    #modules={"models": ['__main__']},
 
     # Add users for the example
     @sanic_app.listener('before_server_start')
-    async def populate_db(sanic):
+    async def populate_db(*kwargs):
         await User(username="the_dude",
                    email="the_dude@beskar.test.io",
                    password=_guard.hash_password("abides"),).save()
@@ -142,7 +141,8 @@ def create_app(db_path=None):
     return sanic_app
 
 
+app = create_app()
+
 # Run the example
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)

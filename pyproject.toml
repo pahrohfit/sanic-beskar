@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.2.7"
+version = "2.2.8"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -9,8 +9,13 @@ homepage = "https://sanic-beskar.readthedocs.io/en/latest/"
 documentation = "https://sanic-beskar.readthedocs.io/en/latest/"
 repository = "https://github.com/pahrohfit/sanic-beskar"
 
-[project]
-requires-python = ">=3.8"
+[tool.poetry.group.typing.dependencies]
+types-ujson = "^5.7"
+types-toml = "^0.10"
+types-aiofiles = "^23"
+types-passlib = "^1.7"
+mongo-types = "^0.15"
+mypy = "^1.1"
 
 [tool.poetry.group.dev.dependencies]
 bcrypt = "^4.0.1"
@@ -20,7 +25,6 @@ pytest-asyncio = "^0.20.2"
 tortoise-orm = "^0.19.2"
 nest-asyncio = "^1.5.5"
 pytest-cov = "^4.0.0"
-toml = "^0.10.2"
 umongo = "3.1.0"
 motor = "^3.1.0"
 pytest-profiling = "^1.7.0"
@@ -28,22 +32,35 @@ fastpbkdf2 = "^0.2"
 segno = "^1.5.2"
 pytest = "^7.2.0"
 beanie = "^1.11.7"
-mongomock-motor = "^0.0.13"
+mongomock-motor = "^0.0.17"
 mongomock = "^4.1.2"
 ipdb = "^0.13.9"
-sphinx-rtd-theme = "^1.1.1"
-sphinx = "^5.3.0"
 bandit = "^1.7.4"
 flake8-async = "^22.11.6"
 safety = "^2.3.1"
 async-sender = "^2.0.0"
 pytest-xdist = "^3.0.2"
 
-[project.urls]
-"Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
-"Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
+[tool.poetry.group.docs.dependencies]
+toml = "^0.10.2"
+sphinx = "^6.0.0"
+sphinx-rtd-theme = "^1.1.1"
 
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+    'if TYPE_CHECKING:',
+    'def __repr__',
+]
 
+[tool.mypy]
+python_version = "3.8"
+disallow_untyped_defs = true
+show_error_codes = true
+no_implicit_optional = true
+warn_return_any = true
+warn_unused_ignores = true
+exclude = ["example", "docs", "tests"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -53,7 +70,7 @@ passlib = "^1.7"
 sanic = "^22.6.0"
 pyseto = "^1.6.9"
 py-buzz = "^3.2.1"
-cryptography = "^39.0.1"
+cryptography = "^39.0.2"
 jinja2 = "^3.1.2"
 
 [build-system]

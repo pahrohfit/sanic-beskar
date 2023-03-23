@@ -1,10 +1,12 @@
 from typing import Optional
 from bson.objectid import ObjectId
 
-from umongo.exceptions import NotCreatedError
+# umongo is missing type hints at this time
+from umongo.exceptions import NotCreatedError # type: ignore
+from umongo import Document # type: ignore
 
 
-class UmongoUserMixin():
+class UmongoUserMixin(Document):
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_
@@ -21,7 +23,7 @@ class UmongoUserMixin():
     """
 
     @property
-    def rolenames(self):
+    def rolenames(self) -> Optional[list]:
         """
         *Required Attribute or Property*
 
@@ -39,12 +41,12 @@ class UmongoUserMixin():
         :rtype: list
         """
         try:
-            return self.roles.split(",")
+            return self.roles.split(",") # type: ignore
         except Exception:
-            return list()
+            return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
+    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Optional[Document]:
         """
         *Required Method*
 
@@ -64,15 +66,14 @@ class UmongoUserMixin():
         try:
             if username:
                 return await cls.find_one({'username': username})
-            elif email:
+            if email:
                 return await cls.find_one({'email': email})
-            else:
-                return None
+            return None
         except NotCreatedError:
             return None
 
     @classmethod
-    async def identify(cls, id):
+    async def identify(cls, id: str) -> Optional[Document]:
         """
         *Required Attribute or Property*
 
@@ -93,7 +94,7 @@ class UmongoUserMixin():
             return None
 
     @property
-    def identity(self):
+    def identity(self) -> str:
         """
         *Required Attribute or Property*
 
