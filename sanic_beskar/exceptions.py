@@ -12,7 +12,7 @@ class BeskarError(SanicException, Buzz):
     """
     status: int = 401
 
-    def __init__(self, message: str, *args, **kwargs):
+    def __init__(self, message: str, *args: tuple, **kwargs: dict):
         self.status: int = self.status
         self.message: str = f'{self.__class__.__name__}: {message}'
         self.extra_args: tuple = args
@@ -25,7 +25,7 @@ class BeskarError(SanicException, Buzz):
                                                 status=self.status)
         super().__init__(self.message, self.status)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{super().__str__()} ({self.status})"
 
 

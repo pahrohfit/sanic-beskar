@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Optional, Union
 
 from bson.objectid import ObjectId
 
 from beanie.exceptions import DocumentNotFound
-from beanie import Document
+from beanie import Document, PydanticObjectId
 
 
 class BeanieUserMixin(Document):
@@ -23,7 +23,7 @@ class BeanieUserMixin(Document):
     """
 
     @property
-    def identity(self):
+    def identity(self) -> Optional[PydanticObjectId]:
         """
         *Required Attribute or Property*
 
@@ -37,7 +37,7 @@ class BeanieUserMixin(Document):
         return self.id
 
     @property
-    def rolenames(self):
+    def rolenames(self) -> list:
         """
         *Required Attribute or Property*
 
@@ -56,12 +56,13 @@ class BeanieUserMixin(Document):
         """
 
         try:
-            return self.roles.split(",")
+            _roles: list = self.roles.split(",")
+            return _roles
         except Exception:
             return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
+    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Union[object, None]:
         """
         *Required Method*
 
@@ -90,7 +91,7 @@ class BeanieUserMixin(Document):
             return None
 
     @classmethod
-    async def identify(cls, id):
+    async def identify(cls, id: str) -> Optional[str]:
         """
         *Required Attribute or Property*
 

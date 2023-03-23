@@ -14,7 +14,7 @@ except (ImportError, ModuleNotFoundError):
 ## If we are using `segno`, import for typing
 if TYPE_CHECKING:
     from segno import QRCode
-    from sanic_beskar.base import Beskar
+    from sanic_beskar import Beskar as BeskarType
 
 import ujson
 from json import JSONEncoder as json_JSONEncoder
@@ -27,7 +27,7 @@ from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
 
 
 class JSONEncoder(json_JSONEncoder):
-    def default(self, o):
+    def default(self, o: Any) -> Any:
         if hasattr(o, '__json__'):
             return o.__json__()
         if isinstance(o, Iterable):
@@ -146,7 +146,7 @@ def duration_from_string(text: str) -> pendulum.Duration:
 
 
 @functools.lru_cache(maxsize=None)
-def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> 'Beskar':
+def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> 'BeskarType':
     """
     Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
     that is attached to the current sanic app
@@ -155,7 +155,7 @@ def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> 'Beskar':
     :type ctx: Optional[:py:class:`sanic.Sanic`]
 
     :returns: Current Beskar Guard object for this app context
-    :rtype: :py:class:`~sanic_beskar.base.Beskar`
+    :rtype: :py:class:`~sanic_beskar.Beskar`
 
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no guard found
     """
@@ -165,7 +165,7 @@ def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> 'Beskar':
     if not ctx:
         ctx = Sanic.get_app().ctx
 
-    guard = ctx.extensions.get('beskar', None) # type: ignore
+    guard: BeskarType = ctx.extensions.get('beskar', None) # type: ignore
     BeskarError.require_condition(
         guard is not None,
         "No current guard found; Beskar must be initialized first",
@@ -189,7 +189,7 @@ def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     return hasattr(ctx, 'token_data')
 
 
-def add_token_data_to_app_context(token_data) -> None:
+def add_token_data_to_app_context(token_data: dict) -> None:
     """
     Adds a dictionary of token data (presumably unpacked from a token) to the
     top of the sanic app's context
@@ -230,7 +230,7 @@ def remove_token_data_from_app_context() -> None:
         del ctx.token_data
 
 
-def current_user_id() -> str:
+def current_user_id() -> Union[str, None]:
     """
     This method returns the user id retrieved from token data attached to
     the current sanic app's context
@@ -240,7 +240,7 @@ def current_user_id() -> str:
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no user/token found
     """
     token_data = get_token_data_from_app_context()
-    user_id = token_data.get('id', None)
+    user_id: str = token_data.get('id', None)
     BeskarError.require_condition(
         user_id is not None,
         "Could not fetch an id for the current user",

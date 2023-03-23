@@ -23,7 +23,7 @@ class UmongoUserMixin(Document):
     """
 
     @property
-    def rolenames(self):
+    def rolenames(self) -> Optional[list]:
         """
         *Required Attribute or Property*
 
@@ -41,12 +41,12 @@ class UmongoUserMixin(Document):
         :rtype: list
         """
         try:
-            return self.roles.split(",")
+            return self.roles.split(",") # type: ignore
         except Exception:
             return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None):
+    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Optional[Document]:
         """
         *Required Method*
 
@@ -73,7 +73,7 @@ class UmongoUserMixin(Document):
             return None
 
     @classmethod
-    async def identify(cls, id):
+    async def identify(cls, id: str) -> Optional[Document]:
         """
         *Required Attribute or Property*
 
@@ -94,7 +94,7 @@ class UmongoUserMixin(Document):
             return None
 
     @property
-    def identity(self):
+    def identity(self) -> str:
         """
         *Required Attribute or Property*
 
