@@ -2,7 +2,7 @@ import functools
 from collections.abc import Iterable
 import re
 import datetime as dt
-from typing import Optional, Any, TYPE_CHECKING
+from typing import Optional, Union, Any, TYPE_CHECKING
 
 
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
@@ -146,7 +146,7 @@ def duration_from_string(text: str) -> pendulum.Duration:
 
 
 @functools.lru_cache(maxsize=None)
-def current_guard(ctx: Optional[Sanic.ctx] = None) -> 'Beskar':
+def current_guard(ctx: Union[Sanic, Sanic.ctx, None] = None) -> 'Beskar':
     """
     Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
     that is attached to the current sanic app
@@ -159,6 +159,9 @@ def current_guard(ctx: Optional[Sanic.ctx] = None) -> 'Beskar':
 
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no guard found
     """
+    if isinstance(ctx, Sanic):
+        ctx = getattr(ctx, 'ctx')
+
     if not ctx:
         ctx = Sanic.get_app().ctx
 
