@@ -8,7 +8,7 @@ from types import SimpleNamespace
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
 try: # pragma: no cover
     from beanie import PydanticObjectId as ObjectId
-except (ImportError, ModuleNotFoundError):
+except (ImportError, ModuleNotFoundError): # pragma: no cover
     from bson.objectid import ObjectId # type: ignore
 
 ## If we are using `segno`, import for typing
@@ -26,7 +26,7 @@ from sanic_beskar.constants import RESERVED_CLAIMS
 from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
 
 
-class JSONEncoder(json_JSONEncoder): # pragma: nocover
+class JSONEncoder(json_JSONEncoder): # pragma: no cover
     def default(self, o: Any) -> Any:
         if hasattr(o, '__json__'):
             return o.__json__()
@@ -261,7 +261,7 @@ async def generate_totp_qr(user_totp: str) -> 'QRCode':
     """
     try: # pragma: no cover
         import segno
-    except (ModuleNotFoundError, ImportError) as e:
+    except (ModuleNotFoundError, ImportError) as e: # pragma: no cover
         raise ConfigurationError("Attempting to generate a TOTP QR code,"
                                  "but you didn't install the necessary `segno` library!") from e
 
