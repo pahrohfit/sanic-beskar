@@ -6,13 +6,13 @@ from typing import Optional, Union, Any, TYPE_CHECKING
 from types import SimpleNamespace
 
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
-try:
+try: # pragma: no cover
     from beanie import PydanticObjectId as ObjectId
 except (ImportError, ModuleNotFoundError):
     from bson.objectid import ObjectId # type: ignore
 
 ## If we are using `segno`, import for typing
-if TYPE_CHECKING:
+if TYPE_CHECKING: # pragma: no cover
     from segno import QRCode
     from sanic_beskar import Beskar as BeskarType
 
@@ -26,7 +26,7 @@ from sanic_beskar.constants import RESERVED_CLAIMS
 from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
 
 
-class JSONEncoder(json_JSONEncoder):
+class JSONEncoder(json_JSONEncoder): # pragma: nocover
     def default(self, o: Any) -> Any:
         if hasattr(o, '__json__'):
             return o.__json__()
@@ -259,7 +259,7 @@ async def generate_totp_qr(user_totp: str) -> 'QRCode':
     :returns: ``Segno`` object based upon user's stored TOTP configuration
     :rtype: :py:class:`Segno`
     """
-    try:
+    try: # pragma: no cover
         import segno
     except (ModuleNotFoundError, ImportError) as e:
         raise ConfigurationError("Attempting to generate a TOTP QR code,"

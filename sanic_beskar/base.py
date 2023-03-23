@@ -87,7 +87,7 @@ from sanic_beskar.constants import (
 )
 
 
-if TYPE_CHECKING:
+if TYPE_CHECKING: # pragma: no cover
     from pyseto import KeyInterface, Token, Paseto
 
 
@@ -258,7 +258,7 @@ class Beskar():
         )
 
         if self.token_provider == 'paseto':  # nosec B105
-            try:
+            try: # pragma: no cover
                 from pyseto import Key, Paseto, Token # noqa
             except (ImportError, ModuleNotFoundError) as e:
                 raise ConfigurationError("Trying to use PASETO, "
