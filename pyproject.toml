@@ -9,16 +9,15 @@ homepage = "https://sanic-beskar.readthedocs.io/en/latest/"
 documentation = "https://sanic-beskar.readthedocs.io/en/latest/"
 repository = "https://github.com/pahrohfit/sanic-beskar"
 
-[project]
-requires-python = ">=3.8"
-
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.group.typing.dependencies]
 types-ujson = "^5.7"
 types-toml = "^0.10"
 types-aiofiles = "^23"
 types-passlib = "^1.7"
 mongo-types = "^0.15"
 mypy = "^1.1"
+
+[tool.poetry.group.dev.dependencies]
 bcrypt = "^4.0.1"
 plummet = {version = "^1.1", extras = ["time-machine"]}
 sanic-testing = "^22.6.0"
@@ -47,11 +46,14 @@ toml = "^0.10.2"
 sphinx = "^6.0.0"
 sphinx-rtd-theme = "^1.1.1"
 
-
-[project.urls]
-"Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
-"Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
-
+[tool.mypy]
+python_version = "3.8"
+disallow_untyped_defs = true
+show_error_codes = true
+no_implicit_optional = true
+warn_return_any = true
+warn_unused_ignores = true
+exclude = ["examples", "docs", "tests"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
