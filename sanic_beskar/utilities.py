@@ -14,7 +14,7 @@ except (ImportError, ModuleNotFoundError):
 ## If we are using `segno`, import for typing
 if TYPE_CHECKING:
     from segno import QRCode
-    from sanic_beskar import Beskar
+    from sanic_beskar.base import Beskar
 
 import ujson
 from json import JSONEncoder as json_JSONEncoder
@@ -268,7 +268,7 @@ async def generate_totp_qr(user_totp: str) -> 'QRCode':
     return segno.make(user_totp)
 
 
-async def current_user():
+async def current_user() -> Any:
     """
     This method returns a user instance for token data attached to the
     current sanic app's context

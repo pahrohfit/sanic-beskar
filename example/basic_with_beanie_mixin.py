@@ -30,7 +30,7 @@ class User(BeanieUserMixin):
     roles: Optional[str] = None
     is_active: bool = True
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"User {self.id}: {self.username}"
 
 
