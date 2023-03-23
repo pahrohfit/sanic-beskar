@@ -2,8 +2,8 @@ import secrets
 import string
 from typing import Optional
 
-from beanie import init_beanie, Document, Indexed
-from mongomock_motor import AsyncMongoMockClient
+from beanie import init_beanie, Indexed
+from mongomock_motor import AsyncMongoMockClient # type: ignore
 
 from sanic import Sanic, json
 
@@ -11,7 +11,7 @@ import sanic_beskar
 from sanic_beskar import Beskar
 from sanic_beskar.orm import BeanieUserMixin
 
-from async_sender import Mail
+from async_sender import Mail # type: ignore
 
 
 _guard = Beskar()
@@ -19,13 +19,13 @@ _mail = Mail()
 
 
 # A generic user model that might be used by an app powered by sanic-beskar
-class User(Document, BeanieUserMixin):
+class User(BeanieUserMixin):
     """
     Provides a basic user model for use in the tests
     """
 
     username: Optional[str] = None
-    email: Indexed(str, unique=True)
+    email: str = Indexed(str, unique=True)
     password: str
     roles: Optional[str] = None
     is_active: bool = True

@@ -2,6 +2,7 @@ from buzz import Buzz
 
 from sanic.exceptions import SanicException
 from sanic import json
+from sanic.response import JSONResponse
 
 
 class BeskarError(SanicException, Buzz):
@@ -10,17 +11,18 @@ class BeskarError(SanicException, Buzz):
     `py-buzz on gitub <https://github.com/dusktreader/py-buzz>`_
     """
     status: int = 401
-    json_response: dict = dict({})
 
     def __init__(self, message: str, *args, **kwargs):
         self.status: int = self.status
         self.message: str = f'{self.__class__.__name__}: {message}'
-        self.extra_args = args
-        self.extra_kwargs = kwargs
-        self.json_response = json({"error": message,
-                                   "data": self.__class__.__name__,
-                                   "status": self.status},
-                                  status=self.status)
+        self.extra_args: tuple = args
+        self.extra_kwargs: dict = kwargs
+        self.json_response: JSONResponse = json({
+                                                 "error": message,
+                                                 "data": self.__class__.__name__,
+                                                 "status": self.status,
+                                                },
+                                                status=self.status)
         super().__init__(self.message, self.status)
 
     def __str__(self):

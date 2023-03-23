@@ -2,14 +2,19 @@ import functools
 from collections.abc import Iterable
 import re
 import datetime as dt
-from typing import Optional
+from typing import Optional, Any, TYPE_CHECKING
 
 
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
 try:
     from beanie import PydanticObjectId as ObjectId
 except (ImportError, ModuleNotFoundError):
-    from bson.objectid import ObjectId
+    from bson.objectid import ObjectId # type: ignore
+
+## If we are using `segno`, import for typing
+if TYPE_CHECKING:
+    from segno import QRCode
+    from sanic_beskar import Beskar
 
 import ujson
 from json import JSONEncoder as json_JSONEncoder
@@ -70,7 +75,7 @@ def normalize_rbac(rbac_dump: dict) -> dict:
     Returns:
         dict: Normalized (for our purposes) RBAC policy.
     """
-    _inversed = {}
+    _inversed: dict = {}
     for k in rbac_dump:
         for v in rbac_dump[k]:
             _inversed.setdefault(v, []).append(k)
@@ -78,7 +83,7 @@ def normalize_rbac(rbac_dump: dict) -> dict:
     return _inversed
 
 
-async def is_valid_json(data: str) -> ujson:
+async def is_valid_json(data: str) -> Any:
     """
     Simple helper to validate if a value is valid json data
 
@@ -94,7 +99,7 @@ async def is_valid_json(data: str) -> ujson:
         return False
 
 
-def duration_from_string(text: str) -> pendulum:
+def duration_from_string(text: str) -> pendulum.Duration:
     """
     Parses a duration from a string. String may look like these patterns:
     * 1 Hour
@@ -130,7 +135,7 @@ def duration_from_string(text: str) -> pendulum:
         match,
         f"Couldn't parse {text}",
     )
-    parts = match.groupdict()
+    parts = match.groupdict() # type: ignore
     clean = {k: int(v) for (k, v) in parts.items() if v}
     ConfigurationError.require_condition(
         clean,
@@ -141,7 +146,7 @@ def duration_from_string(text: str) -> pendulum:
 
 
 @functools.lru_cache(maxsize=None)
-def current_guard(ctx: Optional[Sanic] = None):
+def current_guard(ctx: Optional[Sanic.ctx] = None) -> 'Beskar':
     """
     Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
     that is attached to the current sanic app
@@ -193,7 +198,7 @@ def add_token_data_to_app_context(token_data) -> None:
     ctx.token_data = token_data
 
 
-def get_token_data_from_app_context() -> str:
+def get_token_data_from_app_context() -> dict:
     """
     Fetches a dict of token data from the top of the sanic app's context
 
@@ -202,9 +207,9 @@ def get_token_data_from_app_context() -> str:
     :raises: :py:exc:`~sanic_beskar.BeskarError` on missing token
     """
     ctx = Sanic.get_app().ctx
-    token_data = getattr(ctx, 'token_data', None)
+    token_data = getattr(ctx, 'token_data', {})
     BeskarError.require_condition(
-        token_data is not None,
+        token_data is not {},
         """
         No token_data found in app context.
         Make sure @auth_required decorator is specified *first* for route
@@ -240,7 +245,7 @@ def current_user_id() -> str:
     return user_id
 
 
-async def generate_totp_qr(user_totp: ujson):
+async def generate_totp_qr(user_totp: str) -> 'QRCode':
     """
     This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.

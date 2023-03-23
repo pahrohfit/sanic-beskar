@@ -1,6 +1,6 @@
 import textwrap
 import pendulum
-import plummet
+import plummet # type: ignore
 import warnings
 
 from httpx import Cookies

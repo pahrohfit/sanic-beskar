@@ -1,9 +1,10 @@
 from typing import Optional
 
 from tortoise.exceptions import DoesNotExist
+from tortoise.models import Model
 
 
-class TortoiseUserMixin:
+class TortoiseUserMixin(Model):
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `tortoise-orm <https://tortoise.github.io/>`_. Makes

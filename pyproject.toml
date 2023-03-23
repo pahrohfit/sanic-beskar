@@ -13,6 +13,12 @@ repository = "https://github.com/pahrohfit/sanic-beskar"
 requires-python = ">=3.8"
 
 [tool.poetry.group.dev.dependencies]
+types-ujson = "^5.7"
+types-toml = "^0.10"
+types-aiofiles = "^23"
+types-passlib = "^1.7"
+mongo-types = "^0.15"
+mypy = "^1.1"
 bcrypt = "^4.0.1"
 plummet = {version = "^1.1", extras = ["time-machine"]}
 sanic-testing = "^22.6.0"
@@ -45,6 +51,7 @@ sphinx-rtd-theme = "^1.1.1"
 [project.urls]
 "Homepage" = "https://sanic-beskar.readthedocs.io/en/latest/"
 "Bug Tracker" = "https://github.com/pahrohfit/sanic-beskar/issues"
+
 
 [tool.poetry.dependencies]
 python = "^3.8"

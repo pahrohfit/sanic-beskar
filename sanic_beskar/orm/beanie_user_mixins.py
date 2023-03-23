@@ -3,9 +3,10 @@ from typing import Optional
 from bson.objectid import ObjectId
 
 from beanie.exceptions import DocumentNotFound
+from beanie import Document
 
 
-class BeanieUserMixin:
+class BeanieUserMixin(Document):
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `tortoise-orm <https://tortoise.github.io/>`_. Makes

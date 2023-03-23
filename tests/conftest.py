@@ -1,8 +1,10 @@
-from sanic_testing import TestManager
+from sanic_testing import TestManager # type: ignore
 
 from sys import path as sys_path
 from os import path as os_path
 sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
+
+from typing import Any
 
 import pytest
 import warnings
@@ -17,9 +19,9 @@ from sanic_beskar.base import Beskar
 from models import ValidatingUser, MixinUser, User, TotpUser
 from server import create_app, _guard, _mail
 
-import async_sender
+import async_sender # type: ignore
 
-import nest_asyncio
+import nest_asyncio # type: ignore
 nest_asyncio.apply()
 
 
@@ -131,9 +133,9 @@ def client(app):
 @pytest.fixture()
 def mock_users(user_class, default_guard):
 
-    async def _get_user(username: str = None,
-                        class_name: object = user_class,
-                        guard_name: object = default_guard,
+    async def _get_user(username: str = '',
+                        class_name: Any = user_class,
+                        guard_name: Any = default_guard,
                         **kwargs):
         if not username:
             raise SanicException("You must supply a valid test user name!")

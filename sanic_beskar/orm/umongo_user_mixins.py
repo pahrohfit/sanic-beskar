@@ -1,10 +1,12 @@
 from typing import Optional
 from bson.objectid import ObjectId
 
-from umongo.exceptions import NotCreatedError
+# umongo is missing type hints at this time
+from umongo.exceptions import NotCreatedError # type: ignore
+from umongo import Document # type: ignore
 
 
-class UmongoUserMixin():
+class UmongoUserMixin(Document):
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_

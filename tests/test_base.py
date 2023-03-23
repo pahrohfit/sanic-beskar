@@ -1,12 +1,12 @@
 import warnings
 import pendulum
-import plummet
+import plummet # type: ignore
 import pytest
 import ujson
 
 from httpx import Cookies
 
-from passlib.totp import generate_secret
+import passlib
 
 from passlib.exc import (
     InvalidTokenError,
@@ -1164,7 +1164,7 @@ class TestBeskar:
             Beskar(app, totp_user_class)
 
         app.config.BESKAR_TOTP_SECRETS_TYPE = 'string'
-        app.config.BESKAR_TOTP_SECRETS_DATA = {1: generate_secret()}
+        app.config.BESKAR_TOTP_SECRETS_DATA = {1: passlib.totp.generate_secret()}
         totp_protected_guard = Beskar(app, totp_user_class)
         totp_protected = totp_protected_guard.totp_ctx.new()
         with warnings.catch_warnings():

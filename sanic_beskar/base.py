@@ -3,7 +3,7 @@ from importlib import import_module
 from importlib.util import find_spec
 import datetime
 from collections.abc import Callable
-from typing import Union, Optional
+from typing import Union, Optional, TYPE_CHECKING, Any
 import re
 import textwrap
 import warnings
@@ -86,6 +86,10 @@ from sanic_beskar.constants import (
 )
 
 
+if TYPE_CHECKING:
+    from pyseto import KeyInterface, Token, Paseto
+
+
 class Beskar():
     """
     Comprises the implementation for the :py:mod:`sanic-beskar`
@@ -96,23 +100,24 @@ class Beskar():
 
     def __init__(
         self: 'Beskar',
-        app: Sanic = None,
-        user_class: object = None,
-        is_blacklisted: Callable = None,
-        encode_token_hook: Callable = None,
-        refresh_token_hook: Callable = None,
-        rbac_populate_hook: Callable = None,
-    ) -> 'Beskar':
-        self.app: Sanic = None
-        self.pwd_ctx = None
-        self.totp_ctx = None
+        app: Optional[Sanic] = None,
+        user_class: Optional[object] = None,
+        is_blacklisted: Optional[Callable] = None,
+        encode_token_hook: Optional[Callable] = None,
+        refresh_token_hook: Optional[Callable] = None,
+        rbac_populate_hook: Optional[Callable] = None,
+    ) -> None:
+        self.app: Sanic
+        self.pwd_ctx: CryptContext = CryptContext()
+        self.totp_ctx: TOTP = TOTP(new=True)
+        self.totp_secrets_type: str
         self.hash_scheme = None
         self.salt = None
         self.token_provider = 'jwt'  # nosec B105
-        self.paseto_ctx = None
-        self.paseto_key = None
-        self.paseto_token = None
-        self.rbac_definitions = {}
+        self.paseto_ctx: 'Paseto'
+        self.paseto_key: Union[bytes, str]
+        self.paseto_token: 'Token'
+        self.rbac_definitions: dict = {}
 
         if app is not None and user_class is not None:
             self.init_app(
@@ -129,12 +134,12 @@ class Beskar():
 
     def init_app(
         self,
-        app: Sanic = None,
-        user_class: object = None,
-        is_blacklisted: Callable = None,
-        encode_token_hook: Callable = None,
-        refresh_token_hook: Callable = None,
-        rbac_populate_hook: Callable = None,
+        app: Sanic,
+        user_class: object,
+        is_blacklisted: Optional[Callable] = None,
+        encode_token_hook: Optional[Callable] = None,
+        refresh_token_hook: Optional[Callable] = None,
+        rbac_populate_hook: Optional[Callable] = None,
     ):
         """
         Initializes the :py:class:`Beskar` extension
@@ -216,6 +221,8 @@ class Beskar():
         self.encode_token_hook = encode_token_hook
         self.refresh_token_hook = refresh_token_hook
         self.rbac_populate_hook = rbac_populate_hook
+        self.access_lifespan: pendulum.Duration
+        self.refresh_lifespan: pendulum.Duration
 
         # Populate our config defaults
         self.set_config()
@@ -226,7 +233,7 @@ class Beskar():
         # If the user provided a base RBAC policy, lets consume it
         if app.config.get("BESKAR_RBAC_POLICY"):
             try:
-                self.rbac_definitions = normalize_rbac(app.config.get("BESKAR_RBAC_POLICY"))
+                self.rbac_definitions = normalize_rbac(app.config.get("BESKAR_RBAC_POLICY", {}))
             except Exception as e:
                 raise ConfigurationError(f'Failure loading supplied BESKAR_RBAC_POLICY '
                                          f'from config: {e}') from e
@@ -256,9 +263,9 @@ class Beskar():
                 raise ConfigurationError("Trying to use PASETO, "
                                          "but you did't install the `pyseto` module") from e
 
-            self.paseto_key = Key.new(version=self.paseto_version, purpose="local", key=self.paseto_key)
+            self.paseto_parsed_keys: 'KeyInterface' = Key.new(version=self.paseto_version, purpose="local", key=self.paseto_key)
             self.paseto_ctx = Paseto(exp=self.access_lifespan.seconds, include_iat=False)
-            self.paseto_token = Token
+            self.paseto_token = Token # type: ignore
 
         # TODO: add 'issuser', at the very least
         if self.totp_secrets_type:
@@ -314,7 +321,7 @@ class Beskar():
             async def init_rbac_populate(app):
                 logger.info("Populating initial RBAC definitions")
                 await app.dispatch("beskar.rbac.update")
-            app.add_task(init_rbac_populate(app))
+            app.add_task(init_rbac_populate(app)) # type: ignore
 
         if not hasattr(app.ctx, "extensions"):
             app.ctx.extensions = {}
@@ -631,7 +638,7 @@ class Beskar():
         _last_counter = None
         if hasattr(user, 'get_cache_verify') and callable(user.get_cache_verify):
             _last_counter = await user.get_cache_verify()
-        verify = totp_factory.verify(token, user.totp,
+        verify = totp_factory.verify(token, getattr(user, 'totp'),
                                      last_counter=_last_counter)
 
         """
@@ -712,7 +719,12 @@ class Beskar():
 
         return user
 
-    async def authenticate(self, user: str, password: str, token: str = None, lookup: Optional[str] = 'username'):
+    async def authenticate(
+        self,
+        user: str,
+        password: str,
+        token: Optional[str] = None,
+        lookup: Optional[str] = 'username'):
 
         """
         Verifies that a password matches the stored password for that username or
@@ -754,17 +766,17 @@ class Beskar():
             "Beskar must be initialized before this method is available",
         )
         if lookup == 'username':
-            user = await self.user_class.lookup(username=user)
+            user_o = await self.user_class.lookup(username=user)
         elif lookup == 'email':
-            user = await self.user_class.lookup(email=user)
+            user_o = await self.user_class.lookup(email=user)
         else:
             raise AuthenticationError('Lookup type *must* be either `username` or `email`')
 
         AuthenticationError.require_condition(
-            user is not None
+            user_o is not None
             and self._verify_password(
                 password,
-                user.password,
+                user_o.password,
             ),
             "The credentials provided are missing or incorrect",
         )
@@ -778,12 +790,12 @@ class Beskar():
             application will be required to either re-call `authenticate`
             with all 3 arugements, or call `authenticate_otp` directly.
         """
-        if hasattr(user, 'totp') or token:
+        if hasattr(user_o, 'totp') or token:
             if token:
-                user = await self.authenticate_totp(user, token)
+                user_o = await self.authenticate_totp(user_o, token)
             elif self.totp_enforce:
                 raise TOTPRequired("Password authentication successful -- "
-                                   f"TOTP still *required* for user '{user.username}'.")
+                                   f"TOTP still *required* for user '{user_o.username}'.")
 
         """
         If we are set to BESKAR_HASH_AUTOUPDATE then check our hash
@@ -796,11 +808,11 @@ class Beskar():
             but don't modify the user.
         """
         if self.hash_autoupdate:
-            await self.verify_and_update(user=user, password=password)
+            await self.verify_and_update(user=user_o, password=password)
         elif self.hash_autotest:
-            await self.verify_and_update(user=user)
+            await self.verify_and_update(user=user_o)
 
-        return user
+        return user_o
 
     def _verify_password(self, raw_password: str, hashed_password: str):
         """
@@ -926,7 +938,7 @@ class Beskar():
         time_delta = access_expiration - moment.int_timestamp
 
         return self.paseto_ctx.encode(
-            self.paseto_key,
+            self.paseto_parsed_keys,
             payload_parts,
             serializer=ujson,
             exp=time_delta,
@@ -935,8 +947,8 @@ class Beskar():
     async def encode_jwt_token(
         self,
         user,
-        override_access_lifespan: Optional[pendulum.duration] = None,
-        override_refresh_lifespan: Optional[pendulum.duration] = None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
+        override_refresh_lifespan: Optional[pendulum.Duration] = None,
         bypass_user_check: Optional[bool] = False,
         is_registration_token: Optional[bool] = False,
         is_reset_token: Optional[bool] = False,
@@ -1188,7 +1200,7 @@ class Beskar():
         time_delta = access_expiration - moment.int_timestamp
 
         return self.paseto_ctx.encode(
-            self.paseto_key,
+            self.paseto_parsed_keys,
             payload_parts,
             serializer=ujson,
             exp=time_delta,
@@ -1268,7 +1280,7 @@ class Beskar():
             f"extract_{self.token_provider}_token"
         )(token=token, access_type=access_type)
 
-    async def extract_paseto_token(self, token: object, access_type=AccessType.access):
+    async def extract_paseto_token(self, token: Union[bytes, str], access_type=AccessType.access):
         """
         Extracts a data dictionary from a PASETO token.
 
@@ -1282,7 +1294,7 @@ class Beskar():
 
         # Note: we disable exp verification because we will do it ourselves
         failed = None
-        keys = self.paseto_key if isinstance(self.paseto_key, list) else [self.paseto_key]
+        keys = self.paseto_parsed_keys if isinstance(self.paseto_parsed_keys, list) else [self.paseto_parsed_keys]
         t = self.paseto_token.new(token)
         for k in keys:
             if k.header != t.header:
@@ -1302,7 +1314,7 @@ class Beskar():
             raise failed
 
         # Convert to expected time format
-        t.payload['exp'] = pendulum.parse(t.payload['exp']).int_timestamp
+        t.payload['exp'] = pendulum.parse(t.payload['exp']).int_timestamp # type: ignore
         self._validate_token_data(t.payload, access_type=access_type)
         return t.payload
 
@@ -1559,7 +1571,7 @@ class Beskar():
         confirmation_sender: Optional[str] = None,
         confirmation_uri: Optional[str] = None,
         subject: Optional[str] = None,
-        override_access_lifespan: Optional[pendulum.duration] = None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
     ):
         """
         Sends a registration email to a new user, containing a time expiring
@@ -1626,7 +1638,7 @@ class Beskar():
         reset_sender: Optional[str] = None,
         reset_uri: Optional[str] = None,
         subject: Optional[str] = None,
-        override_access_lifespan: Optional[pendulum.duration] = None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
     ):
         """
         Sends a password reset email to a user, containing a time expiring
@@ -1859,7 +1871,7 @@ class Beskar():
         """
         return self.pwd_ctx.hash(raw_password)
 
-    async def verify_and_update(self, user: object = None, password: str = None):
+    async def verify_and_update(self, user, password: str = ''):
         """
         Validate a password hash contained in the user object is
         hashed with the defined hash scheme (:py:data:`BESKAR_HASH_SCHEME`).
@@ -1871,7 +1883,7 @@ class Beskar():
         currently desired hash scheme (:py:exc:`~BESKAR_HASH_SCHEME`).
 
         Args:
-            user (:py:class:`User`): The user object to tie claim to (username, id,
+            user (:py:class:`User`): The user class to tie claim to (username, id,
                 email, etc). *MUST* include the password field, defined as :py:attr:`password`.
             password (str): The user's provide password from login.  If present, this is used
                 to validate and then attempt to update with the new :py:data:`BESKAR_HASH_SCHEME`

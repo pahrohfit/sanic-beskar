@@ -57,7 +57,7 @@ class User(Model):
         return self.is_active
 
 
-class MixinUser(Model, TortoiseUserMixin):
+class MixinUser(TortoiseUserMixin):
 
     class Meta:
         table = "MixinUser"
@@ -85,7 +85,7 @@ class ValidatingUser(User):
         return self.is_active
 
 
-class TotpUser(User, Model, TortoiseUserMixin):
+class TotpUser(User, TortoiseUserMixin):
 
     class Meta:
         table = "TotpUser"

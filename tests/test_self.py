@@ -1,51 +1,36 @@
 from copy import deepcopy
-import warnings
-import pendulum
-import plummet
 import pytest
-import ujson
-
-from httpx import Cookies
-
-from passlib.totp import generate_secret
-
-from passlib.exc import (
-    InvalidTokenError,
-    MalformedTokenError,
-    UsedTokenError,
-)
-
-from sanic.log import logger
 
 from sanic_beskar import Beskar
+
 from sanic_beskar.exceptions import (
-    AuthenticationError,
-    BlacklistedError,
-    ClaimCollisionError,
-    EarlyRefreshError,
-    ExpiredAccessError,
-    ExpiredRefreshError,
-    InvalidUserError,
-    MissingClaimError,
-    MissingUserError,
-    MisusedRegistrationToken,
-    MisusedResetToken,
+#    AuthenticationError, # TODO: Test this shit
+#    BlacklistedError, # TODO : Test this shit
+#    ClaimCollisionError, # TODO : Test this shit
+#    EarlyRefreshError, # TODO : Test this shit
+#    ExpiredAccessError, # TODO : Test this shit
+#    ExpiredRefreshError, # TODO : Test this shit
+#    InvalidUserError, # TODO : Test this shit
+#    MissingClaimError, # TODO : Test this shit
+#    MissingUserError, # TODO : Test this shit
+#    MisusedRegistrationToken, # TODO : Test this shit
+#    MisusedResetToken, # TODO : Test this shit
     BeskarError,
-    LegacyScheme,
-    TOTPRequired,
+#    LegacyScheme, # TODO : Test this shit
+#    TOTPRequired, # TODO : Test this shit
     ConfigurationError,
 )
-from sanic_beskar.constants import (
-    AccessType,
-    DEFAULT_TOKEN_ACCESS_LIFESPAN,
-    DEFAULT_TOKEN_REFRESH_LIFESPAN,
-    DEFAULT_TOKEN_HEADER_NAME,
-    DEFAULT_TOKEN_HEADER_TYPE,
-    IS_REGISTRATION_TOKEN_CLAIM,
-    IS_RESET_TOKEN_CLAIM,
-    REFRESH_EXPIRATION_CLAIM,
-    VITAM_AETERNUM,
-)
+#from sanic_beskar.constants import (
+#    AccessType, # TODO : Test this shit
+#    DEFAULT_TOKEN_ACCESS_LIFESPAN, # TODO : Test this shit
+#    DEFAULT_TOKEN_REFRESH_LIFESPAN, # TODO : Test this shit
+#    DEFAULT_TOKEN_HEADER_NAME, # TODO : Test this shit
+#    DEFAULT_TOKEN_HEADER_TYPE, # TODO : Test this shit
+#    IS_REGISTRATION_TOKEN_CLAIM, # TODO : Test this shit
+#    IS_RESET_TOKEN_CLAIM, # TODO : Test this shit
+#    REFRESH_EXPIRATION_CLAIM, # TODO : Test this shit
+#    VITAM_AETERNUM, # TODO : Test this shit
+#)
 
 
 class TestBeskar:

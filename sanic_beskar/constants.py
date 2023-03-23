@@ -1,4 +1,4 @@
-import pendulum
+from pendulum import Duration, duration
 import enum
 from os.path import dirname, abspath
 
@@ -7,9 +7,9 @@ DEFAULT_TOKEN_PLACES: list = ["header", "cookie"]
 DEFAULT_TOKEN_COOKIE_NAME: str = "access_token"
 DEFAULT_TOKEN_HEADER_NAME: str = "Authorization"
 DEFAULT_TOKEN_HEADER_TYPE: str = "Bearer"
-DEFAULT_TOKEN_ACCESS_LIFESPAN: pendulum = pendulum.duration(minutes=15)
-DEFAULT_TOKEN_REFRESH_LIFESPAN: pendulum = pendulum.duration(days=30)
-DEFAULT_TOKEN_RESET_LIFESPAN: pendulum = pendulum.duration(minutes=10)
+DEFAULT_TOKEN_ACCESS_LIFESPAN: Duration = duration(minutes=15)
+DEFAULT_TOKEN_REFRESH_LIFESPAN: Duration = duration(days=30)
+DEFAULT_TOKEN_RESET_LIFESPAN: Duration = duration(minutes=10)
 DEFAULT_JWT_ALGORITHM: str = "HS256"
 DEFAULT_JWT_ALLOWED_ALGORITHMS: list = ["HS256"]
 
@@ -54,8 +54,8 @@ DEFAULT_HASH_ALLOWED_SCHEMES: list = [
 DEFAULT_HASH_DEPRECATED_SCHEMES: list = []
 
 DEFAULT_TOTP_ENFORCE: bool = True
-DEFAULT_TOTP_SECRETS_TYPE: str = None
-DEFAULT_TOTP_SECRETS_DATA: str = None
+DEFAULT_TOTP_SECRETS_TYPE: str = ''
+DEFAULT_TOTP_SECRETS_DATA: str = ''
 
 DEFAULT_TOKEN_PROVIDER: str = 'jwt'  # jwt|paseto
 DEFAULT_PASETO_VERSION: int = 4  # 1|2|3|4
@@ -75,7 +75,7 @@ RESERVED_CLAIMS = {
 }
 
 # 1M days seems reasonable. If this code is being used in 3000 years...welp
-VITAM_AETERNUM: pendulum = pendulum.Duration(days=1000000)
+VITAM_AETERNUM: Duration = duration(days=1000000)
 
 
 class AccessType(enum.Enum):

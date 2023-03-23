@@ -6,12 +6,12 @@ from sanic import Sanic, json
 import sanic_beskar
 from sanic_beskar import Beskar
 from sanic_beskar.orm import UmongoUserMixin
-from async_sender import Mail
+from async_sender import Mail # type: ignore
 
-from umongo import Document, fields, validate
+from umongo import Document, fields, validate # type: ignore
 
-from umongo.frameworks.motor_asyncio import MotorAsyncIOInstance
-from mongomock_motor import AsyncMongoMockClient
+from umongo.frameworks.motor_asyncio import MotorAsyncIOInstance # type: ignore
+from mongomock_motor import AsyncMongoMockClient # type: ignore
 
 
 _guard = Beskar()

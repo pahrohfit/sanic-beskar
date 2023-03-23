@@ -2,7 +2,6 @@ import secrets
 import string
 
 from tortoise.contrib.sanic import register_tortoise
-from tortoise.models import Model
 from tortoise import fields
 
 from sanic import Sanic, json
@@ -11,7 +10,7 @@ import sanic_beskar
 from sanic_beskar import Beskar
 from sanic_beskar.orm import TortoiseUserMixin
 
-from async_sender import Mail
+from async_sender import Mail # type: ignore
 
 
 _guard = Beskar()
@@ -19,7 +18,7 @@ _mail = Mail()
 
 
 # A generic user model that might be used by an app powered by sanic-beskar
-class User(Model, TortoiseUserMixin):
+class User(TortoiseUserMixin):
     """
     Provides a basic user model for use in the tests
     """
