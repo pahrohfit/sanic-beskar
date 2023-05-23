@@ -12,6 +12,12 @@ Unreleased
 
 v2.2.8 - 2023-03-21
 -------------------
+- Dev Dependancy updates
+- Upgraded support for newer `Cryptography`, `Sanic`, `Beanie`
+- Moved from `sphinx-rtd-theme` to `furo` for Sphinx Docs
+
+v2.2.8 - 2023-03-21
+-------------------
 - Dependancy updates
 - Linting cleanups
 - Upgraded `Cryptography` requirement to >39.0.1 due to security concerns
