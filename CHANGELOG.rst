@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 Unreleased
 ----------
+- Dependancy updates
 
 v2.2.8 - 2023-03-21
 -------------------
