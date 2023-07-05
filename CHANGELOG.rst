@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.2.10 - 2023-07-05
+-------------------
+- Dependancy updates: `pyseto` and `cryptography` to current main versions
+
+v2.2.9 - 2023-05-23
+-------------------
+- Dependancy updates and testing
+
 v2.2.8 - 2023-03-21
 -------------------
 - Dev Dependancy updates
