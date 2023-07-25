@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.2.11 - 2023-07-25
+-------------------
+- Dependancies tested: `sanic`, `pyseto` and `cryptography` to current main versions
+- Dependancy version changes: `cryptography` allow down to 39.0.0 as minimum
+
 v2.2.10 - 2023-07-05
 -------------------
 - Dependancy updates: `pyseto` and `cryptography` to current main versions

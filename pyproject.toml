@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.2.10"
+version = "2.2.11"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -67,10 +67,10 @@ python = "^3.8"
 pyjwt = "^2.6"
 pendulum = "^2.1"
 passlib = "^1.7"
-sanic = ">=22.6.0, <=23.4"
+sanic = ">=22.6.0, <=24.0"
 pyseto = "^1.6.9"
 py-buzz = "^3.2.1"
-cryptography = ">=39.0.2, <42.0"
+cryptography = ">=39.0.0, <42.0"
 jinja2 = "^3.1.2"
 
 [build-system]
