@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.2.12 - 2023-09-18
+-------------------
+- Dependancies tested: `tortoise-orm` and `py-buzz` to current main versions
+- Dependancies updated: `tortoise-orm` and `py-buzz` to allow a more current major version
+
 v2.2.11 - 2023-07-25
 -------------------
 - Dependancies tested: `sanic`, `pyseto` and `cryptography` to current main versions
