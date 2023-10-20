@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
-v2.2.13 - 2023-10-19
+v2.3.0 - 2023-10-19
 -------------------
 - Dependancies tested: `mongomock-motor`, `cryptography`, `pydantic`, `beanie` to current main versions
+- Added support for python 3.12. Requires `pendulum==3.0.0.b*`. All tests passed.
 
 v2.2.12 - 2023-09-18
 -------------------

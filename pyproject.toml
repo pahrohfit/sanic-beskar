@@ -40,6 +40,7 @@ flake8-async = "^22.11.6"
 safety = ">=2.3"
 async-sender = ">=2.0.0"
 pytest-xdist = "^3.0.2"
+tox = "^4.11.3"
 
 [tool.poetry.group.docs.dependencies]
 toml = "^0.10.2"
@@ -63,15 +64,18 @@ warn_unused_ignores = true
 exclude = ["example", "docs", "tests"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-pyjwt = "^2.6"
-pendulum = "^2.1"
-passlib = "^1.7"
+python = ">=3.8, <3.13"
+pyjwt = ">=2.6"
+pendulum = [
+    { version = ">=2.1, <=3.1", allow-prereleases = true, python = ">=3.7,<=3.11" },
+    { version = "3.0.*", allow-prereleases = true, python = ">=3.12" },
+]
+passlib = ">=1.7"
 sanic = ">=22.6.0, <=24.0"
-pyseto = "^1.6.9"
+pyseto = ">=1.6.9"
 py-buzz = ">3.2.0, <5.0"
 cryptography = ">=39.0.0, <42.0"
-jinja2 = "^3.1.2"
+jinja2 = ">=3.1.2"
 
 [build-system]
 requires = ["poetry-core>=1.2"]
@@ -87,4 +91,4 @@ asyncio_mode = "auto"
 #log_date_format = "%Y-%m-%d %H:%M:%S"
 #log_cli = "false"
 #log_level = "DEBUG"
-addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
+addopts = "--color=auto --code-highlight=yes -n 2 --maxprocesses=4"
