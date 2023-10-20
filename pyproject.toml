@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.2.12"
+version = "2.2.13"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -18,32 +18,32 @@ mongo-types = "^0.15"
 mypy = "^1.1"
 
 [tool.poetry.group.dev.dependencies]
-bcrypt = "^4.0.1"
+bcrypt = ">=4.0.1, <5"
 plummet = {version = "^1.1", extras = ["time-machine"]}
 sanic-testing = "^23.3"
 pytest-asyncio = "^0.21"
 tortoise-orm = ">=0.19.2, < 21.0"
 nest-asyncio = "^1.5.5"
 pytest-cov = "^4.0.0"
-umongo = "3.1.0"
-motor = "^3.1.0"
+umongo = ">=3.1.0, <4.0"
+motor = ">=3.1.0, <4.0"
 pytest-profiling = "^1.7.0"
-fastpbkdf2 = "^0.2"
-segno = "^1.5.2"
+fastpbkdf2 = ">=0.2"
+segno = ">=1.5.2, <2.0"
 pytest = "^7.2.0"
 beanie = ">=1.11.7, <=2.0"
-mongomock-motor = "^0.0.19"
-mongomock = "^4.1.2"
+mongomock-motor = ">=0.0.19"
+mongomock = ">=4.1.2"
 ipdb = "^0.13.9"
 bandit = "^1.7.4"
 flake8-async = "^22.11.6"
-safety = "^2.3.1"
-async-sender = "^2.0.0"
+safety = ">=2.3"
+async-sender = ">=2.0.0"
 pytest-xdist = "^3.0.2"
 
 [tool.poetry.group.docs.dependencies]
 toml = "^0.10.2"
-sphinx = "^7.0.1"
+sphinx = ">=7.1, <8.0"
 furo = "^2023.5.20"
 
 [tool.coverage.report]

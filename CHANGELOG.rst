@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.2.13 - 2023-10-19
+-------------------
+- Dependancies tested: `mongomock-motor`, `cryptography`, `pydantic`, `beanie` to current main versions
+
 v2.2.12 - 2023-09-18
 -------------------
 - Dependancies tested: `tortoise-orm` and `py-buzz` to current main versions
