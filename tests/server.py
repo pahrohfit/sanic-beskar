@@ -14,7 +14,7 @@ from tortoise.contrib.sanic import register_tortoise
 from ujson import dumps as ujson_dumps
 from ujson import loads as ujson_loads
 
-from models import User
+from models import MixinUserTortoise
 
 _guard = Beskar()
 _mail = Mail()
@@ -36,7 +36,7 @@ def create_app(db_path=None):
 
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
-    _guard.init_app(sanic_app, User)
+    _guard.init_app(sanic_app, MixinUserTortoise)
     _guard.rbac_definitions = {
         "sooper_access_right": ["admin", "uber_admin"],
         "lame_access_right": ["not_admin"],

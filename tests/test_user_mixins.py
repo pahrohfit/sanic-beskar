@@ -5,7 +5,7 @@ from sanic_beskar.base import Beskar
 
 from bson import ObjectId
 
-from models import NoRolesMixinUser, MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
+from models import MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
 
 
 class TestUserMixin:
