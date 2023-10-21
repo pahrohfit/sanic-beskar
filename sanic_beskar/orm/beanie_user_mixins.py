@@ -1,7 +1,6 @@
 from typing import Optional
 
 from beanie import Document, PydanticObjectId
-from beanie.exceptions import DocumentNotFound
 from bson.objectid import ObjectId
 
 
@@ -54,11 +53,8 @@ class BeanieUserMixin(Document):
         :rtype: list
         """
 
-        try:
-            _roles: list = self.roles.split(",")
-            return _roles
-        except Exception:
-            return []
+        _roles: list = self.roles.split(",") if self.roles else []
+        return _roles
 
     @classmethod
     async def lookup(
@@ -80,16 +76,12 @@ class BeanieUserMixin(Document):
         :returns: ``None`` or :py:class:`User` of the found user
         :rtype: :py:class:`User`
         """
-        try:
-            if username:
-                return await cls.find({"username": username}).first_or_none()
-            if email:
-                return await cls.find({"email": email}).first_or_none()
+        if username:
+            return await cls.find({"username": username}).first_or_none()
+        if email:
+            return await cls.find({"email": email}).first_or_none()
 
-            return None
-
-        except DocumentNotFound:
-            return None
+        return None
 
     @classmethod
     async def identify(cls, id: str) -> Optional[Document]:
@@ -107,7 +99,4 @@ class BeanieUserMixin(Document):
         :returns: Provided :py:class:`User` ``id``
         :rtype: str, None
         """
-        try:
-            return await cls.find({"_id": ObjectId(id)}).first_or_none()
-        except DocumentNotFound:
-            return None
+        return await cls.find({"_id": ObjectId(id)}).first_or_none()

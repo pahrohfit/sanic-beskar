@@ -3,18 +3,21 @@ import sanic_beskar
 import sanic_beskar.exceptions
 from sanic_beskar.base import Beskar
 
-from models import NoRolesMixinUser
+from bson import ObjectId
+
+from models import NoRolesMixinUser, MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
 
 
 class TestUserMixin:
-    async def test_basic(self, app, mixin_user_class, mock_users):
-        mixin_guard = sanic_beskar.Beskar(app, mixin_user_class)
+    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
+    async def test_basic(self, app, mixin_user, mock_users):
+        mixin_guard = sanic_beskar.Beskar(app, mixin_user)
 
         the_dude = await mock_users(
             username="the_dude",
             password="abides",
             guard_name=mixin_guard,
-            class_name=mixin_user_class,
+            class_name=mixin_user,
         )
 
         assert await mixin_guard.authenticate("the_dude", "abides") == the_dude
@@ -24,35 +27,47 @@ class TestUserMixin:
             await mixin_guard.authenticate("the_dude", "is_undudelike")
         await the_dude.delete()
 
-    async def test_no_rolenames(self, app, mixin_user_class, mock_users):
-        mixin_guard = sanic_beskar.Beskar(app, mixin_user_class)
+    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
+    async def test_no_rolenames(self, app, mixin_user, mock_users):
+        mixin_guard = sanic_beskar.Beskar(app, mixin_user)
 
-        the_noroles_dude = await NoRolesMixinUser.create(
-            username="the_noroles_dude",
-            email="the_noroles_dude@mock.com",
-            password=mixin_guard.hash_password("the_noroles_dude_pw"),
-            is_active=True,
+        the_noroles_dude = await mock_users(
+            username="the_dude",
+            password="abides",
+            guard_name=mixin_guard,
+            class_name=mixin_user,
         )
 
         assert the_noroles_dude.rolenames == []
         await the_noroles_dude.delete()
 
-    async def test_lookups(self, app, mixin_user_class, mock_users):
-        mixin_guard = sanic_beskar.Beskar(app, mixin_user_class)
+    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
+    async def test_lookups(self, app, mixin_user, mock_users):
+        mixin_guard = sanic_beskar.Beskar(app, mixin_user)
 
         the_dude = await mock_users(
             username="the_dude",
             password="abides",
             email="the_dude@mock.com",
             guard_name=mixin_guard,
-            class_name=mixin_user_class,
+            class_name=mixin_user,
         )
 
-        assert await mixin_user_class.lookup(email="the_dude@mock.com") == the_dude
-        assert await mixin_user_class.lookup(username="the_dude") == the_dude
-        assert await mixin_user_class.lookup() is None
-        assert await mixin_user_class.identify(id=the_dude.id) == the_dude
-        assert await mixin_user_class.identify(id=99999999) is None
+        assert await mixin_user.lookup(email="the_dude@mock.com") == the_dude
+        assert await mixin_user.lookup(username="the_dude") == the_dude
+        assert await mixin_user.lookup() is None
+        assert await mixin_user.identify(id=the_dude.id) == the_dude
+        fake_id = 999999999
+        if isinstance(the_dude.id, ObjectId):
+            fake_id = ObjectId()
+        assert await mixin_user.identify(id=fake_id) is None
+        assert await mixin_user.lookup(username=fake_id) is None
+
+        if isinstance(the_dude.id, ObjectId):
+            assert str(the_dude.identity) == str(the_dude.id)
+        else:
+            assert the_dude.identity == the_dude.id
+
         await the_dude.delete()
 
     async def test_totp(self, app, totp_user_class, mock_users):

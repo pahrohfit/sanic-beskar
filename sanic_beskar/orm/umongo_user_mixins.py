@@ -3,11 +3,8 @@ from typing import Optional
 from bson.objectid import ObjectId
 from umongo import Document  # type: ignore
 
-# umongo is missing type hints at this time
-from umongo.exceptions import NotCreatedError  # type: ignore
 
-
-class UmongoUserMixin(Document):
+class UmongoUserMixin:
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_
@@ -41,10 +38,8 @@ class UmongoUserMixin(Document):
         :returns: Provided :py:class:`User`'s current ``roles``
         :rtype: list
         """
-        try:
-            return self.roles.split(",")  # type: ignore
-        except Exception:
-            return []
+        _roles: list = self.roles.split(",") if self.roles else []
+        return _roles
 
     @classmethod
     async def lookup(
@@ -66,14 +61,11 @@ class UmongoUserMixin(Document):
         :returns: ``None`` or :py:class:`User` of the found user
         :rtype: :py:class:`User`, None
         """
-        try:
-            if username:
-                return await cls.find_one({"username": username})
-            if email:
-                return await cls.find_one({"email": email})
-            return None
-        except NotCreatedError:
-            return None
+        if username:
+            return await cls.find_one({"username": username})
+        if email:
+            return await cls.find_one({"email": email})
+        return None
 
     @classmethod
     async def identify(cls, id: str) -> Optional[Document]:
@@ -91,10 +83,7 @@ class UmongoUserMixin(Document):
         :returns: Provided :py:class:`User` ``id``
         :rtype: str, None
         """
-        try:
-            return await cls.find_one({"id": ObjectId(id)})
-        except NotCreatedError:
-            return None
+        return await cls.find_one({"id": ObjectId(id)})
 
     @property
     def identity(self) -> str:
