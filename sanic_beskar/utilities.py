@@ -2,7 +2,7 @@ import datetime as dt
 import re
 from collections.abc import Iterable
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
 try:  # pragma: no cover
@@ -146,7 +146,7 @@ def duration_from_string(text: str) -> pendulum.Duration:
         return pendulum.duration(**clean)
 
 
-def current_guard(ctx: Sanic | (SimpleNamespace | None) = None) -> "BeskarType":
+def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> "BeskarType":
     """
     Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
     that is attached to the current sanic app
@@ -173,7 +173,7 @@ def current_guard(ctx: Sanic | (SimpleNamespace | None) = None) -> "BeskarType":
     return guard
 
 
-def app_context_has_token_data(ctx: Sanic | None = None) -> bool:
+def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     """
     Checks if there is already token_data added to the app context
 
@@ -230,7 +230,7 @@ def remove_token_data_from_app_context() -> None:
         del ctx.token_data
 
 
-def current_user_id() -> str | None:
+def current_user_id() -> Union[str, None]:
     """
     This method returns the user id retrieved from token data attached to
     the current sanic app's context

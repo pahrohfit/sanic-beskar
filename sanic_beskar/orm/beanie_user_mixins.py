@@ -1,3 +1,5 @@
+from typing import Optional
+
 from beanie import Document, PydanticObjectId
 from beanie.exceptions import DocumentNotFound
 from bson.objectid import ObjectId
@@ -20,7 +22,7 @@ class BeanieUserMixin(Document):
     """
 
     @property
-    def identity(self) -> PydanticObjectId | None:
+    def identity(self) -> Optional[PydanticObjectId]:
         """
         *Required Attribute or Property*
 
@@ -59,7 +61,9 @@ class BeanieUserMixin(Document):
             return []
 
     @classmethod
-    async def lookup(cls, username: str | None = None, email: str | None = None) -> object | None:
+    async def lookup(
+        cls, username: Optional[str] = None, email: Optional[str] = None
+    ) -> Optional[Document]:
         """
         *Required Method*
 
@@ -88,7 +92,7 @@ class BeanieUserMixin(Document):
             return None
 
     @classmethod
-    async def identify(cls, id: str) -> str | None:
+    async def identify(cls, id: str) -> Optional[Document]:
         """
         *Required Attribute or Property*
 

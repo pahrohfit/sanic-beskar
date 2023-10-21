@@ -1,6 +1,5 @@
-from collections.abc import Callable
 from functools import wraps
-from typing import Any
+from typing import Any, Callable, Union
 
 from sanic import Request
 
@@ -106,7 +105,7 @@ def auth_accepted(method: Callable) -> Callable[..., Any]:
     return wrapper
 
 
-def roles_required(*required_rolenames: list | set) -> Callable[..., Any]:
+def roles_required(*required_rolenames: Union[list, set]) -> Callable[..., Any]:
     """
     This decorator ensures that any uses accessing the decorated route have all
     the needed roles to access it. If an :py:func:`auth_required` decorator is not
@@ -152,7 +151,7 @@ def roles_required(*required_rolenames: list | set) -> Callable[..., Any]:
     return decorator
 
 
-def rights_required(*required_rights: list | set) -> Callable[..., Any]:
+def rights_required(*required_rights: Union[list, set]) -> Callable[..., Any]:
     """
     This decorator ensures that any uses accessing the decorated route have all
     the needed rights to access it. If an :py:func:`auth_required` decorator is not
@@ -208,7 +207,7 @@ def rights_required(*required_rights: list | set) -> Callable[..., Any]:
     return decorator
 
 
-def roles_accepted(*accepted_rolenames: list | set) -> Callable[..., Any]:
+def roles_accepted(*accepted_rolenames: Union[list, set]) -> Callable[..., Any]:
     """
     This decorator ensures that any uses accessing the decorated route have one
     of the needed roles to access it. If an :py:func:`auth_required` decorator is not

@@ -3,10 +3,10 @@ import re
 import textwrap
 import uuid
 import warnings
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable
 from importlib import import_module
 from importlib.util import find_spec
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Coroutine, Optional, Union
 
 import aiofiles
 import jinja2
@@ -96,12 +96,12 @@ class Beskar:
 
     def __init__(
         self: "Beskar",
-        app: Sanic | None = None,
-        user_class: object | None = None,
-        is_blacklisted: Callable | None = None,
-        encode_token_hook: Callable | None = None,
-        refresh_token_hook: Callable | None = None,
-        rbac_populate_hook: Coroutine | None = None,
+        app: Optional[Sanic] = None,
+        user_class: Optional[object] = None,
+        is_blacklisted: Optional[Callable] = None,
+        encode_token_hook: Optional[Callable] = None,
+        refresh_token_hook: Optional[Callable] = None,
+        rbac_populate_hook: Optional[Coroutine] = None,
     ) -> None:
         self.app: Sanic
         self.pwd_ctx: CryptContext = CryptContext()
@@ -111,7 +111,7 @@ class Beskar:
         self.salt = None
         self.token_provider = "jwt"  # nosec
         self.paseto_ctx: "Paseto"
-        self.paseto_key: bytes | str
+        self.paseto_key: Union[bytes, str]
         self.paseto_token: "Token"
         self.rbac_definitions: dict = {}
 
@@ -132,10 +132,10 @@ class Beskar:
         self,
         app: Sanic,
         user_class: object,
-        is_blacklisted: Callable | None = None,
-        encode_token_hook: Callable | None = None,
-        refresh_token_hook: Callable | None = None,
-        rbac_populate_hook: Coroutine | None = None,
+        is_blacklisted: Optional[Callable] = None,
+        encode_token_hook: Optional[Callable] = None,
+        refresh_token_hook: Optional[Callable] = None,
+        rbac_populate_hook: Optional[Coroutine] = None,
     ) -> Sanic:
         """
         Initializes the :py:class:`Beskar` extension
@@ -657,7 +657,7 @@ class Beskar:
         return verify
 
     async def authenticate_totp(
-        self, user: str | object, token: str, lookup: str | None = "username"
+        self, user: Union[str, object], token: str, lookup: Optional[str] = "username"
     ) -> Any:
         """
         Verifies that a TOTP validates agains the stored TOTP for that
@@ -725,8 +725,8 @@ class Beskar:
         self,
         user: str,
         password: str,
-        token: str | None = None,
-        lookup: str | None = "username",
+        token: Optional[str] = None,
+        lookup: Optional[str] = "username",
     ) -> object:
         """
         Verifies that a password matches the stored password for that username or
@@ -856,12 +856,12 @@ class Beskar:
     async def encode_paseto_token(
         self,
         user: Any,
-        override_access_lifespan: pendulum.Duration | None = None,
-        override_refresh_lifespan: pendulum.Duration | None = None,
-        bypass_user_check: bool | None = False,
-        is_registration_token: bool | None = False,
-        is_reset_token: bool | None = False,
-        **custom_claims: dict | None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
+        override_refresh_lifespan: Optional[pendulum.Duration] = None,
+        bypass_user_check: Optional[bool] = False,
+        is_registration_token: Optional[bool] = False,
+        is_reset_token: Optional[bool] = False,
+        **custom_claims: Optional[dict],
     ) -> str:
         """
         Encodes user data into a PASETO token that can be used for authorization
@@ -954,12 +954,12 @@ class Beskar:
     async def encode_jwt_token(
         self,
         user: Any,
-        override_access_lifespan: pendulum.Duration | None = None,
-        override_refresh_lifespan: pendulum.Duration | None = None,
-        bypass_user_check: bool | None = False,
-        is_registration_token: bool | None = False,
-        is_reset_token: bool | None = False,
-        **custom_claims: dict | None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
+        override_refresh_lifespan: Optional[pendulum.Duration] = None,
+        bypass_user_check: Optional[bool] = False,
+        is_registration_token: Optional[bool] = False,
+        is_reset_token: Optional[bool] = False,
+        **custom_claims: Optional[dict],
     ) -> str:
         """
         Encodes user data into a jwt token that can be used for authorization
@@ -1042,12 +1042,12 @@ class Beskar:
     async def encode_token(
         self,
         user: object,
-        override_access_lifespan: pendulum.Duration | None = None,
-        override_refresh_lifespan: pendulum.Duration | None = None,
-        bypass_user_check: bool | None = False,
-        is_registration_token: bool | None = False,
-        is_reset_token: bool | None = False,
-        **custom_claims: dict | None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
+        override_refresh_lifespan: Optional[pendulum.Duration] = None,
+        bypass_user_check: Optional[bool] = False,
+        is_registration_token: Optional[bool] = False,
+        is_reset_token: Optional[bool] = False,
+        **custom_claims: Optional[dict],
     ) -> str:
         """
         Wrapper function to encode user data into a `insert_type_here` token
@@ -1094,7 +1094,7 @@ class Beskar:
 
         return _token
 
-    async def encode_eternal_token(self, user: object, **custom_claims: dict | None) -> str:
+    async def encode_eternal_token(self, user: object, **custom_claims: Optional[dict]) -> str:
         """
         This utility function encodes an application configuration defined
         type token that never expires
@@ -1123,7 +1123,7 @@ class Beskar:
         )
 
     async def refresh_token(
-        self, token: str, override_access_lifespan: pendulum.Duration | None = None
+        self, token: str, override_access_lifespan: Optional[pendulum.Duration] = None
     ) -> str:
         """
         Wrapper function to creates a new token for a user if and only if the old
@@ -1153,7 +1153,7 @@ class Beskar:
         return _token
 
     async def refresh_paseto_token(
-        self, token: str, override_access_lifespan: pendulum.Duration | None = None
+        self, token: str, override_access_lifespan: Optional[pendulum.Duration] = None
     ) -> bytes:
         """
         Creates a new PASETO token for a user if and only if the old token's access
@@ -1216,7 +1216,7 @@ class Beskar:
         return _token
 
     async def refresh_jwt_token(
-        self, token: str, override_access_lifespan: pendulum.Duration | None = None
+        self, token: str, override_access_lifespan: Optional[pendulum.Duration] = None
     ) -> str:
         """
         Creates a new JWT token for a user if and only if the old token's access
@@ -1291,7 +1291,7 @@ class Beskar:
         return _token
 
     async def extract_paseto_token(
-        self, token: bytes | str, access_type: AccessType = AccessType.access
+        self, token: Union[bytes, str], access_type: AccessType = AccessType.access
     ) -> dict:
         """
         Extracts a data dictionary from a PASETO token.
@@ -1442,7 +1442,7 @@ class Beskar:
                 "invalid reset token used for verification",
             )
 
-    def _unpack_header(self, headers: Header) -> str | None:
+    def _unpack_header(self, headers: Header) -> Union[str, None]:
         """
         Unpacks a token from a request header
         """
@@ -1459,7 +1459,7 @@ class Beskar:
         )
         return match.group(1)  # type: ignore
 
-    def read_token_from_header(self, request: Request) -> str | None:
+    def read_token_from_header(self, request: Request) -> Union[str, None]:
         """
         Unpacks a token from the current sanic request
 
@@ -1547,13 +1547,13 @@ class Beskar:
 
     async def pack_header_for_user(
         self,
-        user: object | str,
-        override_access_lifespan: pendulum.Duration | None = None,
-        override_refresh_lifespan: pendulum.Duration | None = None,
-        bypass_user_check: bool | None = False,
-        is_registration_token: bool | None = False,
-        is_reset_token: bool | None = False,
-        **custom_claims: dict | None,
+        user: Union[object, str],
+        override_access_lifespan: Optional[pendulum.Duration] = None,
+        override_refresh_lifespan: Optional[pendulum.Duration] = None,
+        bypass_user_check: Optional[bool] = False,
+        is_registration_token: Optional[bool] = False,
+        is_reset_token: Optional[bool] = False,
+        **custom_claims: Optional[dict],
     ) -> dict:
         """
         Encodes a jwt token and packages it into a header dict for a given user
@@ -1588,11 +1588,11 @@ class Beskar:
         self,
         email: str,
         user: object,
-        template: str | jinja2.nodes.Template | None = None,
-        confirmation_sender: str | None = None,
-        confirmation_uri: str | None = None,
-        subject: str | None = None,
-        override_access_lifespan: pendulum.Duration | None = None,
+        template: Optional[Union[str, jinja2.nodes.Template]] = None,
+        confirmation_sender: Optional[str] = None,
+        confirmation_uri: Optional[str] = None,
+        subject: Optional[str] = None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
     ) -> dict:
         """
         Sends a registration email to a new user, containing a time expiring
@@ -1655,11 +1655,11 @@ class Beskar:
     async def send_reset_email(
         self,
         email: str,
-        template: str | jinja2.nodes.Template | None = None,
-        reset_sender: str | None = None,
-        reset_uri: str | None = None,
-        subject: str | None = None,
-        override_access_lifespan: pendulum.Duration | None = None,
+        template: Optional[Union[str, jinja2.nodes.Template]] = None,
+        reset_sender: Optional[str] = None,
+        reset_uri: Optional[str] = None,
+        subject: Optional[str] = None,
+        override_access_lifespan: Optional[pendulum.Duration] = None,
     ) -> dict:
         """
         Sends a password reset email to a user, containing a time expiring
@@ -1725,11 +1725,11 @@ class Beskar:
         self,
         email: str,
         user: object,
-        template: str | jinja2.nodes.Template | None = None,
-        action_sender: str | None = "",
-        action_uri: str | None = "",
-        subject: str | None = "",
-        override_access_lifespan: pendulum.Duration | None = None,
+        template: Optional[Union[str, jinja2.nodes.Template]] = None,
+        action_sender: Optional[str] = "",
+        action_uri: Optional[str] = "",
+        subject: Optional[str] = "",
+        override_access_lifespan: Optional[pendulum.Duration] = None,
         custom_token: str = "",
     ) -> dict:
         """

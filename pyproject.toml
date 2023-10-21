@@ -105,7 +105,7 @@ exclude_dirs = ['tests/']
 
 [tool.ruff]
 line-length = 100
-target-version = 'py311'
+target-version = 'py38'
 src = ["sanic_beskar", "tests"]
 ignore = ["E501", "E402", "N818", "A002", "A003", "B904", "N805", "B006", "E712", "S106", "S105", "B028"]
 exclude = [".mypy_cache", ".vscode", ".git", ".pytest_cache", ".github", "__pycache__", "example", "docs", "tests"]
