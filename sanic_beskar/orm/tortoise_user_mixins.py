@@ -54,10 +54,8 @@ class TortoiseUserMixin(Model):
         :rtype: list
         """
 
-        try:
-            return self.roles.split(",")  # type: ignore
-        except Exception:
-            return []
+        _roles: list = self.roles.split(",") if self.roles else []
+        return _roles
 
     @classmethod
     async def lookup(

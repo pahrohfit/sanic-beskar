@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.3.1"
+version = "2.3.2"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -92,6 +92,23 @@ asyncio_mode = "auto"
 #log_cli = "false"
 #log_level = "DEBUG"
 addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
+filterwarnings = [
+  "ignore:::marshmallow.*",
+  "ignore:::umongo.*",
+  "ignore:::beanie.*",
+  "ignore:::tortoise.*",
+  "ignore:::httpx._models",
+  "ignore:::passlib.utils",
+  "ignore:::websockets.connection",
+  "ignore:::pkg_resources",
+  "ignore:::mongomock.__version__",
+  "ignore:::tracerite",
+  "ignore:::pydantic:798",
+  "ignore:::pydantic:249",
+  "ignore:::pydantic:3898",
+  "ignore:::xdist.plugin:252",
+]
+
 
 [tool.black]
 line-length = 100

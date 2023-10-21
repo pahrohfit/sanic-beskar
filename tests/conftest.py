@@ -15,9 +15,12 @@ import pytest
 from sanic.exceptions import SanicException
 from sanic.log import logger
 from sanic_beskar.base import Beskar
-from tortoise import Tortoise, run_async
 
-from models import MixinUser, TotpUser, User, ValidatingUser
+from tortoise import Tortoise, run_async
+from mongomock_motor import AsyncMongoMockClient
+from beanie import init_beanie
+
+from models import MixinUserTortoise, TotpUser, ValidatingUser, MixinUserBeanie
 from server import _guard, _mail, create_app
 
 nest_asyncio.apply()
@@ -33,7 +36,7 @@ async def init(db_path=None):
 
 
 @pytest.fixture(params=["jwt", "paseto"])
-def app(tmpdir_factory, request, monkeypatch):
+async def app(tmpdir_factory, request, monkeypatch):
     db_path = tmpdir_factory.mktemp(
         "sanic-beskar-test",
         numbered=True,
@@ -51,7 +54,10 @@ def app(tmpdir_factory, request, monkeypatch):
     sanic_app.prepare()
 
     sanic_app.config.SUPPRESS_SEND = 1  # Don't actually send mails
-    # _mail.init_app(sanic_app)
+
+    # Init beanie
+    client = AsyncMongoMockClient()
+    await init_beanie(database=client.db_name, document_models=[MixinUserBeanie])
 
     yield sanic_app
     sanic_app = None
@@ -62,7 +68,7 @@ def user_class():
     """
     This fixture simply fetches the user_class to be used in testing
     """
-    return User
+    return MixinUserTortoise
 
 
 @pytest.fixture(scope="session")
@@ -70,7 +76,7 @@ def mixin_user_class():
     """
     This fixture simply fetches the mixin user_class to be used in testing
     """
-    return MixinUser
+    return MixinUserTortoise
 
 
 @pytest.fixture(scope="session")
@@ -146,7 +152,7 @@ def mock_users(user_class, default_guard):
 
         # TODO: This is ugly, gotta be a nicer way
         if kwargs.get("id"):
-            return await class_name.create(
+            return await class_name.cls_create(
                 username=username,
                 email=email,
                 password=password,
@@ -155,7 +161,7 @@ def mock_users(user_class, default_guard):
                 id=kwargs["id"],
             )
         if kwargs.get("totp"):
-            return await class_name.create(
+            return await class_name.cls_create(
                 username=username,
                 email=email,
                 password=password,
@@ -164,7 +170,7 @@ def mock_users(user_class, default_guard):
                 totp=kwargs.get("totp"),
             )
         else:
-            return await class_name.create(
+            return await class_name.cls_create(
                 username=username,
                 email=email,
                 password=password,

@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.3.2 - 2023-10-21
+-------------------
+- Updated Dependancies
+- Increased testing coverage by adding full testing of all mixins (`umongo`, `tortoise`, `beanie`)
+- Corrected bug in `umongo` example and mixin due to `umongo` changes to document instantiation
+- Disabled a bunch of depreciation warnings that are only caused by unit testing of 3rd party modules, external to `beskar` itself
+- Removed usless try/except(NotFound) from `beanie` and `umongo` mixin methods
+- Fixed bug in mixins where no `roles` would respond with a `['']` list instead of empty `[]` list
+
 v2.3.1 - 2023-10-19
 -------------------
 - Made python version deps a little more sane looking
