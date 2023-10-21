@@ -1,34 +1,35 @@
-import functools
-from collections.abc import Iterable
-import re
 import datetime as dt
-from typing import Optional, Union, Any, TYPE_CHECKING
+import functools
+import re
+from collections.abc import Iterable
 from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any
 
 # If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
-try: # pragma: no cover
+try:  # pragma: no cover
     from beanie import PydanticObjectId as ObjectId
-except (ImportError, ModuleNotFoundError): # pragma: no cover
-    from bson.objectid import ObjectId # type: ignore
+except (ImportError, ModuleNotFoundError):  # pragma: no cover
+    from bson.objectid import ObjectId  # type: ignore
 
 ## If we are using `segno`, import for typing
 if TYPE_CHECKING:
     from segno import QRCode
+
     from sanic_beskar import Beskar as BeskarType
 
-import ujson
 from json import JSONEncoder as json_JSONEncoder
 
-from sanic import Sanic, Request
 import pendulum
+import ujson
+from sanic import Request, Sanic
 
 from sanic_beskar.constants import RESERVED_CLAIMS
-from sanic_beskar.exceptions import (BeskarError, ConfigurationError)
+from sanic_beskar.exceptions import BeskarError, ConfigurationError
 
 
-class JSONEncoder(json_JSONEncoder): # pragma: no cover
+class JSONEncoder(json_JSONEncoder):  # pragma: no cover
     def default(self, o: Any) -> Any:
-        if hasattr(o, '__json__'):
+        if hasattr(o, "__json__"):
             return o.__json__()
         if isinstance(o, Iterable):
             return list(o)
@@ -36,13 +37,14 @@ class JSONEncoder(json_JSONEncoder): # pragma: no cover
             return o.isoformat()
         if isinstance(o, ObjectId):
             return str(o)
-        if hasattr(o, '__getitem__') and hasattr(o, 'keys'):
+        if hasattr(o, "__getitem__") and hasattr(o, "keys"):
             return dict(o)
-        if hasattr(o, '__dict__'):
-            return {member: getattr(o, member)
-                    for member in dir(o)
-                    if not member.startswith('_') and
-                    not hasattr(getattr(o, member), '__call__')}
+        if hasattr(o, "__dict__"):
+            return {
+                member: getattr(o, member)
+                for member in dir(o)
+                if not member.startswith("_") and not callable(getattr(o, member))
+            }
 
         return JSONEncoder.default(self, o)
 
@@ -116,18 +118,18 @@ def duration_from_string(text: str) -> pendulum.Duration:
 
     :raises: :py:exc:`~sanic_beskar.ConfigurationError` on bad strings
     """
-    text = text.replace(' ', '')
-    text = text.replace(',', '')
+    text = text.replace(" ", "")
+    text = text.replace(",", "")
     text = text.lower()
     match = re.match(
-        r'''
+        r"""
             ((?P<years>\d+)y[a-z]*)?
             ((?P<months>\d+)mo[a-z]*)?
             ((?P<days>\d+)d[a-z]*)?
             ((?P<hours>\d+)h[a-z]*)?
             ((?P<minutes>\d+)m[a-z]*)?
             ((?P<seconds>\d+)s[a-z]*)?
-        ''',
+        """,
         text,
         re.VERBOSE,
     )
@@ -135,7 +137,7 @@ def duration_from_string(text: str) -> pendulum.Duration:
         match,
         f"Couldn't parse {text}",
     )
-    parts = match.groupdict() # type: ignore
+    parts = match.groupdict()  # type: ignore
     clean = {k: int(v) for (k, v) in parts.items() if v}
     ConfigurationError.require_condition(
         clean,
@@ -145,8 +147,8 @@ def duration_from_string(text: str) -> pendulum.Duration:
         return pendulum.duration(**clean)
 
 
-@functools.lru_cache(maxsize=None)
-def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> 'BeskarType':
+@functools.cache
+def current_guard(ctx: Sanic | (SimpleNamespace | None) = None) -> "BeskarType":
     """
     Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
     that is attached to the current sanic app
@@ -160,12 +162,12 @@ def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> 'BeskarTyp
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no guard found
     """
     if isinstance(ctx, Sanic):
-        ctx = getattr(ctx, 'ctx')
+        ctx = ctx.ctx
 
     if not ctx:
         ctx = Sanic.get_app().ctx
 
-    guard: BeskarType = ctx.extensions.get('beskar', None) # type: ignore
+    guard: BeskarType = ctx.extensions.get("beskar", None)  # type: ignore
     BeskarError.require_condition(
         guard is not None,
         "No current guard found; Beskar must be initialized first",
@@ -173,7 +175,7 @@ def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> 'BeskarTyp
     return guard
 
 
-def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
+def app_context_has_token_data(ctx: Sanic | None = None) -> bool:
     """
     Checks if there is already token_data added to the app context
 
@@ -186,7 +188,7 @@ def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
     if not ctx:
         ctx = Sanic.get_app().ctx
 
-    return hasattr(ctx, 'token_data')
+    return hasattr(ctx, "token_data")
 
 
 def add_token_data_to_app_context(token_data: dict) -> None:
@@ -210,7 +212,7 @@ def get_token_data_from_app_context() -> dict:
     :raises: :py:exc:`~sanic_beskar.BeskarError` on missing token
     """
     ctx = Sanic.get_app().ctx
-    token_data = getattr(ctx, 'token_data', {})
+    token_data = getattr(ctx, "token_data", {})
     BeskarError.require_condition(
         token_data is not {},
         """
@@ -230,7 +232,7 @@ def remove_token_data_from_app_context() -> None:
         del ctx.token_data
 
 
-def current_user_id() -> Union[str, None]:
+def current_user_id() -> str | None:
     """
     This method returns the user id retrieved from token data attached to
     the current sanic app's context
@@ -240,7 +242,7 @@ def current_user_id() -> Union[str, None]:
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no user/token found
     """
     token_data = get_token_data_from_app_context()
-    user_id: str = token_data.get('id', None)
+    user_id: str = token_data.get("id", None)
     BeskarError.require_condition(
         user_id is not None,
         "Could not fetch an id for the current user",
@@ -248,7 +250,7 @@ def current_user_id() -> Union[str, None]:
     return user_id
 
 
-async def generate_totp_qr(user_totp: str) -> 'QRCode':
+async def generate_totp_qr(user_totp: str) -> "QRCode":
     """
     This is a helper utility to generate a :py:mod:`segno`
     QR code renderer, based upon a supplied `User` TOTP value.
@@ -259,11 +261,13 @@ async def generate_totp_qr(user_totp: str) -> 'QRCode':
     :returns: ``Segno`` object based upon user's stored TOTP configuration
     :rtype: :py:class:`Segno`
     """
-    try: # pragma: no cover
+    try:  # pragma: no cover
         import segno
-    except (ModuleNotFoundError, ImportError) as e: # pragma: no cover
-        raise ConfigurationError("Attempting to generate a TOTP QR code,"
-                                 "but you didn't install the necessary `segno` library!") from e
+    except (ModuleNotFoundError, ImportError) as e:  # pragma: no cover
+        raise ConfigurationError(
+            "Attempting to generate a TOTP QR code,"
+            "but you didn't install the necessary `segno` library!"
+        ) from e
 
     return segno.make(user_totp)
 
@@ -295,11 +299,11 @@ async def current_rolenames() -> set:
     :rtype: set
     """
     token_data = get_token_data_from_app_context()
-    if 'rls' not in token_data:
+    if "rls" not in token_data:
         # This is necessary so our set arithmetic works correctly
-        return set(['non-empty-but-definitely-not-matching-subset'])
+        return set(["non-empty-but-definitely-not-matching-subset"])
 
-    return set(r.strip() for r in token_data['rls'].split(','))
+    return set(r.strip() for r in token_data["rls"].split(","))
 
 
 def current_custom_claims() -> dict:

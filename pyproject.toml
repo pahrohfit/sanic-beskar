@@ -55,13 +55,13 @@ exclude_lines = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 disallow_untyped_defs = true
 show_error_codes = true
 no_implicit_optional = true
 warn_return_any = true
 warn_unused_ignores = true
-exclude = ["example", "docs", "tests"]
+exclude = ["example/", "docs/", "tests/"]
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.13"
@@ -92,3 +92,27 @@ asyncio_mode = "auto"
 #log_cli = "false"
 #log_level = "DEBUG"
 addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
+
+[tool.black]
+line-length = 100
+preview-string-processing = true
+target-version = ['py311']
+include = ['sanic_beskar/', 'tests']
+
+[tool.bandit]
+skips = ['B101']
+exclude_dirs = ['tests/']
+
+[tool.ruff]
+line-length = 100
+target-version = 'py311'
+src = ["sanic_beskar", "tests"]
+ignore = ["E501", "E402", "N818", "A002", "A003", "B904", "N805", "B006", "E712", "S106", "S105", "B028"]
+exclude = [".mypy_cache", ".vscode", ".git", ".pytest_cache", ".github", "__pycache__", "example", "docs", "tests"]
+select = ["E", "F", "B", "W", "I", "N", "UP", "ASYNC", "S", "A", "RSE", "RET"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.per-file-ignores]
+"tests/*.py" = ["S101", "D100", "D102", "D101", "D103", "S311", "D104"]

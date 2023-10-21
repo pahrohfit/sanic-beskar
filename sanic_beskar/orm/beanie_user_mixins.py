@@ -1,9 +1,6 @@
-from typing import Optional, Union
-
-from bson.objectid import ObjectId
-
-from beanie.exceptions import DocumentNotFound
 from beanie import Document, PydanticObjectId
+from beanie.exceptions import DocumentNotFound
+from bson.objectid import ObjectId
 
 
 class BeanieUserMixin(Document):
@@ -23,7 +20,7 @@ class BeanieUserMixin(Document):
     """
 
     @property
-    def identity(self) -> Optional[PydanticObjectId]:
+    def identity(self) -> PydanticObjectId | None:
         """
         *Required Attribute or Property*
 
@@ -62,7 +59,7 @@ class BeanieUserMixin(Document):
             return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Union[object, None]:
+    async def lookup(cls, username: str | None = None, email: str | None = None) -> object | None:
         """
         *Required Method*
 
@@ -81,9 +78,9 @@ class BeanieUserMixin(Document):
         """
         try:
             if username:
-                return await cls.find({'username': username}).first_or_none()
+                return await cls.find({"username": username}).first_or_none()
             if email:
-                return await cls.find({'email': email}).first_or_none()
+                return await cls.find({"email": email}).first_or_none()
 
             return None
 
@@ -91,7 +88,7 @@ class BeanieUserMixin(Document):
             return None
 
     @classmethod
-    async def identify(cls, id: str) -> Optional[str]:
+    async def identify(cls, id: str) -> str | None:
         """
         *Required Attribute or Property*
 
@@ -107,6 +104,6 @@ class BeanieUserMixin(Document):
         :rtype: str, None
         """
         try:
-            return await cls.find({'_id': ObjectId(id)}).first_or_none()
+            return await cls.find({"_id": ObjectId(id)}).first_or_none()
         except DocumentNotFound:
             return None

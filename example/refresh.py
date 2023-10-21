@@ -1,17 +1,14 @@
 import secrets
 import string
 
-from tortoise.contrib.sanic import register_tortoise
-from tortoise.models import Model
-from tortoise import fields
-from tortoise.exceptions import DoesNotExist
-
-from sanic import Sanic, json
-
 import sanic_beskar
+from async_sender import Mail  # type: ignore
+from sanic import Sanic, json
 from sanic_beskar import Beskar
-from async_sender import Mail # type: ignore
-
+from tortoise import fields
+from tortoise.contrib.sanic import register_tortoise
+from tortoise.exceptions import DoesNotExist
+from tortoise.models import Model
 
 _guard = Beskar()
 _mail = Mail()
@@ -30,7 +27,7 @@ class User(Model):
     username = fields.CharField(unique=True, max_length=255)
     password = fields.CharField(max_length=255)
     email = fields.CharField(max_length=255, unique=True)
-    roles = fields.CharField(max_length=255, default='')
+    roles = fields.CharField(max_length=255, default="")
     is_active = fields.BooleanField(default=True)
 
     def __str__(self):
@@ -105,50 +102,58 @@ def create_app():
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
     """
-    sanic_app = Sanic('sanic-testing')
+    sanic_app = Sanic("sanic-testing")
     # In order to process more requests after initializing the app,
     # we have to set degug to false so that it will not check to see if there
     # has already been a request before a setup function
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
     # sanic-beskar config
-    sanic_app.config.SECRET_KEY = ''.join(secrets.choice(string.ascii_letters) for i in range(15))
+    sanic_app.config.SECRET_KEY = "".join(secrets.choice(string.ascii_letters) for i in range(15))
     sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"seconds": 30}
     sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"minutes": 2}
 
-    sanic_app.config.TOKEN_PLACES = ['header', 'cookie']
+    sanic_app.config.TOKEN_PLACES = ["header", "cookie"]
 
     _guard.init_app(sanic_app, User)
     sanic_app.ctx.mail = _mail
 
     register_tortoise(
         sanic_app,
-        db_url='sqlite://:memory:',
-        modules={"models": ['__main__']},
+        db_url="sqlite://:memory:",
+        modules={"models": ["__main__"]},
         generate_schemas=True,
     )
 
     # Add users for the example
-    @sanic_app.listener('before_server_start')
+    @sanic_app.listener("before_server_start")
     async def populate_db(*args):
-        await User.create(username="the_dude",
-                          email="the_dude@beskar.test.io",
-                          password=_guard.hash_password("abides"),)
+        await User.create(
+            username="the_dude",
+            email="the_dude@beskar.test.io",
+            password=_guard.hash_password("abides"),
+        )
 
-        await User.create(username="Walter",
-                          email="walter@beskart.io",
-                          password=_guard.hash_password("calmerthanyouare"),
-                          roles="admin",)
+        await User.create(
+            username="Walter",
+            email="walter@beskart.io",
+            password=_guard.hash_password("calmerthanyouare"),
+            roles="admin",
+        )
 
-        await User.create(username="Donnie",
-                          email="donnie@beskar.test.io",
-                          password=_guard.hash_password("iamthewalrus"),
-                          roles="operator",)
+        await User.create(
+            username="Donnie",
+            email="donnie@beskar.test.io",
+            password=_guard.hash_password("iamthewalrus"),
+            roles="operator",
+        )
 
-        await User.create(username="Maude",
-                          password=_guard.hash_password("andthorough"),
-                          email="maude@beskar.test.io",
-                          roles="operator,admin",)
+        await User.create(
+            username="Maude",
+            password=_guard.hash_password("andthorough"),
+            email="maude@beskar.test.io",
+            roles="operator,admin",
+        )
 
     # Set up some routes for the example
     @sanic_app.route("/login", methods=["POST"])
@@ -180,7 +185,7 @@ def create_app():
         user = await sanic_beskar.current_user()
         return json({"message": f"protected endpoint (allowed user {user.username})"})
 
-    @sanic_app.route('/refresh', methods=['GET'])
+    @sanic_app.route("/refresh", methods=["GET"])
     async def refresh(*args):
         """
         Refreshes an existing token by creating a new one that is a copy of the old
@@ -191,13 +196,12 @@ def create_app():
         """
         old_token = _guard.read_token_from_header()
         new_token = await _guard.refresh_token(old_token)
-        ret = {'access_token': new_token}
+        ret = {"access_token": new_token}
         return json(ret, 200)
 
-
-    @sanic_app.route('/disable_user', methods=['POST'])
+    @sanic_app.route("/disable_user", methods=["POST"])
     @sanic_beskar.auth_required
-    @sanic_beskar.roles_required('admin')
+    @sanic_beskar.roles_required("admin")
     async def disable_user(request):
         """
         Disables a user in the data store
@@ -207,7 +211,7 @@ def create_app():
               -d '{"username":"Walter"}'
         """
         req = request.json
-        usr = await User.lookup(username=req.get('username', None))
+        usr = await User.lookup(username=req.get("username", None))
         usr.is_active = False
         await usr.save(updated_fields=["is_active"])
         return json({"message": f"disabled user {usr.username}"})

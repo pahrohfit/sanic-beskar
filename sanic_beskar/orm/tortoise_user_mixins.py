@@ -1,7 +1,4 @@
-from typing import Optional, Union
-
 from bson.objectid import ObjectId
-
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
 
@@ -23,7 +20,7 @@ class TortoiseUserMixin(Model):
     """
 
     @property
-    def identity(self) -> Union[str, ObjectId]:
+    def identity(self) -> str | ObjectId:
         """
         *Required Attribute or Property*
 
@@ -34,10 +31,10 @@ class TortoiseUserMixin(Model):
         :returns: Provided :py:class:`User.id`
         :rtype: str
         """
-        return getattr(self, 'id') # type: ignore
+        return self.id  # type: ignore
 
     @property
-    def rolenames(self) -> Optional[list]:
+    def rolenames(self) -> list | None:
         """
         *Required Attribute or Property*
 
@@ -56,12 +53,12 @@ class TortoiseUserMixin(Model):
         """
 
         try:
-            return self.roles.split(",") # type: ignore
+            return self.roles.split(",")  # type: ignore
         except Exception:
             return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Optional[object]:
+    async def lookup(cls, username: str | None = None, email: str | None = None) -> object | None:
         """
         *Required Method*
 
@@ -88,7 +85,7 @@ class TortoiseUserMixin(Model):
             return None
 
     @classmethod
-    async def identify(cls, id: ObjectId) -> Optional[object]:
+    async def identify(cls, id: ObjectId) -> object | None:
         """
         *Required Attribute or Property*
 

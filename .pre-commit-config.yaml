@@ -1,0 +1,63 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: [--config=./pyproject.toml]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.292
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: [--config=./pyproject.toml]
+
+  #- repo: local
+  #  hooks:
+  #    - id: mypy
+  #      name: mypy
+  #      # or `entry: poetry run mypy`, but perhaps both are the same
+  #      entry: poetry run mypy
+  #      require_serial: true
+  #      # From the docs it is not clear the difference between `language: python` VS `language: system`
+  #      language: system
+  #      types: [ python ]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: '1.7.5'
+    hooks:
+      - id: bandit
+        name: bandit
+        description: 'Bandit is a tool for finding common security issues in Python code'
+        entry: bandit
+        language: python
+        language_version: python3
+        types: [python]
+        require_serial: true
+        args: ['--configfile=./pyproject.toml']
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files # prevents giant files from being committed.
+      - id: check-case-conflict # checks for files that would conflict in case-insensitive filesystems.
+      - id: check-merge-conflict # checks for files that contain merge conflict strings.
+      - id: check-yaml # checks yaml files for parseable syntax.
+      - id: detect-private-key # detects the presence of private keys.
+      - id: end-of-file-fixer # ensures that a file is either empty, or ends with one newline.
+      - id: fix-byte-order-marker # removes utf-8 byte order marker.
+      - id: mixed-line-ending # replaces or checks mixed line ending.
+      - id: trailing-whitespace # trims trailing whitespace.
+
+  - repo: https://github.com/sirosen/check-jsonschema
+    rev: 0.27.0
+    hooks:
+      - id: check-github-actions
+      - id: check-github-workflows

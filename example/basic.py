@@ -1,17 +1,14 @@
 import secrets
 import string
 
-from tortoise.contrib.sanic import register_tortoise
-from tortoise.models import Model
-from tortoise import fields
-from tortoise.exceptions import DoesNotExist
-
-from sanic import Sanic, json
-
 import sanic_beskar
+from async_sender import Mail  # type: ignore
+from sanic import Sanic, json
 from sanic_beskar import Beskar
-from async_sender import Mail # type: ignore
-
+from tortoise import fields
+from tortoise.contrib.sanic import register_tortoise
+from tortoise.exceptions import DoesNotExist
+from tortoise.models import Model
 
 _guard = Beskar()
 _mail = Mail()
@@ -30,7 +27,7 @@ class User(Model):
     username = fields.CharField(unique=True, max_length=255)
     password = fields.CharField(max_length=255)
     email = fields.CharField(max_length=255, unique=True)
-    roles = fields.CharField(max_length=255, default='')
+    roles = fields.CharField(max_length=255, default="")
     is_active = fields.BooleanField(default=True)
 
     def __str__(self):
@@ -105,14 +102,14 @@ def create_app():
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
     """
-    sanic_app = Sanic('sanic-testing')
+    sanic_app = Sanic("sanic-testing")
     # In order to process more requests after initializing the app,
     # we have to set degug to false so that it will not check to see if there
     # has already been a request before a setup function
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
     # sanic-beskar config
-    sanic_app.config.SECRET_KEY = ''.join(secrets.choice(string.ascii_letters) for i in range(15))
+    sanic_app.config.SECRET_KEY = "".join(secrets.choice(string.ascii_letters) for i in range(15))
     sanic_app.config["TOKEN_ACCESS_LIFESPAN"] = {"hours": 24}
     sanic_app.config["TOKEN_REFRESH_LIFESPAN"] = {"days": 30}
 
@@ -121,32 +118,40 @@ def create_app():
 
     register_tortoise(
         sanic_app,
-        db_url='sqlite://:memory:',
-        modules={"models": ['__main__']},
+        db_url="sqlite://:memory:",
+        modules={"models": ["__main__"]},
         generate_schemas=True,
     )
 
     # Add users for the example
-    @sanic_app.listener('before_server_start')
+    @sanic_app.listener("before_server_start")
     async def populate_db(*args):
-        await User.create(username="the_dude",
-                          email="the_dude@beskar.test.io",
-                          password=_guard.hash_password("abides"),)
+        await User.create(
+            username="the_dude",
+            email="the_dude@beskar.test.io",
+            password=_guard.hash_password("abides"),
+        )
 
-        await User.create(username="Walter",
-                          email="walter@beskar.test.io",
-                          password=_guard.hash_password("calmerthanyouare"),
-                          roles="admin",)
+        await User.create(
+            username="Walter",
+            email="walter@beskar.test.io",
+            password=_guard.hash_password("calmerthanyouare"),
+            roles="admin",
+        )
 
-        await User.create(username="Donnie",
-                          email="donnie@beskar.test.io",
-                          password=_guard.hash_password("iamthewalrus"),
-                          roles="operator",)
+        await User.create(
+            username="Donnie",
+            email="donnie@beskar.test.io",
+            password=_guard.hash_password("iamthewalrus"),
+            roles="operator",
+        )
 
-        await User.create(username="Maude",
-                          password=_guard.hash_password("andthorough"),
-                          email="maude@beskar.test.io",
-                          roles="operator,admin",)
+        await User.create(
+            username="Maude",
+            password=_guard.hash_password("andthorough"),
+            email="maude@beskar.test.io",
+            roles="operator,admin",
+        )
 
     # Set up some routes for the example
     @sanic_app.route("/login", methods=["POST"])
@@ -189,7 +194,9 @@ def create_app():
               -H "Authorization: Bearer <your_token>"
         """
         user = await sanic_beskar.current_user()
-        return json({"message": f"protected_admin_required endpoint (allowed user {user.username})"})
+        return json(
+            {"message": f"protected_admin_required endpoint (allowed user {user.username})"}
+        )
 
     @sanic_app.route("/protected_operator_accepted")
     @sanic_beskar.roles_accepted("operator", "admin")
@@ -203,7 +210,9 @@ def create_app():
              -H "Authorization: Bearer <your_token>"
         """
         user = await sanic_beskar.current_user()
-        return json({"message": f"protected_operator_accepted endpoint (allowed usr {user.username}"})
+        return json(
+            {"message": f"protected_operator_accepted endpoint (allowed usr {user.username}"}
+        )
 
     return sanic_app
 

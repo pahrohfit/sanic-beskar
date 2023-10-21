@@ -1,23 +1,20 @@
-from sys import path as sys_path
 from os import path as os_path
+from sys import path as sys_path
+
 sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
 
-from ujson import dumps as ujson_dumps, loads as ujson_loads
-
 import sanic_beskar
-
-from models import User
-
+from async_sender import Mail  # type: ignore
 from sanic import Sanic, json
 from sanic.log import logger
 from sanic.views import HTTPMethodView
-
-from tortoise.contrib.sanic import register_tortoise
-
 from sanic_beskar import Beskar
 from sanic_beskar.exceptions import BeskarError
-from async_sender import Mail # type: ignore
+from tortoise.contrib.sanic import register_tortoise
+from ujson import dumps as ujson_dumps
+from ujson import loads as ujson_loads
 
+from models import User
 
 _guard = Beskar()
 _mail = Mail()
@@ -28,26 +25,27 @@ def create_app(db_path=None):
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
     """
-    sanic_app = Sanic('sanic-testing', dumps=ujson_dumps, loads=ujson_loads)
+    sanic_app = Sanic("sanic-testing", dumps=ujson_dumps, loads=ujson_loads)
     # In order to process more requests after initializing the app,
     # we have to set degug to false so that it will not check to see if there
     # has already been a request before a setup function
-    sanic_app.state.mode = 'Mode.DEBUG'
+    sanic_app.state.mode = "Mode.DEBUG"
     sanic_app.config.TESTING = True
-    sanic_app.config['PYTESTING'] = True
+    sanic_app.config["PYTESTING"] = True
     sanic_app.config.SECRET_KEY = "top secret 4nd comPLex radness!!"
 
     sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
 
-
     _guard.init_app(sanic_app, User)
-    _guard.rbac_definitions = {'sooper_access_right': ['admin', 'uber_admin'],
-                               'lame_access_right': ['not_admin'],}
+    _guard.rbac_definitions = {
+        "sooper_access_right": ["admin", "uber_admin"],
+        "lame_access_right": ["not_admin"],
+    }
     sanic_app.ctx.mail = _mail
 
     @sanic_app.route("/unprotected")
     def unprotected(request):
-        return json({'message': "success"})
+        return json({"message": "success"})
 
     @sanic_app.route("/kinda_protected")
     @sanic_beskar.auth_accepted
@@ -72,7 +70,7 @@ def create_app(db_path=None):
 
     @sanic_app.route("/rbac_protected")
     @sanic_beskar.auth_required
-    @sanic_beskar.rights_required('sooper_access_right')
+    @sanic_beskar.rights_required("sooper_access_right")
     async def rights_protected(request):
         return json({"message": "success"})
 
@@ -115,12 +113,12 @@ def create_app(db_path=None):
         return json({"message": "fuck"})
 
     if not db_path:
-        db_path = 'sqlite://:memory:'
-    logger.info(f'App db_path: {db_path}')
+        db_path = "sqlite://:memory:"
+    logger.info(f"App db_path: {db_path}")
     register_tortoise(
         sanic_app,
         db_url=db_path,
-        modules={"models": ['models']},
+        modules={"models": ["models"]},
         generate_schemas=True,
     )
 

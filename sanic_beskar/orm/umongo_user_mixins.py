@@ -1,9 +1,8 @@
-from typing import Optional
 from bson.objectid import ObjectId
+from umongo import Document  # type: ignore
 
 # umongo is missing type hints at this time
-from umongo.exceptions import NotCreatedError # type: ignore
-from umongo import Document # type: ignore
+from umongo.exceptions import NotCreatedError  # type: ignore
 
 
 class UmongoUserMixin(Document):
@@ -23,7 +22,7 @@ class UmongoUserMixin(Document):
     """
 
     @property
-    def rolenames(self) -> Optional[list]:
+    def rolenames(self) -> list | None:
         """
         *Required Attribute or Property*
 
@@ -41,12 +40,12 @@ class UmongoUserMixin(Document):
         :rtype: list
         """
         try:
-            return self.roles.split(",") # type: ignore
+            return self.roles.split(",")  # type: ignore
         except Exception:
             return []
 
     @classmethod
-    async def lookup(cls, username: Optional[str] = None, email: Optional[str] = None) -> Optional[Document]:
+    async def lookup(cls, username: str | None = None, email: str | None = None) -> Document | None:
         """
         *Required Method*
 
@@ -65,15 +64,15 @@ class UmongoUserMixin(Document):
         """
         try:
             if username:
-                return await cls.find_one({'username': username})
+                return await cls.find_one({"username": username})
             if email:
-                return await cls.find_one({'email': email})
+                return await cls.find_one({"email": email})
             return None
         except NotCreatedError:
             return None
 
     @classmethod
-    async def identify(cls, id: str) -> Optional[Document]:
+    async def identify(cls, id: str) -> Document | None:
         """
         *Required Attribute or Property*
 
@@ -89,7 +88,7 @@ class UmongoUserMixin(Document):
         :rtype: str, None
         """
         try:
-            return await cls.find_one({'id': ObjectId(id)})
+            return await cls.find_one({"id": ObjectId(id)})
         except NotCreatedError:
             return None
 

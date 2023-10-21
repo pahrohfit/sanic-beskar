@@ -1,49 +1,45 @@
 import warnings
-import pendulum
-import plummet # type: ignore
-import pytest
-import ujson
-
-from httpx import Cookies
 
 import passlib
-
+import pendulum
+import plummet  # type: ignore
+import pytest
+import ujson
+from httpx import Cookies
 from passlib.exc import (
     InvalidTokenError,
     MalformedTokenError,
     UsedTokenError,
 )
-
 from sanic.log import logger
-
 from sanic_beskar import Beskar
-from sanic_beskar.exceptions import (
-    AuthenticationError,
-    BlacklistedError,
-    ClaimCollisionError,
-    EarlyRefreshError,
-    ExpiredAccessError,
-    ExpiredRefreshError,
-    InvalidUserError,
-    MissingClaimError,
-    MissingUserError,
-    MisusedRegistrationToken,
-    MisusedResetToken,
-    BeskarError,
-    LegacyScheme,
-    TOTPRequired,
-    ConfigurationError,
-)
 from sanic_beskar.constants import (
-    AccessType,
     DEFAULT_TOKEN_ACCESS_LIFESPAN,
-    DEFAULT_TOKEN_REFRESH_LIFESPAN,
     DEFAULT_TOKEN_HEADER_NAME,
     DEFAULT_TOKEN_HEADER_TYPE,
+    DEFAULT_TOKEN_REFRESH_LIFESPAN,
     IS_REGISTRATION_TOKEN_CLAIM,
     IS_RESET_TOKEN_CLAIM,
     REFRESH_EXPIRATION_CLAIM,
     VITAM_AETERNUM,
+    AccessType,
+)
+from sanic_beskar.exceptions import (
+    AuthenticationError,
+    BeskarError,
+    BlacklistedError,
+    ClaimCollisionError,
+    ConfigurationError,
+    EarlyRefreshError,
+    ExpiredAccessError,
+    ExpiredRefreshError,
+    InvalidUserError,
+    LegacyScheme,
+    MissingClaimError,
+    MissingUserError,
+    MisusedRegistrationToken,
+    MisusedResetToken,
+    TOTPRequired,
 )
 
 
@@ -83,7 +79,7 @@ class TestBeskar:
         supplied. It also verifies that an AuthenticationError is raised
         when a valid user/password combination are not supplied.
         """
-        the_dude = await mock_users(username='the_dude', password='abides')
+        the_dude = await mock_users(username="the_dude", password="abides")
 
         loaded_user = await user_class.lookup(username=the_dude.username)
         authed_user = await default_guard.authenticate("the_dude", "abides")
@@ -200,9 +196,7 @@ class TestBeskar:
         }
         with pytest.raises(MissingClaimError) as err_info:
             guard._validate_token_data(data, AccessType.access)
-        assert "missing {}".format(REFRESH_EXPIRATION_CLAIM) in str(
-            err_info.value
-        )
+        assert f"missing {REFRESH_EXPIRATION_CLAIM}" in str(err_info.value)
 
     def test__validate_token_data__fails_when_access_has_expired(
         self,
@@ -214,11 +208,9 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
         }
-        with plummet.frozen_time('2017-05-21 19:54:32'):
+        with plummet.frozen_time("2017-05-21 19:54:32"):
             with pytest.raises(ExpiredAccessError):
                 guard._validate_token_data(data, AccessType.access)
 
@@ -232,11 +224,9 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
         }
-        with plummet.frozen_time('2017-05-21 19:54:28'):
+        with plummet.frozen_time("2017-05-21 19:54:28"):
             with pytest.raises(EarlyRefreshError):
                 guard._validate_token_data(data, AccessType.refresh)
 
@@ -250,11 +240,9 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
         }
-        with plummet.frozen_time('2017-05-21 20:54:32'):
+        with plummet.frozen_time("2017-05-21 20:54:32"):
             with pytest.raises(ExpiredRefreshError):
                 guard._validate_token_data(data, AccessType.refresh)
 
@@ -268,12 +256,10 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
             IS_REGISTRATION_TOKEN_CLAIM: True,
         }
-        with plummet.frozen_time('2017-05-21 19:54:28'):
+        with plummet.frozen_time("2017-05-21 19:54:28"):
             with pytest.raises(MisusedRegistrationToken):
                 guard._validate_token_data(data, AccessType.access)
 
@@ -287,12 +273,10 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
             IS_REGISTRATION_TOKEN_CLAIM: True,
         }
-        with plummet.frozen_time('2017-05-21 19:54:32'):
+        with plummet.frozen_time("2017-05-21 19:54:32"):
             with pytest.raises(MisusedRegistrationToken):
                 guard._validate_token_data(data, AccessType.refresh)
 
@@ -306,12 +290,10 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
             IS_RESET_TOKEN_CLAIM: True,
         }
-        with plummet.frozen_time('2017-05-21 19:54:28'):
+        with plummet.frozen_time("2017-05-21 19:54:28"):
             with pytest.raises(MisusedResetToken):
                 guard._validate_token_data(data, AccessType.access)
 
@@ -325,11 +307,9 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
         }
-        with plummet.frozen_time('2017-05-21 19:54:28'):
+        with plummet.frozen_time("2017-05-21 19:54:28"):
             guard._validate_token_data(data, AccessType.access)
 
     def test__validate_token_data__succeeds_when_refreshing(
@@ -342,11 +322,9 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
         }
-        with plummet.frozen_time('2017-05-21 19:54:32'):
+        with plummet.frozen_time("2017-05-21 19:54:32"):
             guard._validate_token_data(data, AccessType.refresh)
 
     def test__validate_token_data__succeeds_when_registering(
@@ -359,15 +337,15 @@ class TestBeskar:
             "jti": "jti",
             "id": 1,
             "exp": pendulum.parse("2017-05-21 19:54:30").int_timestamp,
-            REFRESH_EXPIRATION_CLAIM: pendulum.parse(
-                "2017-05-21 20:54:30"
-            ).int_timestamp,
+            REFRESH_EXPIRATION_CLAIM: pendulum.parse("2017-05-21 20:54:30").int_timestamp,
             IS_REGISTRATION_TOKEN_CLAIM: True,
         }
-        with plummet.frozen_time('2017-05-21 19:54:28'):
+        with plummet.frozen_time("2017-05-21 19:54:28"):
             guard._validate_token_data(data, AccessType.register)
 
-    async def test_encode_token(self, app, validating_user_class, mock_users, default_guard, no_token_validation):
+    async def test_encode_token(
+        self, app, validating_user_class, mock_users, default_guard, no_token_validation
+    ):
         """
         This test::
             * verifies that the encode_token correctly encodes token
@@ -384,17 +362,14 @@ class TestBeskar:
               claims
         """
         the_dude = await mock_users(username="the_dude", password="abides", roles="admin,operator")
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             logger.critical(f"Token Type: {default_guard.token_provider}")
             token = await default_guard.encode_token(the_dude)
             token_data = await default_guard.extract_token(token)
 
             assert token_data["iat"] == moment.int_timestamp
-            assert (
-                token_data["exp"]
-                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
-            )
+            assert token_data["exp"] == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
@@ -404,7 +379,7 @@ class TestBeskar:
 
         override_access_lifespan = pendulum.Duration(minutes=1)
         override_refresh_lifespan = pendulum.Duration(hours=1)
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_token(
                 the_dude,
@@ -414,10 +389,7 @@ class TestBeskar:
             token_data = await default_guard.extract_token(token)
 
             assert token_data["iat"] == moment.int_timestamp
-            assert (
-                token_data["exp"]
-                == (moment + override_access_lifespan).int_timestamp
-            )
+            assert token_data["exp"] == (moment + override_access_lifespan).int_timestamp
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
@@ -427,7 +399,7 @@ class TestBeskar:
 
         override_access_lifespan = pendulum.Duration(hours=1)
         override_refresh_lifespan = pendulum.Duration(minutes=1)
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_token(
                 the_dude,
@@ -460,7 +432,7 @@ class TestBeskar:
         expected_message = "The user is not valid or has had access revoked"
         assert expected_message in str(err_info.value)
 
-        moment = plummet.momentize('2018-08-18 08:55:12')
+        moment = plummet.momentize("2018-08-18 08:55:12")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_token(
                 the_dude,
@@ -469,10 +441,7 @@ class TestBeskar:
             )
             token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
-            assert (
-                token_data["exp"]
-                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
-            )
+            assert token_data["exp"] == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
@@ -493,17 +462,14 @@ class TestBeskar:
         token data based on a user instance. Also verifies that the lifespan is
         set to the constant VITAM_AETERNUM
         """
-        the_dude = await mock_users(username='the_dude', roles="admin,operator")
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        the_dude = await mock_users(username="the_dude", roles="admin,operator")
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_eternal_token(the_dude)
             token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
             assert token_data["exp"] == (moment + VITAM_AETERNUM).int_timestamp
-            assert (
-                token_data[REFRESH_EXPIRATION_CLAIM]
-                == (moment + VITAM_AETERNUM).int_timestamp
-            )
+            assert token_data[REFRESH_EXPIRATION_CLAIM] == (moment + VITAM_AETERNUM).int_timestamp
             assert token_data["id"] == the_dude.id
 
     async def test_refresh_token(
@@ -534,11 +500,9 @@ class TestBeskar:
               payload are also packaged in the new token's payload
         """
 
-        the_dude = await mock_users(username="the_dude",
-                                    password="abides",
-                                    roles="admin,operator")
+        the_dude = await mock_users(username="the_dude", password="abides", roles="admin,operator")
 
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_token(the_dude)
         new_moment = (
@@ -551,8 +515,7 @@ class TestBeskar:
             new_token_data = await default_guard.extract_token(new_token)
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
-                new_token_data["exp"]
-                == (new_moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
+                new_token_data["exp"] == (new_moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
@@ -562,7 +525,7 @@ class TestBeskar:
             assert new_token_data["rls"] == "admin,operator"
 
         moment = plummet.momentize("2017-05-21 18:39:55")
-        with plummet.frozen_time('2017-05-21 18:39:55'):
+        with plummet.frozen_time("2017-05-21 18:39:55"):
             token = await default_guard.encode_token(the_dude)
         new_moment = (
             pendulum.parse("2017-05-21 18:39:55")
@@ -575,12 +538,9 @@ class TestBeskar:
                 override_access_lifespan=pendulum.Duration(hours=2),
             )
             new_token_data = await default_guard.extract_token(new_token)
-            assert (
-                new_token_data["exp"]
-                == (new_moment + pendulum.Duration(hours=2)).int_timestamp
-            )
+            assert new_token_data["exp"] == (new_moment + pendulum.Duration(hours=2)).int_timestamp
 
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_token(
                 the_dude,
@@ -593,27 +553,24 @@ class TestBeskar:
                 token,
                 override_access_lifespan=pendulum.Duration(hours=2),
             )
-            logger.critical(f'new_token: {new_token}')
+            logger.critical(f"new_token: {new_token}")
             new_token_data = await default_guard.extract_token(new_token)
             logger.critical(f"new_token_data: {new_token_data}")
-            assert (
-                new_token_data["exp"]
-                == new_token_data[REFRESH_EXPIRATION_CLAIM]
-            )
+            assert new_token_data["exp"] == new_token_data[REFRESH_EXPIRATION_CLAIM]
 
-        expiring_interval = DEFAULT_TOKEN_ACCESS_LIFESPAN + pendulum.Duration(
-            minutes=1
-        )
+        expiring_interval = DEFAULT_TOKEN_ACCESS_LIFESPAN + pendulum.Duration(minutes=1)
 
         validating_guard = Beskar(app, validating_user_class)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             validating_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)
-        brandt = await mock_users(username="brandt",
-                                  password="can't watch",
-                                  guard_name=validating_guard,
-                                  class_name=validating_user_class)
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        brandt = await mock_users(
+            username="brandt",
+            password="can't watch",
+            guard_name=validating_guard,
+            class_name=validating_user_class,
+        )
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             token = await validating_guard.encode_token(brandt)
         new_moment = moment + expiring_interval
@@ -628,12 +585,10 @@ class TestBeskar:
         expected_message = "The user is not valid or has had access revoked"
         assert expected_message in str(err_info.value)
 
-        expiring_interval = DEFAULT_TOKEN_ACCESS_LIFESPAN + pendulum.Duration(
-            minutes=1
-        )
+        expiring_interval = DEFAULT_TOKEN_ACCESS_LIFESPAN + pendulum.Duration(minutes=1)
 
         bunny = await mock_users(username="bunny", guard_name=default_guard)
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_token(bunny)
         await bunny.delete()
@@ -644,7 +599,7 @@ class TestBeskar:
         expected_message = "Could not find the requested user"
         assert expected_message in str(err_info.value)
 
-        moment = plummet.momentize('2018-08-14 09:05:24')
+        moment = plummet.momentize("2018-08-14 09:05:24")
         with plummet.frozen_time(moment):
             token = await default_guard.encode_token(
                 the_dude,
@@ -661,8 +616,7 @@ class TestBeskar:
             new_token_data = await default_guard.extract_token(new_token)
             assert new_token_data["iat"] == new_moment.int_timestamp
             assert (
-                new_token_data["exp"]
-                == (new_moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
+                new_token_data["exp"] == (new_moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             )
             assert (
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
@@ -683,11 +637,11 @@ class TestBeskar:
         request's header using the configuration settings for header name and
         type
         """
-        the_dude = await mock_users(username='the_dude', password='abides', roles='admin,operator')
+        the_dude = await mock_users(username="the_dude", password="abides", roles="admin,operator")
 
-        with plummet.frozen_time('2017-05-21 18:39:55'):
+        with plummet.frozen_time("2017-05-21 18:39:55"):
             token = await default_guard.encode_token(the_dude)
-            logger.critical(f'Token: {token}')
+            logger.critical(f"Token: {token}")
 
         request, _ = await client.get(
             "/unprotected",
@@ -701,23 +655,18 @@ class TestBeskar:
         assert default_guard.read_token(request) == token
         await the_dude.delete()
 
-    async def test_read_token_from_cookie(
-        self, client, mock_users, default_guard
-    ):
+    async def test_read_token_from_cookie(self, client, mock_users, default_guard):
         """
         This test verifies that a token may be properly read from a flask
         request's cookies using the configuration settings for cookie
         """
-        the_dude = await mock_users(username='the_dude', roles='admin,operator')
+        the_dude = await mock_users(username="the_dude", roles="admin,operator")
 
         cookies = Cookies()
-        with plummet.frozen_time('2017-05-21 18:39:55'):
+        with plummet.frozen_time("2017-05-21 18:39:55"):
             token = await default_guard.encode_token(the_dude)
             cookies[default_guard.cookie_name] = token
-            request, _ = await client.get(
-                "/unprotected",
-                cookies=cookies
-            )
+            request, _ = await client.get("/unprotected", cookies=cookies)
 
         assert default_guard.read_token_from_cookie(request) == token
         assert default_guard.read_token(request) == token
@@ -731,9 +680,9 @@ class TestBeskar:
             package a token into a header dict for a specified user
           * verifies that custom claims may be packaged as well
         """
-        the_dude = await mock_users(username='the_dude', roles='admin,operator')
+        the_dude = await mock_users(username="the_dude", roles="admin,operator")
 
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         with plummet.frozen_time(moment):
             header_dict = await default_guard.pack_header_for_user(the_dude)
             token_header = header_dict.get(DEFAULT_TOKEN_HEADER_NAME)
@@ -742,10 +691,7 @@ class TestBeskar:
             token = token.strip()
             token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
-            assert (
-                token_data["exp"]
-                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
-            )
+            assert token_data["exp"] == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
@@ -753,7 +699,7 @@ class TestBeskar:
             assert token_data["id"] == the_dude.id
             assert token_data["rls"] == "admin,operator"
 
-        moment = plummet.momentize('2017-05-21 18:39:55')
+        moment = plummet.momentize("2017-05-21 18:39:55")
         override_access_lifespan = pendulum.Duration(minutes=1)
         override_refresh_lifespan = pendulum.Duration(hours=1)
         with plummet.frozen_time(moment):
@@ -767,17 +713,14 @@ class TestBeskar:
             token = token_header.replace(DEFAULT_TOKEN_HEADER_TYPE, "")
             token = token.strip()
             token_data = await default_guard.extract_token(token)
-            assert (
-                token_data["exp"]
-                == (moment + override_access_lifespan).int_timestamp
-            )
+            assert token_data["exp"] == (moment + override_access_lifespan).int_timestamp
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
             )
             assert token_data["id"] == the_dude.id
 
-        moment = plummet.momentize('2018-08-14 09:08:39')
+        moment = plummet.momentize("2018-08-14 09:08:39")
         with plummet.frozen_time(moment):
             header_dict = await default_guard.pack_header_for_user(
                 the_dude,
@@ -790,10 +733,7 @@ class TestBeskar:
             token = token.strip()
             token_data = await default_guard.extract_token(token)
             assert token_data["iat"] == moment.int_timestamp
-            assert (
-                token_data["exp"]
-                == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
-            )
+            assert token_data["exp"] == (moment + DEFAULT_TOKEN_ACCESS_LIFESPAN).int_timestamp
             assert (
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
@@ -825,7 +765,7 @@ class TestBeskar:
         app.config["BESKAR_RESET_ENDPOINT"] = "unprotected"
 
         # create our default test user
-        the_dude = await mock_users(username='the_dude', password='blah')
+        the_dude = await mock_users(username="the_dude", password="blah")
 
         # test a bad username
         with pytest.raises(MissingUserError):
@@ -885,7 +825,7 @@ class TestBeskar:
         app.config["BESKAR_CONFIRMATION_ENDPOINT"] = "unprotected"
 
         # create our default test user
-        the_dude = await mock_users(username='the_dude', password='Abides')
+        the_dude = await mock_users(username="the_dude", password="Abides")
 
         notify = await default_guard.send_registration_email(
             "the@dude.com",
@@ -917,23 +857,21 @@ class TestBeskar:
         token may not be refreshed
         """
         # create our default test user
-        the_dude = await mock_users(username='the_dude')
+        the_dude = await mock_users(username="the_dude")
 
         reg_token = await default_guard.encode_token(
             the_dude,
             bypass_user_check=True,
             is_registration_token=True,
         )
-        extracted_user = await default_guard.get_user_from_registration_token(
-            reg_token
-        )
+        extracted_user = await default_guard.get_user_from_registration_token(reg_token)
         assert extracted_user == the_dude
 
         """
            test to ensure a registration token that is expired
                sets off an 'ExpiredAccessError' exception
         """
-        with plummet.frozen_time('2019-01-30 16:30:00'):
+        with plummet.frozen_time("2019-01-30 16:30:00"):
             expired_reg_token = await default_guard.encode_token(
                 the_dude,
                 bypass_user_check=True,
@@ -941,11 +879,9 @@ class TestBeskar:
                 is_registration_token=True,
             )
 
-        with plummet.frozen_time('2019-01-30 16:40:00'):
+        with plummet.frozen_time("2019-01-30 16:40:00"):
             with pytest.raises(ExpiredAccessError):
-                await default_guard.get_user_from_registration_token(
-                    expired_reg_token
-                )
+                await default_guard.get_user_from_registration_token(expired_reg_token)
 
     async def test_validate_and_update(self, app, user_class, default_guard, mock_users):
         """
@@ -957,7 +893,7 @@ class TestBeskar:
         pbkdf2_sha512_password = default_guard.hash_password("pbkdf2_sha512")
 
         # create our default test user
-        the_dude = await mock_users(username='the_dude', password=pbkdf2_sha512_password)
+        the_dude = await mock_users(username="the_dude", password=pbkdf2_sha512_password)
 
         """
         Test the current password is hashed with BESKAR_HASH_SCHEME
@@ -988,9 +924,7 @@ class TestBeskar:
             gets the user entry's password updated and saved.
         """
         the_dude_old_password = the_dude.password
-        updated_dude = await default_guard.verify_and_update(
-            the_dude, "bcrypt_password"
-        )
+        updated_dude = await default_guard.verify_and_update(the_dude, "bcrypt_password")
         assert updated_dude.password != the_dude_old_password
 
         """
@@ -1005,7 +939,9 @@ class TestBeskar:
         # put away your toys
         await the_dude.delete()
 
-    async def test_authenticate_validate_and_update(self, app, user_class, mock_users, default_guard):
+    async def test_authenticate_validate_and_update(
+        self, app, user_class, mock_users, default_guard
+    ):
         """
         This test verifies the authenticate() function, when altered by
         either 'BESKAR_HASH_AUTOUPDATE' or 'BESKAR_HASH_AUTOTEST'
@@ -1015,7 +951,9 @@ class TestBeskar:
         pbkdf2_sha512_password = default_guard.hash_password("start_password")
 
         # create our default test user
-        the_dude = await mock_users(username='fuckyou', email="fuck@you.com", password=pbkdf2_sha512_password)
+        the_dude = await mock_users(
+            username="fuckyou", email="fuck@you.com", password=pbkdf2_sha512_password
+        )
 
         """
         Test the existing model as a baseline
@@ -1061,9 +999,7 @@ class TestBeskar:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             default_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
-        updated_dude = await default_guard.authenticate(
-            the_dude.username, "bcrypt_password"
-        )
+        updated_dude = await default_guard.authenticate(the_dude.username, "bcrypt_password")
         assert updated_dude.password != the_dude_old_password
 
         # put away your toys
@@ -1076,11 +1012,11 @@ class TestBeskar:
         """
 
         with pytest.raises(ConfigurationError):
-            app.config.BESKAR_TOTP_SECRETS_TYPE = 'failwhale'
+            app.config.BESKAR_TOTP_SECRETS_TYPE = "failwhale"
             Beskar(app, totp_user_class)
 
         with pytest.raises(ConfigurationError):
-            Beskar(app, totp_user_class, rbac_populate_hook='failwhale')
+            Beskar(app, totp_user_class, rbac_populate_hook="failwhale")
 
         app.config.BESKAR_TOTP_SECRETS_TYPE = None
         totp_guard = Beskar(app, totp_user_class)
@@ -1090,17 +1026,18 @@ class TestBeskar:
         totp = totp_guard.totp_ctx.new()
 
         # create our default test user
-        the_dude = await mock_users(username='the_dude',
-                                    password='abides',
-                                    class_name=totp_user_class,
-                                    guard_name=totp_guard,
-                                    totp=totp.to_json())
+        the_dude = await mock_users(
+            username="the_dude",
+            password="abides",
+            class_name=totp_user_class,
+            guard_name=totp_guard,
+            totp=totp.to_json(),
+        )
 
         # create our default test user
-        await mock_users(username='the_muggle',
-                         password='human',
-                         class_name=user_class,
-                         guard_name=default_guard)
+        await mock_users(
+            username="the_muggle", password="human", class_name=user_class, guard_name=default_guard
+        )
 
         assert the_dude.totp == totp.to_json()
 
@@ -1109,7 +1046,7 @@ class TestBeskar:
         # verify the token value is good for user `the_dude`
         assert not the_dude.totp_last_counter
         verify_token = totp.verify(token, the_dude.totp, last_counter=the_dude.totp_last_counter)
-        the_dude = await totp_guard.authenticate_totp('the_dude', totp.generate().token)
+        the_dude = await totp_guard.authenticate_totp("the_dude", totp.generate().token)
 
         # test if we are updating our replay prevention cache
         assert verify_token.counter == the_dude.totp_last_counter
@@ -1118,36 +1055,36 @@ class TestBeskar:
         the_dude.totp_last_counter = None
         await the_dude.save(update_fields=["totp_last_counter"])
         assert not the_dude.totp_last_counter
-        the_dude = await totp_guard.authenticate('the_dude', 'abides', totp.generate().token)
+        the_dude = await totp_guard.authenticate("the_dude", "abides", totp.generate().token)
         assert the_dude.totp_last_counter
 
         # verify a proper failure if TOTP not configured for user
-        with pytest.raises(AuthenticationError, match=r'TOTP challenge is not properly configured'):
-            await default_guard.authenticate_totp('the_muggle', 80085)
-        with pytest.raises(AuthenticationError, match=r'TOTP challenge is not properly configured'):
-            await default_guard.authenticate('the_muggle', 'human', 80085)
+        with pytest.raises(AuthenticationError, match=r"TOTP challenge is not properly configured"):
+            await default_guard.authenticate_totp("the_muggle", 80085)
+        with pytest.raises(AuthenticationError, match=r"TOTP challenge is not properly configured"):
+            await default_guard.authenticate("the_muggle", "human", 80085)
 
         # verify a replay failure
         with pytest.raises(UsedTokenError):
             totp.verify(token, the_dude.totp, last_counter=the_dude.totp_last_counter)
         with pytest.raises(UsedTokenError):
-            await totp_guard.authenticate_totp('the_dude', token)
+            await totp_guard.authenticate_totp("the_dude", token)
         with pytest.raises(UsedTokenError):
-            await totp_guard.authenticate('the_dude', 'abides', token)
+            await totp_guard.authenticate("the_dude", "abides", token)
 
         # verify a bad token failure
         with pytest.raises(InvalidTokenError):
             totp.verify(313373, the_dude.totp, last_counter=the_dude.totp_last_counter)
         with pytest.raises(InvalidTokenError):
-            await totp_guard.authenticate_totp('the_dude', 313373)
+            await totp_guard.authenticate_totp("the_dude", 313373)
         with pytest.raises(InvalidTokenError):
-            await totp_guard.authenticate('the_dude', 'abides', 313373)
+            await totp_guard.authenticate("the_dude", "abides", 313373)
 
         # verify a missing token failure
         with pytest.raises(AuthenticationError) as e:
-            await totp_guard.authenticate_totp('the_dude', None)  # Null token provided
+            await totp_guard.authenticate_totp("the_dude", None)  # Null token provided
         with pytest.raises(AuthenticationError) as e:
-            await totp_guard.authenticate('the_dude', 'abides', None)  # No token provided
+            await totp_guard.authenticate("the_dude", "abides", None)  # No token provided
         # the `authenticate` for a TOTP user, not providing `token` is a special return
         assert e.type == TOTPRequired
 
@@ -1155,15 +1092,15 @@ class TestBeskar:
         with pytest.raises(MalformedTokenError):
             totp.verify(8008135, the_dude.totp, last_counter=the_dude.totp_last_counter)
         with pytest.raises(MalformedTokenError):
-            await totp_guard.authenticate_totp('the_dude', 8008135)
+            await totp_guard.authenticate_totp("the_dude", 8008135)
         with pytest.raises(MalformedTokenError):
-            await totp_guard.authenticate('the_dude', 'abides', 8008135)
+            await totp_guard.authenticate("the_dude", "abides", 8008135)
 
-        app.config.BESKAR_TOTP_SECRETS_TYPE = 'failwhale'
+        app.config.BESKAR_TOTP_SECRETS_TYPE = "failwhale"
         with pytest.raises(BeskarError):
             Beskar(app, totp_user_class)
 
-        app.config.BESKAR_TOTP_SECRETS_TYPE = 'string'
+        app.config.BESKAR_TOTP_SECRETS_TYPE = "string"
         app.config.BESKAR_TOTP_SECRETS_DATA = {1: passlib.totp.generate_secret()}
         totp_protected_guard = Beskar(app, totp_user_class)
         totp_protected = totp_protected_guard.totp_ctx.new()
@@ -1172,15 +1109,17 @@ class TestBeskar:
             totp_protected_guard.pwd_ctx.update(pbkdf2_sha512__default_rounds=1)
 
         # create our default test user w/ encrypted TOTP
-        the_protected_dude = await mock_users(username='the_protected_dude',
-                                              password='abides',
-                                              class_name=totp_user_class,
-                                              guard_name=totp_protected_guard,
-                                              totp=totp_protected.to_json())
+        the_protected_dude = await mock_users(
+            username="the_protected_dude",
+            password="abides",
+            class_name=totp_user_class,
+            guard_name=totp_protected_guard,
+            totp=totp_protected.to_json(),
+        )
 
         # ensure we can load the output as json
         the_protected_dude_totp = ujson.loads(the_protected_dude.totp)
         # ensure the key is encrypted
-        assert the_protected_dude_totp.get('enckey')
+        assert the_protected_dude_totp.get("enckey")
         # put away your toys
         await the_dude.delete()
