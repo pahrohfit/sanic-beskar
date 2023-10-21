@@ -1,5 +1,4 @@
 import datetime as dt
-import functools
 import re
 from collections.abc import Iterable
 from types import SimpleNamespace
@@ -147,7 +146,6 @@ def duration_from_string(text: str) -> pendulum.Duration:
         return pendulum.duration(**clean)
 
 
-@functools.cache
 def current_guard(ctx: Sanic | (SimpleNamespace | None) = None) -> "BeskarType":
     """
     Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
