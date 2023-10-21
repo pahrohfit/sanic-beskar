@@ -1,22 +1,20 @@
 from functools import wraps
-from typing import Callable, Any, Union
+from typing import Any, Callable, Union
 
 from sanic import Request
 
 from sanic_beskar.exceptions import (
     BeskarError,
-    MissingRoleError,
     MissingRightError,
+    MissingRoleError,
     MissingToken,
 )
-
-
 from sanic_beskar.utilities import (
-    current_guard,
     add_token_data_to_app_context,
     app_context_has_token_data,
-    remove_token_data_from_app_context,
+    current_guard,
     current_rolenames,
+    remove_token_data_from_app_context,
 )
 
 
@@ -91,6 +89,7 @@ def auth_accepted(method: Callable) -> Callable[..., Any]:
     Returns:
         None: Decorator
     """
+
     @wraps(method)
     async def wrapper(request: Request, *args: tuple, **kwargs: dict) -> Any:
         # TODO: hack to work around class based views
@@ -102,6 +101,7 @@ def auth_accepted(method: Callable) -> Callable[..., Any]:
             return await method(request, *args, **kwargs)
         finally:
             remove_token_data_from_app_context()
+
     return wrapper
 
 
@@ -140,8 +140,7 @@ def roles_required(*required_rolenames: Union[list, set]) -> Callable[..., Any]:
             try:
                 MissingRoleError.require_condition(
                     not {*required_rolenames} - {*(await current_rolenames())},
-                    'This endpoint requires all the following roles: '
-                    f'[{required_rolenames}]',
+                    "This endpoint requires all the following roles: " f"[{required_rolenames}]",
                 )
                 return await method(request, *args, **kwargs)
             finally:
@@ -190,15 +189,14 @@ def rights_required(*required_rights: Union[list, set]) -> Callable[..., Any]:
                 for right in required_rights:
                     BeskarError.require_condition(
                         right in current_guard().rbac_definitions,
-                        'This endpoint requires a right which is not otherwise defined: '
-                        f'[{right}]',
+                        "This endpoint requires a right which is not otherwise defined: "
+                        f"[{right}]",
                     )
                     MissingRightError.require_condition(
                         not {*current_roles}.isdisjoint(
                             {*(current_guard().rbac_definitions[right])}
                         ),
-                        'This endpoint requires all the following rights: '
-                        f'[{required_rights}]',
+                        "This endpoint requires all the following rights: " f"[{required_rights}]",
                     )
                 return await method(request, *args, **kwargs)
             finally:
@@ -239,8 +237,7 @@ def roles_accepted(*accepted_rolenames: Union[list, set]) -> Callable[..., Any]:
             try:
                 MissingRoleError.require_condition(
                     not {*(await current_rolenames())}.isdisjoint(accepted_rolenames),
-                    'This endpoint requires one of the following roles: '
-                    f'[{accepted_rolenames}]',
+                    "This endpoint requires one of the following roles: " f"[{accepted_rolenames}]",
                 )
                 return await method(request, *args, **kwargs)
             finally:

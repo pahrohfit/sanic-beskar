@@ -1,8 +1,7 @@
-from tortoise.models import Model
+from sanic_beskar.orm import TortoiseUserMixin
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
-
-from sanic_beskar.orm import TortoiseUserMixin
+from tortoise.models import Model
 
 
 class User(Model):
@@ -17,7 +16,7 @@ class User(Model):
     username = fields.CharField(unique=True, max_length=255)
     password = fields.CharField(max_length=255)
     email = fields.CharField(max_length=255, unique=True, required=False)
-    roles = fields.CharField(max_length=255, default='')
+    roles = fields.CharField(max_length=255, default="")
     is_active = fields.BooleanField(default=True)
 
     def __str__(self):
@@ -26,7 +25,7 @@ class User(Model):
     @property
     def rolenames(self):
         try:
-            return self.roles.split(',')
+            return self.roles.split(",")
         except Exception:
             return list()
 
@@ -58,7 +57,6 @@ class User(Model):
 
 
 class MixinUser(TortoiseUserMixin):
-
     class Meta:
         table = "MixinUser"
 
@@ -66,11 +64,20 @@ class MixinUser(TortoiseUserMixin):
     username = fields.CharField(unique=True, max_length=255)
     password = fields.CharField(max_length=255)
     email = fields.CharField(max_length=255, unique=True, required=False)
-    roles = fields.CharField(max_length=255, default='')
+    roles = fields.CharField(max_length=255, default="")
+
+
+class NoRolesMixinUser(TortoiseUserMixin):
+    class Meta:
+        table = "NoRolesMixinUser"
+
+    id = fields.IntField(pk=True)
+    username = fields.CharField(unique=True, max_length=255)
+    password = fields.CharField(max_length=255)
+    email = fields.CharField(max_length=255, unique=True, required=False)
 
 
 class ValidatingUser(User):
-
     class Meta:
         table = "ValidatingUser"
 
@@ -78,7 +85,7 @@ class ValidatingUser(User):
     username = fields.CharField(unique=True, max_length=255)
     password = fields.CharField(max_length=255)
     email = fields.CharField(max_length=255, unique=True, required=False)
-    roles = fields.CharField(max_length=255, default='')
+    roles = fields.CharField(max_length=255, default="")
     is_active = fields.BooleanField(default=True)
 
     def is_valid(self):
@@ -86,7 +93,6 @@ class ValidatingUser(User):
 
 
 class TotpUser(User, TortoiseUserMixin):
-
     class Meta:
         table = "TotpUser"
 

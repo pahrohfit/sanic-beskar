@@ -1,12 +1,11 @@
 import textwrap
-import pendulum
-import plummet # type: ignore
 import warnings
 
+import pendulum
+import plummet  # type: ignore
 from httpx import Cookies
-
-from sanic_beskar.exceptions import MissingRoleError, MissingRightError
 from sanic_beskar import Beskar
+from sanic_beskar.exceptions import MissingRightError, MissingRoleError
 
 
 class TestBeskarDecorators:
@@ -35,7 +34,7 @@ class TestBeskarDecorators:
         a valid token, setting the `current_user()`.
         """
 
-        the_dude = await mock_users(username='the_dude')
+        the_dude = await mock_users(username="the_dude")
         # Token is not in header or cookie
         _, response = await client.get(
             "/kinda_protected",
@@ -46,7 +45,7 @@ class TestBeskarDecorators:
         assert response.json["user"] is None
 
         # Token is present and valid
-        with plummet.frozen_time('2017-05-24 10:38:45'):
+        with plummet.frozen_time("2017-05-24 10:38:45"):
             _, response = await client.get(
                 "/kinda_protected",
                 headers=await default_guard.pack_header_for_user(the_dude),
@@ -64,10 +63,9 @@ class TestBeskarDecorators:
         Otherwise, a 401 error occurs with an informative error message.
         """
 
-        the_dude = await mock_users(username='the_dude')
+        the_dude = await mock_users(username="the_dude")
 
-        for route_name in ['/protected_class', '/protected_route']:
-
+        for route_name in ["/protected_class", "/protected_route"]:
             # Token is not in header or cookie
             _, response = await client.get(
                 route_name,
@@ -75,7 +73,7 @@ class TestBeskarDecorators:
             )
 
             exc_msg = textwrap.dedent(
-                    f"""
+                f"""
                     Could not find token in any
                      of the given locations: {default_guard.token_places}
                     """
@@ -93,14 +91,10 @@ class TestBeskarDecorators:
             assert response.status == 401
 
             # Token is expired
-            moment = pendulum.parse('2017-05-24 10:18:45')
+            moment = pendulum.parse("2017-05-24 10:18:45")
             with plummet.frozen_time(moment):
                 headers = await default_guard.pack_header_for_user(the_dude)
-            moment = (
-                moment
-                + default_guard.access_lifespan
-                + pendulum.Duration(seconds=1)
-            )
+            moment = moment + default_guard.access_lifespan + pendulum.Duration(seconds=1)
             with plummet.frozen_time(moment):
                 _, response = await client.get(
                     route_name,
@@ -110,7 +104,7 @@ class TestBeskarDecorators:
                 assert "access permission has expired" in response.json["message"]
 
             # Token is present and valid in header or cookie
-            with plummet.frozen_time('2017-05-24 10:38:45'):
+            with plummet.frozen_time("2017-05-24 10:38:45"):
                 _, response = await client.get(
                     route_name,
                     headers=await default_guard.pack_header_for_user(the_dude),
@@ -134,19 +128,16 @@ class TestBeskarDecorators:
         an explicit @auth_required decorator
         """
 
-        the_dude = await mock_users(username='the_dude')
+        the_dude = await mock_users(username="the_dude")
         # Lacks one of one required roles
         _, response = await client.get(
             "/protected_admin_required",
             headers=await default_guard.pack_header_for_user(the_dude),
         )
         assert response.status == 403
-        assert (
-            "This endpoint requires all the following roles"
-            in response.json["message"]
-        )
+        assert "This endpoint requires all the following roles" in response.json["message"]
 
-        walter = await mock_users(username='walter', roles="admin")
+        walter = await mock_users(username="walter", roles="admin")
         # Has one of one required roles
         _, response = await client.get(
             "/protected_admin_required",
@@ -161,12 +152,9 @@ class TestBeskarDecorators:
         )
         assert response.status == 403
         assert MissingRoleError.__name__ in response.json["message"]
-        assert (
-            "This endpoint requires all the following roles"
-            in response.json["message"]
-        )
+        assert "This endpoint requires all the following roles" in response.json["message"]
 
-        maude = await mock_users(username='maude', roles="operator,admin")
+        maude = await mock_users(username="maude", roles="operator,admin")
         # Has two of two required roles
         _, response = await client.get(
             "/protected_admin_and_operator_required",
@@ -200,7 +188,7 @@ class TestBeskarDecorators:
         supplied, a 401 error occurs with an informative error message.
         """
 
-        the_dude = await mock_users(username='the_dude')
+        the_dude = await mock_users(username="the_dude")
         _, response = await client.get(
             "/protected_class",
             headers=await default_guard.pack_header_for_user(the_dude),
@@ -213,33 +201,30 @@ class TestBeskarDecorators:
         )
         assert response.status == 403
         assert MissingRoleError.__name__ in response.json["message"]
-        assert (
-            "This endpoint requires one of the following roles"
-            in response.json["message"]
-        )
+        assert "This endpoint requires one of the following roles" in response.json["message"]
 
-        walter = await mock_users(username='walter', roles="admin")
+        walter = await mock_users(username="walter", roles="admin")
         _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(walter),
         )
         assert response.status == 200
 
-        donnie = await mock_users(username='donnie', roles="operator")
+        donnie = await mock_users(username="donnie", roles="operator")
         _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(donnie),
         )
         assert response.status == 200
 
-        maude = await mock_users(username='maude', roles="operator,admin")
+        maude = await mock_users(username="maude", roles="operator,admin")
         _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(maude),
         )
         assert response.status == 200
 
-        jesus = await mock_users(username='jesus', roles="admin,god")
+        jesus = await mock_users(username="jesus", roles="admin,god")
         _, response = await client.get(
             "/protected_admin_and_operator_accepted",
             headers=await default_guard.pack_header_for_user(jesus),
@@ -255,8 +240,8 @@ class TestBeskarDecorators:
         """
         from sanic.log import logger
 
-        the_dude = await mock_users(username='the_dude', roles="admin")
-        walter = await mock_users(username='walter', roles="not_admin")
+        the_dude = await mock_users(username="the_dude", roles="admin")
+        walter = await mock_users(username="walter", roles="not_admin")
 
         _, response = await client.get(
             "/rbac_protected",
@@ -271,7 +256,4 @@ class TestBeskarDecorators:
         )
         assert response.status == 403
         assert MissingRightError.__name__ in response.json["message"]
-        assert (
-            "This endpoint requires all the following rights"
-            in response.json["message"]
-        )
+        assert "This endpoint requires all the following rights" in response.json["message"]

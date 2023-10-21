@@ -1,26 +1,26 @@
 from copy import deepcopy
+
 import pytest
-
 from sanic_beskar import Beskar
-
 from sanic_beskar.exceptions import (
-#    AuthenticationError, # TODO: Test this shit
-#    BlacklistedError, # TODO : Test this shit
-#    ClaimCollisionError, # TODO : Test this shit
-#    EarlyRefreshError, # TODO : Test this shit
-#    ExpiredAccessError, # TODO : Test this shit
-#    ExpiredRefreshError, # TODO : Test this shit
-#    InvalidUserError, # TODO : Test this shit
-#    MissingClaimError, # TODO : Test this shit
-#    MissingUserError, # TODO : Test this shit
-#    MisusedRegistrationToken, # TODO : Test this shit
-#    MisusedResetToken, # TODO : Test this shit
+    #    AuthenticationError, # TODO: Test this shit
+    #    BlacklistedError, # TODO : Test this shit
+    #    ClaimCollisionError, # TODO : Test this shit
+    #    EarlyRefreshError, # TODO : Test this shit
+    #    ExpiredAccessError, # TODO : Test this shit
+    #    ExpiredRefreshError, # TODO : Test this shit
+    #    InvalidUserError, # TODO : Test this shit
+    #    MissingClaimError, # TODO : Test this shit
+    #    MissingUserError, # TODO : Test this shit
+    #    MisusedRegistrationToken, # TODO : Test this shit
+    #    MisusedResetToken, # TODO : Test this shit
     BeskarError,
-#    LegacyScheme, # TODO : Test this shit
-#    TOTPRequired, # TODO : Test this shit
+    #    LegacyScheme, # TODO : Test this shit
+    #    TOTPRequired, # TODO : Test this shit
     ConfigurationError,
 )
-#from sanic_beskar.constants import (
+
+# from sanic_beskar.constants import (
 #    AccessType, # TODO : Test this shit
 #    DEFAULT_TOKEN_ACCESS_LIFESPAN, # TODO : Test this shit
 #    DEFAULT_TOKEN_REFRESH_LIFESPAN, # TODO : Test this shit
@@ -30,7 +30,7 @@ from sanic_beskar.exceptions import (
 #    IS_RESET_TOKEN_CLAIM, # TODO : Test this shit
 #    REFRESH_EXPIRATION_CLAIM, # TODO : Test this shit
 #    VITAM_AETERNUM, # TODO : Test this shit
-#)
+# )
 
 
 class TestBeskar:
@@ -138,34 +138,34 @@ class TestBeskar:
         _default_config = deepcopy(app.config)
 
         # Check jacked up SECRET_KEY raises proper error
-        app.config['SECRET_KEY'] = None
+        app.config["SECRET_KEY"] = None
         with pytest.raises(ConfigurationError) as err_info:
             Beskar(app, user_class)
-        assert 'There must be a SECRET_KEY app config setting set' in err_info.value.message
-        app.config['SECRET_KEY'] = 'weak'
+        assert "There must be a SECRET_KEY app config setting set" in err_info.value.message
+        app.config["SECRET_KEY"] = "weak"
         with pytest.raises(ConfigurationError) as err_info:
             Beskar(app, user_class)
-        assert 'your SECRET_KEY is weak in legnth' in err_info.value.message
-        app.config['I_MAKE_POOR_CHOICES'] = True
+        assert "your SECRET_KEY is weak in legnth" in err_info.value.message
+        app.config["I_MAKE_POOR_CHOICES"] = True
         assert Beskar(app, user_class)
 
-        app.config = deepcopy(_default_config) # reset
+        app.config = deepcopy(_default_config)  # reset
         # Check too short of a password length raises proper error
-        app.config['BESKAR_PASSWORD_POLICY'] = {'length': 7}
+        app.config["BESKAR_PASSWORD_POLICY"] = {"length": 7}
         with pytest.raises(ConfigurationError) as err_info:
             Beskar(app, user_class)
-        assert 'your password policy secret key legnth is weak!' in err_info.value.message
-        app.config['I_MAKE_POOR_CHOICES'] = True
+        assert "your password policy secret key legnth is weak!" in err_info.value.message
+        app.config["I_MAKE_POOR_CHOICES"] = True
         assert Beskar(app, user_class)
 
-        app.config = deepcopy(_default_config) # reset
+        app.config = deepcopy(_default_config)  # reset
         # Test bad PASETO version
-        app.config['BESKAR_PASETO_VERSION'] = 99
+        app.config["BESKAR_PASETO_VERSION"] = 99
         with pytest.raises(ConfigurationError) as err_info:
             Beskar(app, user_class)
 
-        app.config = deepcopy(_default_config) # reset
+        app.config = deepcopy(_default_config)  # reset
         # Test weak failed attempt lockout policy
-        app.config['BESKAR_PASSWORD_POLICY'] = {'attempt_lockout': 0}
+        app.config["BESKAR_PASSWORD_POLICY"] = {"attempt_lockout": 0}
         with pytest.warns(UserWarning):
             Beskar(app, user_class)

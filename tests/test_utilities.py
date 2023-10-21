@@ -1,41 +1,38 @@
-from io import StringIO, BytesIO
-from ujson import dumps
-import pytest
+from io import BytesIO, StringIO
 
-from sanic import Sanic
 import pendulum
-
-
-from sanic_beskar.utilities import (
-    add_token_data_to_app_context,
-    app_context_has_token_data,
-    generate_totp_qr,
-    remove_token_data_from_app_context,
-    current_user,
-    current_user_id,
-    current_rolenames,
-    current_custom_claims,
-    duration_from_string,
-    normalize_rbac,
-    is_valid_json,
-    current_guard,
-    get_request,
-)
+import pytest
+from sanic import Sanic
 from sanic_beskar.exceptions import (
     BeskarError,
     ConfigurationError,
 )
+from sanic_beskar.utilities import (
+    add_token_data_to_app_context,
+    app_context_has_token_data,
+    current_custom_claims,
+    current_guard,
+    current_rolenames,
+    current_user,
+    current_user_id,
+    duration_from_string,
+    generate_totp_qr,
+    get_request,
+    is_valid_json,
+    normalize_rbac,
+    remove_token_data_from_app_context,
+)
+from ujson import dumps
 
 
 class TestBeskarUtilities:
-
     def test_app_context_has_token_data(self):
         """
         This test verifies that the app_context_has_token_data method can
         determine if token_data has been added to the app context yet
         """
         assert not app_context_has_token_data()
-        add_token_data_to_app_context({'a': 1})
+        add_token_data_to_app_context({"a": 1})
         assert app_context_has_token_data()
         remove_token_data_from_app_context()
         assert not app_context_has_token_data()
@@ -46,11 +43,11 @@ class TestBeskarUtilities:
         It also verifies that attempting to remove the data if it does not
         exist there does not cause an exception
         """
-        token_data = {'a': 1}
+        token_data = {"a": 1}
         add_token_data_to_app_context(token_data)
         assert Sanic.get_app().ctx.token_data == token_data
         remove_token_data_from_app_context()
-        assert not hasattr(Sanic.get_app().ctx, 'token_data')
+        assert not hasattr(Sanic.get_app().ctx, "token_data")
         remove_token_data_from_app_context()
 
     async def test_current_user_id(self):
@@ -63,9 +60,9 @@ class TestBeskarUtilities:
         add_token_data_to_app_context(token_data)
         with pytest.raises(BeskarError) as err_info:
             await current_user()
-        assert 'Could not fetch an id' in str(err_info.value)
+        assert "Could not fetch an id" in str(err_info.value)
 
-        token_data = {'id': 31}
+        token_data = {"id": 31}
         add_token_data_to_app_context(token_data)
         assert current_user_id() == 31
 
@@ -79,16 +76,16 @@ class TestBeskarUtilities:
         add_token_data_to_app_context(token_data)
         with pytest.raises(BeskarError) as err_info:
             await current_user()
-        assert 'Could not fetch an id' in str(err_info.value)
+        assert "Could not fetch an id" in str(err_info.value)
 
-        token_data = {'id': 31}
+        token_data = {"id": 31}
         add_token_data_to_app_context(token_data)
         with pytest.raises(BeskarError) as err_info:
             await current_user()
-        assert 'Could not identify the current user' in str(err_info.value)
+        assert "Could not identify the current user" in str(err_info.value)
 
         the_dude = await mock_users(username="the_dude", password="Abides", id=13)
-        token_data = {'id': 13}
+        token_data = {"id": 13}
         add_token_data_to_app_context(token_data)
         assert await current_user() == the_dude
 
@@ -100,9 +97,7 @@ class TestBeskarUtilities:
         """
         token_data = {}
         add_token_data_to_app_context(token_data)
-        assert (await current_rolenames()) == set([
-            'non-empty-but-definitely-not-matching-subset'
-        ])
+        assert (await current_rolenames()) == set(["non-empty-but-definitely-not-matching-subset"])
 
         token_data = {"rls": "admin,operator"}
         add_token_data_to_app_context(token_data)
@@ -116,14 +111,14 @@ class TestBeskarUtilities:
         """
         token_data = dict(
             id=13,
-            jti='whatever',
-            duder='brief',
-            el_duderino='not brief',
+            jti="whatever",
+            duder="brief",
+            el_duderino="not brief",
         )
         add_token_data_to_app_context(token_data)
         assert current_custom_claims() == dict(
-            duder='brief',
-            el_duderino='not brief',
+            duder="brief",
+            el_duderino="not brief",
         )
 
     def test_duration_from_string_success(self):
@@ -132,19 +127,19 @@ class TestBeskarUtilities:
         parse a duration from a string with expected formats
         """
         expected_duration = pendulum.duration(days=12, hours=1, seconds=1)
-        computed_duration = duration_from_string('12d1h1s')
+        computed_duration = duration_from_string("12d1h1s")
         assert computed_duration == expected_duration
 
         expected_duration = pendulum.duration(months=1, hours=2, minutes=3)
-        computed_duration = duration_from_string('1 Month 2 Hours 3 minutes')
+        computed_duration = duration_from_string("1 Month 2 Hours 3 minutes")
         assert computed_duration == expected_duration
 
         expected_duration = pendulum.duration(days=1, minutes=2, seconds=3)
-        computed_duration = duration_from_string('1day,2min,3sec')
+        computed_duration = duration_from_string("1day,2min,3sec")
         assert computed_duration == expected_duration
 
         expected_duration = pendulum.duration(months=1, minutes=2)
-        computed_duration = duration_from_string('1mo,2m')
+        computed_duration = duration_from_string("1mo,2m")
         assert computed_duration == expected_duration
 
     def test_duration_from_string_fails(self):
@@ -153,9 +148,9 @@ class TestBeskarUtilities:
         ConfiguationError exception if there was a problem parsing the string
         """
         with pytest.raises(ConfigurationError):
-            duration_from_string('12x1y1z')
+            duration_from_string("12x1y1z")
         with pytest.raises(ConfigurationError):
-            duration_from_string('')
+            duration_from_string("")
 
     async def test_segno_qr_generation(self, default_guard):
         """
@@ -169,8 +164,8 @@ class TestBeskarUtilities:
         qrcode = await generate_totp_qr(totp.to_json())
         assert qrcode
 
-        qrcode.save(kind='png', out=png_out)
-        qrcode.save(kind='txt', out=txt_out)
+        qrcode.save(kind="png", out=png_out)
+        qrcode.save(kind="txt", out=txt_out)
 
         assert png_out != BytesIO()
         assert isinstance(png_out, BytesIO)
@@ -187,18 +182,18 @@ class TestBeskarUtilities:
         """
 
         test_rbac_dump = {
-            'role1': ['righta', 'rightb', 'rightc', 'rightd'],
-            'role2': ['rightc'],
-            'role3': ['rightb', 'righte', 'rightc'],
-            'role4': ['righte', 'righta', 'rightb'],
+            "role1": ["righta", "rightb", "rightc", "rightd"],
+            "role2": ["rightc"],
+            "role3": ["rightb", "righte", "rightc"],
+            "role4": ["righte", "righta", "rightb"],
         }
 
         good_rbac = {
-            'righta': ['role1', 'role4'],
-            'rightb': ['role1', 'role3', 'role4'],
-            'rightc': ['role1', 'role2', 'role3'],
-            'rightd': ['role1'],
-            'righte': ['role3', 'role4'],
+            "righta": ["role1", "role4"],
+            "rightb": ["role1", "role3", "role4"],
+            "rightc": ["role1", "role2", "role3"],
+            "rightd": ["role1"],
+            "righte": ["role3", "role4"],
         }
 
         assert normalize_rbac(test_rbac_dump) == good_rbac
@@ -208,7 +203,7 @@ class TestBeskarUtilities:
         This test verifies we can identify proper JSON.
         """
 
-        assert await is_valid_json(dumps({'foo': 'bar'}))
+        assert await is_valid_json(dumps({"foo": "bar"}))
         assert not await is_valid_json([None])
         assert not await is_valid_json({"foo"})
 
