@@ -68,6 +68,14 @@ class MixinUser(TortoiseUserMixin):
     email = fields.CharField(max_length=255, unique=True, required=False)
     roles = fields.CharField(max_length=255, default='')
 
+class NoRolesMixinUser(TortoiseUserMixin):
+    class Meta:
+        table = "NoRolesMixinUser"
+
+    id = fields.IntField(pk=True)
+    username = fields.CharField(unique=True, max_length=255)
+    password = fields.CharField(max_length=255)
+    email = fields.CharField(max_length=255, unique=True, required=False)
 
 class ValidatingUser(User):
 
