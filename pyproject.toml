@@ -42,6 +42,7 @@ async-sender = ">=2.0.0"
 pytest-xdist = ">=3.0.2"
 tox = ">=4.11.3"
 alt-pytest-asyncio = ">=0.7.2"
+pytest-sugar = "^0.9.7"
 
 [tool.poetry.group.docs.dependencies]
 toml = ">=0.10.2"
