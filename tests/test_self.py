@@ -145,7 +145,7 @@ class TestBeskar:
         app.config["SECRET_KEY"] = "weak"
         with pytest.raises(ConfigurationError) as err_info:
             Beskar(app, user_class)
-        assert "your SECRET_KEY is weak in legnth" in err_info.value.message
+        assert "your SECRET_KEY is weak in length" in err_info.value.message
         app.config["I_MAKE_POOR_CHOICES"] = True
         assert Beskar(app, user_class)
 
@@ -154,7 +154,7 @@ class TestBeskar:
         app.config["BESKAR_PASSWORD_POLICY"] = {"length": 7}
         with pytest.raises(ConfigurationError) as err_info:
             Beskar(app, user_class)
-        assert "your password policy secret key legnth is weak!" in err_info.value.message
+        assert "your password policy secret key length is weak!" in err_info.value.message
         app.config["I_MAKE_POOR_CHOICES"] = True
         assert Beskar(app, user_class)
 

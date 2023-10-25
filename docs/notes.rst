@@ -5,7 +5,7 @@ Refreshing Tokens
 -----------------
 
 One of the keys to proper security with auth tokens is to make sure that they only last
-a finite amont of time. This makes sure that if the token is stolen, it cannot be used
+a finite amount of time. This makes sure that if the token is stolen, it cannot be used
 in perpetuity to gain complete access to the user. However, calls to the database to
 validate a user on every http request would dramatically slow down an application.
 
@@ -15,7 +15,7 @@ fixed amount of time, the database is re-checked to make sure that a user is sti
 allowed access.
 
 At that point in time, a new token is issued with the same claims as the first except
-its refresh lifespan is not extened. This is so that a token cannot be refreshed in
+its refresh lifespan is not extended. This is so that a token cannot be refreshed in
 perpetuity.
 
 Once a token's access lifespan and refresh lifespan are both expired, the user must
@@ -25,7 +25,7 @@ Rate Limiting
 -------------
 
 There is not any sort of rate-limiting protection offered by sanic-beskar.
-Thus, if your app does not implment such a thing, it could be vulnerable to brute
+Thus, if your app does not implement such a thing, it could be vulnerable to brute
 force attacks. It's advisable that you implement some sort of system for limiting
 incorrect username/password attempts.
 
@@ -92,7 +92,7 @@ The optional ``rbac_populate_hook`` argument supplied during initialization repr
 the `async` function that should be used to update the RBAC definitions for
 the application.
 
-This function, if provided, will be called at ``init_app()`` time to retreive and load
+This function, if provided, will be called at ``init_app()`` time to retrieve and load
 the RBAC policy for your application, for use in the ``@rights_required()`` decorator.
 This is, essentially, a grouping of discrete rights or entitlements, tied back to a role,
 providing granular control over routes and resources.

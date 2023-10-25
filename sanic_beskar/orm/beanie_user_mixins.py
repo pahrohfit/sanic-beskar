@@ -13,7 +13,7 @@ class BeanieUserMixin(Document):
     ASSUMPTIONS:
 
     * The model has an ``id`` column that uniquely identifies each instance
-    * The model has a ``rolenames`` column that contains the roles for the
+    * The model has a ``roles`` column that contains the roles for the
       user instance as a comma separated list of roles
     * The model has a ``username`` column that is a unique string for each instance
     * The model has a ``password`` column that contains its hashed password
@@ -44,7 +44,7 @@ class BeanieUserMixin(Document):
         provides a list of strings that describe the roles attached to
         the user instance.
 
-        This can be a seperate table (probably sane), so long as this attribute
+        This can be a separate table (probably sane), so long as this attribute
         or property properly returns the associated values for the user as a
         RBAC dict, as:
         {'rolename', ['permissions'],}

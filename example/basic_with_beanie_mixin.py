@@ -1,3 +1,4 @@
+from typing import Optional
 import secrets
 import string
 
@@ -19,10 +20,10 @@ class User(BeanieUserMixin):
     Provides a basic user model for use in the tests
     """
 
-    username: str | None = None
+    username: Optional[str] = None
     email: str = Indexed(str, unique=True)
     password: str
-    roles: str | None = None
+    roles: Optional[str] = None
     is_active: bool = True
 
     def __str__(self) -> str:

@@ -45,7 +45,7 @@
 Strong, Simple, and Precise security for Sanic APIs
 ---------------------------------------------------
 
-This project's begining was fully lifted from the awesome
+This project's beginning was fully lifted from the awesome
 `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_.
 
 Why `beskar <https://starwars.fandom.com/wiki/Beskar>`_? Why not -- what
@@ -61,10 +61,10 @@ accessing your API's endpoints are provisioned with the correct roles for
 access.
 
 The goal of this project is to offer simplistic protection, without
-forcing nonsense, excessivly complicatated implimentation, or
+forcing nonsense, excessivly complicatated implementation, or
 mandated/opinionated ORM usage. Providing this usability for small
 scaled Sanic applications, while allowing the flexibility and
-scalability for enterprise grade solutions, seperates this from your
+scalability for enterprise grade solutions, separates this from your
 other options.
 
 The *sanic-beskar* package can be used to:

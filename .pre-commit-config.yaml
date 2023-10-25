@@ -36,7 +36,9 @@ repos:
     rev: v2.2.6
     hooks:
       - id: codespell
-        args: [-L, alog]
+        args: [-w, -L, alog]
+        additional_dependencies:
+          - tomli
 
   - repo: local
     hooks:

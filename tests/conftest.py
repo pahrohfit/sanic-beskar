@@ -12,12 +12,13 @@ from typing import Any
 import async_sender  # type: ignore
 import nest_asyncio  # type: ignore
 import pytest
+from sanic import Sanic
 from sanic.exceptions import SanicException
 from sanic.log import logger
 from sanic_beskar.base import Beskar
 
 from tortoise import Tortoise, run_async
-from mongomock_motor import AsyncMongoMockClient
+from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
 from beanie import init_beanie
 
 from models import MixinUserTortoise, TotpUser, ValidatingUser, MixinUserBeanie
@@ -27,7 +28,7 @@ nest_asyncio.apply()
 
 
 # Hack for using the same DB instance directly and within the app
-async def init(db_path=None):
+async def init_tortoise(db_path=None):
     await Tortoise.init(
         db_url=db_path,
         modules={"models": ["models"]},
@@ -42,16 +43,17 @@ async def app(tmpdir_factory, request, monkeypatch):
         numbered=True,
     ).join("sqlite.db")
     logger.info(f"Using DB_Path: {str(db_path)}")
-    run_async(init(db_path=f"sqlite://{str(db_path)}"))
+    run_async(init_tortoise(db_path=f"sqlite://{str(db_path)}"))
 
     # Use the fixture params to test all our token providers
     monkeypatch.setenv("SANIC_BESKAR_TOKEN_PROVIDER", request.param)
 
     sanic_app = create_app(db_path=f"sqlite://{str(db_path)}")
     TestManager(sanic_app)
-    # Hack to do some poor code work in the app for some workarounds for broken fucntions under pytest
+    # Hack to do some poor code work in the app for some workarounds for broken functions under pytest
     sanic_app.config["PYTESTING"] = True
-    sanic_app.prepare()
+    sanic_app.asgi = True
+    sanic_app.prepare()  # Fixes IndexError: list index out of range
 
     sanic_app.config.SUPPRESS_SEND = 1  # Don't actually send mails
 
@@ -60,7 +62,8 @@ async def app(tmpdir_factory, request, monkeypatch):
     await init_beanie(database=client.db_name, document_models=[MixinUserBeanie])
 
     yield sanic_app
-    sanic_app = None
+    Sanic._app_registry.clear()
+    # sanic_app = None
 
 
 @pytest.fixture(scope="session")

@@ -42,7 +42,7 @@ class User(Model):
         instance attribute or property that provides a list of strings that
         describe the roles attached to the user instance.
 
-        This can be a seperate table (probably sane), so long as this attribute
+        This can be a separate table (probably sane), so long as this attribute
         or property properly returns the associated values for the user as a
         list of strings.
         """

@@ -12,7 +12,7 @@ Unreleased
 
 v2.3.2 - 2023-10-21
 -------------------
-- Updated Dependancies
+- Updated Dependencies
 - Increased testing coverage by adding full testing of all mixins (`umongo`, `tortoise`, `beanie`)
 - Corrected bug in `umongo` example and mixin due to `umongo` changes to document instantiation
 - Disabled a bunch of depreciation warnings that are only caused by unit testing of 3rd party modules, external to `beskar` itself
@@ -25,69 +25,69 @@ v2.3.1 - 2023-10-19
 
 v2.3.0 - 2023-10-19
 -------------------
-- Dependancies tested: `mongomock-motor`, `cryptography`, `pydantic`, `beanie` to current main versions
+- Dependencies tested: `mongomock-motor`, `cryptography`, `pydantic`, `beanie` to current main versions
 - Added support for python 3.12. Requires `pendulum==3.0.0.b*`. All tests passed.
 
 v2.2.12 - 2023-09-18
 -------------------
-- Dependancies tested: `tortoise-orm` and `py-buzz` to current main versions
-- Dependancies updated: `tortoise-orm` and `py-buzz` to allow a more current major version
+- Dependencies tested: `tortoise-orm` and `py-buzz` to current main versions
+- Dependencies updated: `tortoise-orm` and `py-buzz` to allow a more current major version
 
 v2.2.11 - 2023-07-25
 -------------------
-- Dependancies tested: `sanic`, `pyseto` and `cryptography` to current main versions
-- Dependancy version changes: `cryptography` allow down to 39.0.0 as minimum
+- Dependencies tested: `sanic`, `pyseto` and `cryptography` to current main versions
+- Dependency version changes: `cryptography` allow down to 39.0.0 as minimum
 
 v2.2.10 - 2023-07-05
 -------------------
-- Dependancy updates: `pyseto` and `cryptography` to current main versions
+- Dependency updates: `pyseto` and `cryptography` to current main versions
 
 v2.2.9 - 2023-05-23
 -------------------
-- Dependancy updates and testing
+- Dependency updates and testing
 
 v2.2.8 - 2023-03-21
 -------------------
-- Dev Dependancy updates
+- Dev Dependency updates
 - Upgraded support for newer `Cryptography`, `Sanic`, `Beanie`
 - Moved from `sphinx-rtd-theme` to `furo` for Sphinx Docs
 
 v2.2.8 - 2023-03-21
 -------------------
-- Dependancy updates
+- Dependency updates
 - Linting cleanups
 - Upgraded `Cryptography` requirement to >39.0.1 due to security concerns
 
 v2.2.7 - 2023-03-09
 -------------------
-- Dependancy updates
+- Dependency updates
 
 v2.2.6 - 2023-01-03
 -------------------
-- Dependancy updates
+- Dependency updates
 
 v2.2.5 - 2022-12-28
 -------------------
-- Dependancy updates
+- Dependency updates
 
 v2.2.2 - 2022-11-14
 -------------------
-- Dependancy updates
+- Dependency updates
 - Added `bandit` for additional security testing
 
 v2.2.1 - 2022-11-14
 -------------------
-- Dependancy updates
+- Dependency updates
 
 v2.2.0 - 2022-11-09
 -------------------
-- Dependancy updates
+- Dependency updates
 - Added Python 3.11 support
 - Removed Python 3.7 support
 
 v2.1.1 - 2022-10-26
 -------------------
-- Dependancy updates
+- Dependency updates
 
 v2.1.0 - 2022-08-20
 -------------------
@@ -154,7 +154,7 @@ v0.5.0 - 2019-03-01
 
 v0.4.8 - 2018-08-14
 -------------------
-- Added support for including addtional claims in the JWT
+- Added support for including additional claims in the JWT
 
 v0.4.7 - 2018-06-21
 -------------------
@@ -265,7 +265,7 @@ v0.3.6 - 2017-09-22
 v0.3.5 - 2017-09-22
 -------------------
 - Added support for user models containing a validate method
-- Added abilitiy to provision tokens that don't expire
+- Added ability to provision tokens that don't expire
 - Added ability to override expiration times
 
 v0.3.4 - 2017-09-13

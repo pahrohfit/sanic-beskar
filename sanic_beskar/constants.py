@@ -72,7 +72,7 @@ RESERVED_CLAIMS = {
     IS_RESET_TOKEN_CLAIM,
 }
 
-# 1M days seems reasonable. If this code is being used in 3000 years...welp
+# 1M days seems reasonable. If this code is being used in 3000 years...whelp
 VITAM_AETERNUM: Duration = duration(days=1000000)
 
 

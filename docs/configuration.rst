@@ -108,7 +108,7 @@ OTP Configuration Settings
        code to check and enforce.
      - ``True``
    * - ``BESKAR_TOTP_SECRETS_TYPE``
-     - The type of `secrets` protection for the TOTP implimentation. The
+     - The type of `secrets` protection for the TOTP implementation. The
        available options are:
 
        * ``None`` (default) indicates **no** encryption protection of stored

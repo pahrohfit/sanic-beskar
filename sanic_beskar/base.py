@@ -141,7 +141,7 @@ class Beskar:
         Initializes the :py:class:`Beskar` extension
 
         Args:
-            app (Sanic): The :py:mod:`Sanic` app to bind this extention. Defaults to None.
+            app (Sanic): The :py:mod:`Sanic` app to bind this extension. Defaults to None.
             user_class (object): Class used to interact with a `User`. Defaults to None.
             is_blacklisted (Callable, optional): A method that may optionally be
                 used to check the token against a blacklist when access or refresh
@@ -204,7 +204,7 @@ class Beskar:
                 warnings.warn(
                     textwrap.dedent(
                         """
-                        You are using a `pbkdf2` hashing scheme, but didn't instll
+                        You are using a `pbkdf2` hashing scheme, but didn't install
                           the `fastpbkdf2` module, which will give you like 40%
                           speed improvements. you should go do that now.
                         """
@@ -466,7 +466,7 @@ class Beskar:
     def audit(self) -> None:
         """
         Perform some basic sanity check of settings to make sure the developer didn't
-        try to do some blatently lame stuff
+        try to do some blatantly lame stuff
         """
         valid_schemes = self.pwd_ctx.schemes()
         ConfigurationError.require_condition(
@@ -482,14 +482,14 @@ class Beskar:
         ConfigurationError.require_condition(
             len(self.app.config.SECRET_KEY) >= int(self.password_policy["length"])
             or self.app.config.get("I_MAKE_POOR_CHOICES", False),
-            f"your SECRET_KEY is weak in legnth [{len(self.app.config.SECRET_KEY)} < "
+            f"your SECRET_KEY is weak in length [{len(self.app.config.SECRET_KEY)} < "
             f"{self.password_policy['length']}]! fix it, or set 'I_MAKE_POOR_CHOICES' to True.",
         )
 
         ConfigurationError.require_condition(
             self.password_policy["length"] >= 8
             or self.app.config.get("I_MAKE_POOR_CHOICES", False),
-            "your password policy secret key legnth is weak! fix it, or set 'I_MAKE_POOR_CHOICES' to True. "
+            "your password policy secret key length is weak! fix it, or set 'I_MAKE_POOR_CHOICES' to True. "
             "See https://pages.nist.gov/800-63-3/sp800-63b.html#appA for more information.",
         )
 
@@ -519,7 +519,7 @@ class Beskar:
         Requirements:
         - :py:meth:`lookup` method. Accepts a string parameter, returns instance
         - :py:meth:`identify` method. Accepts an identity parameter, returns instance
-        - :py:attribue:`identity` attribute. Provides unique id for the instance
+        - :py:attribute:`identity` attribute. Provides unique id for the instance
         - :py:attribute:`rolenames` attribute. Provides list of roles attached to instance
         - :py:attribute:`password` attribute. Provides hashed password for instance
 
@@ -639,7 +639,7 @@ class Beskar:
         _last_counter = None
         if hasattr(user, "get_cache_verify") and callable(user.get_cache_verify):
             _last_counter = await user.get_cache_verify()
-        verify = totp_factory.verify(token, user.totp, last_counter=_last_counter)
+        verify = totp_factory.verify(token, user.totp, last_counter=_last_counter)  # type: ignore
 
         """
         Optionally, if our User model has a :py:func:`cache_verify` function,
@@ -660,7 +660,7 @@ class Beskar:
         self, user: Union[str, object], token: str, lookup: Optional[str] = "username"
     ) -> Any:
         """
-        Verifies that a TOTP validates agains the stored TOTP for that
+        Verifies that a TOTP validates against the stored TOTP for that
         username.
 
         If verification passes, the matching user instance is returned.
@@ -740,7 +740,7 @@ class Beskar:
                   and not return the user.
 
                   This means either you will need to call it again, providing
-                  the `token` value from the user, or seperately call
+                  the `token` value from the user, or separately call
                   :py:func:`authenticate_totp`,
                   which only performs validation of the `token` value,
                   and not the users password.
@@ -784,9 +784,9 @@ class Beskar:
         )
 
         """
-        If we provided a TOTP token in this `authenicate` call,
+        If we provided a TOTP token in this `authenticate` call,
             or if the user is required to use TOTP, instead of
-            as a seperate call to `authenticate_totp`, then lets do it here.
+            as a separate call to `authenticate_totp`, then lets do it here.
         Failure to provide a TOTP token, when the user is required to use
             TOTP, results in a `TOTPRequired` exception, and the calling
             application will be required to either re-call `authenticate`
@@ -874,7 +874,7 @@ class Beskar:
             user (:py:class:`User`): `User` to generate a token for.
             override_access_lifespan (pendulum.Duration, optional): Override's the
                 instance's access lifespan to set a custom duration after which
-                the new token's accessability will expire. May not exceed the
+                the new token's accessibility will expire. May not exceed the
                 :py:data:`refresh_lifespan`. Defaults to `None`.
             override_refresh_lifespan (pendulum.Duration, optional): Override's the
                 instance's refresh lifespan to set a custom duration after which
@@ -969,7 +969,7 @@ class Beskar:
             user (:py:class:`User`): `User` to generate a token for.
             override_access_lifespan (pendulum.Duration, optional): Override's the
                 instance's access lifespan to set a custom duration after which
-                the new token's accessability will expire. May not exceed the
+                the new token's accessibility will expire. May not exceed the
                 :py:data:`refresh_lifespan`. Defaults to `None`.
             override_refresh_lifespan (pendulum.Duration, optional): Override's the
                 instance's refresh lifespan to set a custom duration after which
@@ -1060,7 +1060,7 @@ class Beskar:
             user (:py:class:`User`): `User` to generate a token for.
             override_access_lifespan (pendulum.Duration, optional): Override's the
                 instance's access lifespan to set a custom duration after which
-                the new token's accessability will expire. May not exceed the
+                the new token's accessibility will expire. May not exceed the
                 :py:data:`refresh_lifespan`. Defaults to `None`.
             override_refresh_lifespan (pendulum.Duration, optional): Override's the
                 instance's refresh lifespan to set a custom duration after which
@@ -1139,7 +1139,7 @@ class Beskar:
                 refreshed token.
             override_access_lifespan (_type_, optional): Override's the instance's
                 access lifespan to set a custom duration after which the new
-                token's accessability will expire. May not exceed the
+                token's accessibility will expire. May not exceed the
                 :py:data:`refresh_lifespan`. Defaults to `None`.
 
         Returns:
@@ -1166,7 +1166,7 @@ class Beskar:
                 refreshed token.
             override_access_lifespan (_type_, optional): Override's the instance's
                 access lifespan to set a custom duration after which the new
-                token's accessability will expire. May not exceed the
+                token's accessibility will expire. May not exceed the
                 :py:data:`refresh_lifespan`. Defaults to `None`.
 
         Returns:
@@ -1229,7 +1229,7 @@ class Beskar:
                 refreshed token.
             override_access_lifespan (_type_, optional): Override's the instance's
                 access lifespan to set a custom duration after which the new
-                token's accessability will expire. May not exceed the
+                token's accessibility will expire. May not exceed the
                 :py:data:`refresh_lifespan`. Defaults to `None`.
 
         Returns:
@@ -1273,7 +1273,7 @@ class Beskar:
 
     async def extract_token(self, token: str, access_type: AccessType = AccessType.access) -> dict:
         """
-        Wrapper funciton to extract a data dictionary from a token. This
+        Wrapper function to extract a data dictionary from a token. This
         function will automagically identify the token type based upon
         application configuration and process it accordingly.
 
@@ -1562,7 +1562,7 @@ class Beskar:
             user (:py:class:`User`): The user to package the header for
             override_access_lifespan (:py:data:`pendulum`):  Override's the instance's
                 access lifespan to set a custom duration after which the new token's
-                accessability will expire. May not exceed the :py:data:`refresh_lifespan`
+                accessibility will expire. May not exceed the :py:data:`refresh_lifespan`
             override_refresh_lifespan (:py:data:`pendulum`): Override's the instance's
                 refresh lifespan to set a custom duration after which the new token's
                 refreshability will expire.
@@ -1606,7 +1606,7 @@ class Beskar:
                 (username, id, email, etc)
             template (Optional, :py:data:`filehandle`): HTML Template for confirmation
                 email. If not provided, a stock entry is used.
-            confirmation_sender (Optional, str): The sender that shoudl be attached to the
+            confirmation_sender (Optional, str): The sender that should be attached to the
                 confirmation email. Overrides the :py:data:`BESKAR_CONFIRMATION_SENDER`
                 config setting.
             confirmation_uri (Optional, str): The uri that should be visited to complete email
@@ -1620,7 +1620,7 @@ class Beskar:
                 registration token.
 
         Returns:
-            dict: Summary of information sent, along with the `result` from mail send. (Essentually
+            dict: Summary of information sent, along with the `result` from mail send. (Essentially
             the response of :py:func:`send_token_email`).
         """
 
@@ -1685,7 +1685,7 @@ class Beskar:
                 Defaults to :py:data:`TOKEN_ACCESS_LIFESPAN` config setting.
 
         Returns:
-            dict: Summary of information sent, along with the `result` from mail send. (Essentually
+            dict: Summary of information sent, along with the `result` from mail send. (Essentially
             the response of :py:func:`send_token_email`).
         """
         if subject is None:
@@ -1754,7 +1754,7 @@ class Beskar:
             custom_token (str): The token to be carried as the email's payload.
 
         Returns:
-            dict: Summary of information sent, along with the `result` from mail send. (Essentually
+            dict: Summary of information sent, along with the `result` from mail send. (Essentially
             the response of :py:func:`send_token_email`).
 
         Raises:
@@ -1812,7 +1812,7 @@ class Beskar:
     async def get_user_from_registration_token(self, token: str) -> Any:
         """
         Gets a user based on the registration token that is supplied. Verifies
-        that the token is a regisration token and that the user can be properly
+        that the token is a registration token and that the user can be properly
         retrieved
 
         Args:
@@ -1895,7 +1895,7 @@ class Beskar:
         hashed with the defined hash scheme (:py:data:`BESKAR_HASH_SCHEME`).
 
         If not, raise an Exception of :py:exc:`~sanic_beskar.exceptions.LegacySchema`,
-        unless the :py:data:`password` arguement is provided, in which case an updated
+        unless the :py:data:`password` argument is provided, in which case an updated
         :py:class:`User` will be returned, and must be saved by the calling app. The
         updated :py:class:`User` will contain the users current password updated to the
         currently desired hash scheme (:py:exc:`~BESKAR_HASH_SCHEME`).
