@@ -20,17 +20,17 @@ types-python-dateutil = "^2.8.19.14"
 
 [tool.poetry.group.dev.dependencies]
 bcrypt = ">=4.0.1, <5"
-plummet = {version = "^1.1", extras = ["time-machine"]}
-sanic-testing = "^23.3"
+plummet = {version = ">=1.1", extras = ["time-machine"]}
+sanic-testing = ">=23.3"
 tortoise-orm = ">=0.19.2, < 21.0"
 nest-asyncio = "^1.5.5"
-pytest-cov = "^4.0.0"
+pytest-cov = ">=4.0.0"
 umongo = ">=3.1.0, <4.0"
 motor = ">=3.1.0, <4.0"
 pytest-profiling = "^1.7.0"
 fastpbkdf2 = ">=0.2"
 segno = ">=1.5.2, <2.0"
-pytest = "^7.2.0"
+pytest = ">=7.2.0"
 beanie = ">=1.11.7, <=2.0"
 mongomock-motor = ">=0.0.19"
 mongomock = ">=4.1.2"
@@ -68,7 +68,7 @@ exclude = ["docs/"]
 python = ">=3.8, <3.13"
 pyjwt = ">=2.6"
 pendulum = [
-    { version = ">=2.1, <=3.1", allow-prereleases = true, python = ">=3.8,<3.12" },
+    { version = ">=2.1, <3.0", allow-prereleases = true, python = ">=3.8,<3.12" },
     { version = "3.0.*", allow-prereleases = true, python = ">=3.12" },
 ]
 passlib = ">=1.7"
@@ -173,18 +173,21 @@ legacy_tox_ini = """
     skip_install = true
     allowlist_externals = poetry
     commands_pre =
-        poetry install -v
+        poetry lock
+        poetry install --sync -v
     pass_env =
         FORCE_COLOR
         NO_COLOR
         *
 
     [testenv:py3{8,9,10,11,12}-tests]
+    labels = pytest
     description = py3 sanic-beskar testing
     commands =
         poetry run pytest --cov=sanic_beskar --cov-report=html --cov-report=term tests/ {posargs}
 
     [testenv:py3{8,9,10,11,12}-mypy]
+    labels = mypy
     description = py3 mypy validation
     commands =
         poetry run mypy sanic_beskar tests
