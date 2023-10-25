@@ -23,30 +23,30 @@ bcrypt = ">=4.0.1, <5"
 plummet = {version = ">=1.1", extras = ["time-machine"]}
 sanic-testing = ">=23.3"
 tortoise-orm = ">=0.19.2, < 21.0"
-nest-asyncio = "^1.5.5"
+nest-asyncio = ">=1.5.5"
 pytest-cov = ">=4.0.0"
 umongo = ">=3.1.0, <4.0"
 motor = ">=3.1.0, <4.0"
-pytest-profiling = "^1.7.0"
+pytest-profiling = ">=1.7.0"
 fastpbkdf2 = ">=0.2"
 segno = ">=1.5.2, <2.0"
 pytest = ">=7.2.0"
 beanie = ">=1.11.7, <=2.0"
 mongomock-motor = ">=0.0.19"
 mongomock = ">=4.1.2"
-ipdb = "^0.13.9"
-bandit = "^1.7.4"
-flake8-async = "^22.11.6"
+ipdb = ">=0.13.9"
+bandit = ">=1.7.4"
+flake8-async = ">=22.11.6"
 safety = ">=2.3"
 async-sender = ">=2.0.0"
-pytest-xdist = "^3.0.2"
-tox = "^4.11.3"
-alt-pytest-asyncio = "^0.7.2"
+pytest-xdist = ">=3.0.2"
+tox = ">=4.11.3"
+alt-pytest-asyncio = ">=0.7.2"
 
 [tool.poetry.group.docs.dependencies]
-toml = "^0.10.2"
+toml = ">=0.10.2"
 sphinx = ">=7.1, <8.0"
-furo = "^2023.5.20"
+furo = ">=2023.5.20"
 
 [tool.coverage.report]
 exclude_lines = [
@@ -87,7 +87,6 @@ minversion = "7.1"
 testpaths = [
     "tests",
 ]
-#asyncio_mode = "auto"
 addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
 filterwarnings = [
   "ignore:::marshmallow.*",
