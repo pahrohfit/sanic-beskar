@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.3.2"
+version = "2.3.3"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -166,12 +166,13 @@ legacy_tox_ini = """
     isolated_build = true
     env_list =
         pre-commit,
-        py3{8,9,10,11,12}-{tests,mypy}
+        py3{8,9,10,11,12}-{tests},
+        py3{8}-{mypy}
 
     [testenv]
     description = defaults for all environments
     skip_install = true
-    allowlist_externals = poetry
+    allowlist_externals = poetry, pre-commit
     commands_pre =
         poetry lock
         poetry install --sync -v
@@ -186,7 +187,7 @@ legacy_tox_ini = """
     commands =
         poetry run pytest --cov=sanic_beskar --cov-report=html --cov-report=term tests/ {posargs}
 
-    [testenv:py3{8,9,10,11,12}-mypy]
+    [testenv:py3{8}-mypy]
     labels = mypy
     description = py3 mypy validation
     commands =
