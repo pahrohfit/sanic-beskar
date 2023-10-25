@@ -52,6 +52,23 @@ files = [
 ]
 
 [[package]]
+name = "alt-pytest-asyncio"
+version = "0.7.2"
+description = "Alternative pytest plugin to pytest-asyncio"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "alt_pytest_asyncio-0.7.2-py3-none-any.whl", hash = "sha256:965f60f4c9590b30eca643e863a1c8e13502859e57e3f5c1b9dd73304459f627"},
+    {file = "alt_pytest_asyncio-0.7.2.tar.gz", hash = "sha256:d9cc49b1b6330ff77ef0ebfa3495932b8dafdbf290317fe8b58df19d7c9d9878"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0"
+
+[package.extras]
+tests = ["nest-asyncio (==1.0.0)", "noseofyeti[black] (==2.4.1)", "pytest (==7.3.0)"]
+
+[[package]]
 name = "annotated-types"
 version = "0.6.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -2251,24 +2268,6 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
-name = "pytest-asyncio"
-version = "0.21.1"
-description = "Pytest support for asyncio"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "pytest-asyncio-0.21.1.tar.gz", hash = "sha256:40a7eae6dded22c7b604986855ea48400ab15b069ae38116e8c01238e9eeb64d"},
-    {file = "pytest_asyncio-0.21.1-py3-none-any.whl", hash = "sha256:8666c1c8ac02631d7c51ba282e0c69a8a452b211ffedf2599099845da5c5c37b"},
-]
-
-[package.dependencies]
-pytest = ">=7.0.0"
-
-[package.extras]
-docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
-testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy (>=0.931)", "pytest-trio (>=0.7.0)"]
-
-[[package]]
 name = "pytest-cov"
 version = "4.1.0"
 description = "Pytest plugin for measuring coverage."
@@ -3364,4 +3363,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.13"
-content-hash = "5614ebd0297cccd2dae9a70f7a96962e5ef9bf6c2f6a6e3cc97c483c60b729c3"
+content-hash = "e9839e79ac8909be8c008316b04b45ba5350d6e185def9c7bb3c583afb052036"

@@ -21,7 +21,6 @@ mypy = "^1.1"
 bcrypt = ">=4.0.1, <5"
 plummet = {version = "^1.1", extras = ["time-machine"]}
 sanic-testing = "^23.3"
-pytest-asyncio = "^0.21"
 tortoise-orm = ">=0.19.2, < 21.0"
 nest-asyncio = "^1.5.5"
 pytest-cov = "^4.0.0"
@@ -41,6 +40,7 @@ safety = ">=2.3"
 async-sender = ">=2.0.0"
 pytest-xdist = "^3.0.2"
 tox = "^4.11.3"
+alt-pytest-asyncio = "^0.7.2"
 
 [tool.poetry.group.docs.dependencies]
 toml = "^0.10.2"
@@ -55,7 +55,7 @@ exclude_lines = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.8"
 disallow_untyped_defs = true
 show_error_codes = true
 no_implicit_optional = true
@@ -86,11 +86,7 @@ minversion = "7.1"
 testpaths = [
     "tests",
 ]
-asyncio_mode = "auto"
-#log_format = "%(asctime)-15s | %(levelname)-6s | %(threadName)-12s | %(filename)s:%(lineno)d | %(message)s"
-#log_date_format = "%Y-%m-%d %H:%M:%S"
-#log_cli = "false"
-#log_level = "DEBUG"
+#asyncio_mode = "auto"
 addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
 filterwarnings = [
   "ignore:::marshmallow.*",
@@ -113,7 +109,7 @@ filterwarnings = [
 [tool.black]
 line-length = 100
 preview-string-processing = true
-target-version = ['py311']
+target-version = ['py38']
 include = ['sanic_beskar/', 'tests']
 
 [tool.bandit]
@@ -133,3 +129,73 @@ convention = "google"
 
 [tool.ruff.per-file-ignores]
 "tests/*.py" = ["S101", "D100", "D102", "D101", "D103", "S311", "D104"]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = false
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = true
+ignore-nested-functions = false
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 50
+exclude = ["setup.py", "docs", "build"]
+ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+# possible values: 0 (minimal output), 1 (-v), 2 (-vv)
+verbose = 2
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
+#generate-badge = "."
+#badge-format = "svg"
+
+[tool.codespell]
+skip = 'poetry.lock'
+count = ''
+quiet-level = 3
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    min_version = 4
+    isolated_build = true
+    env_list =
+        pre-commit,
+        py3{8,9,10,11,12}-{tests,mypy}
+
+    [testenv]
+    description = defaults for all environments
+    skip_install = true
+    allowlist_externals = poetry
+    commands_pre =
+        poetry install -v
+    pass_env =
+        FORCE_COLOR
+        NO_COLOR
+        *
+
+    [testenv:py3{8,9,10,11,12}-tests]
+    description = py3 sanic-beskar testing
+    commands =
+        poetry run pytest --cov=sanic_beskar --cov-report=html --cov-report=term tests/ {posargs}
+
+    [testenv:py3{8,9,10,11,12}-mypy]
+    description = py3 mypy validation
+    commands =
+        poetry run mypy sanic_beskar tests
+
+    [testenv:pre-commit]
+    description = pre-commit validations
+    skip_install = true
+    deps = pre-commit
+    commands = pre-commit run --all-files
+
+    [testenv:docs]
+    description = sphinix build
+    changedir = docs
+    commands = sphinx-build -W -b html -d {envtmpdir}/doctrees . {envtmpdir}/html
+"""
