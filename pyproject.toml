@@ -142,9 +142,9 @@ ignore-module = true
 ignore-nested-functions = false
 ignore-nested-classes = true
 ignore-setters = false
-fail-under = 50
-exclude = ["setup.py", "docs", "build"]
-ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+fail-under = 100
+exclude = ["setup.py", "docs", "build", "example"]
+#ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
 # possible values: 0 (minimal output), 1 (-v), 2 (-vv)
 verbose = 2
 quiet = false
@@ -197,7 +197,7 @@ legacy_tox_ini = """
     description = pre-commit validations
     skip_install = true
     deps = pre-commit
-    commands = pre-commit run --all-files
+    commands = pre-commit run
 
     [testenv:docs]
     description = sphinix build

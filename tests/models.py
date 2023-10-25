@@ -1,3 +1,4 @@
+from typing import Optional
 from sanic_beskar.orm import TortoiseUserMixin, BeanieUserMixin, UmongoUserMixin
 from tortoise import fields as tortoise_field
 from pydantic import Field as pydantic_field
@@ -13,6 +14,10 @@ umongo_instance.set_db(umongo_db)
 
 
 class MixinUserTortoise(TortoiseUserMixin):
+    """
+    MixinUserTortoise for unit tests
+    """
+
     class Meta:
         table = "MixinUserTortoise"
 
@@ -26,10 +31,15 @@ class MixinUserTortoise(TortoiseUserMixin):
 
     @classmethod
     async def cls_create(cls, **kwargs):
+        """``tortoise`` document create caller"""
         return await cls.create(**kwargs)
 
 
 class MixinUserBeanie(BeanieUserMixin):
+    """
+    MixinUserBeanie for unit tests
+    """
+
     class Meta:
         table = "BeanieMixinUser"
 
@@ -40,6 +50,7 @@ class MixinUserBeanie(BeanieUserMixin):
 
     @classmethod
     async def cls_create(cls, **kwargs):
+        """``beanie`` document create caller"""
         return await cls(**kwargs).insert()
 
 
@@ -48,6 +59,10 @@ umongo_instance.register(UmongoUserMixin)
 
 @umongo_instance.register
 class MixinUserUmongo(UmongoDocument, UmongoUserMixin):
+    """
+    MixinUserUmongo for unit testing
+    """
+
     id: int = umongo_field.IntField()
     username: str = umongo_field.StrField(unique=True)
     password: str = umongo_field.StrField()
@@ -57,12 +72,16 @@ class MixinUserUmongo(UmongoDocument, UmongoUserMixin):
 
     @classmethod
     async def cls_create(cls, **kwargs):
-        # We need to return the document, not the insert op result
+        """``umongo`` document create caller"""
         _user = await cls(**kwargs).commit()
         return await cls.find_one({"id": _user.inserted_id})
 
 
 class ValidatingUser(TortoiseUserMixin):
+    """
+    ValidatingUser for unit testing
+    """
+
     class Meta:
         table = "ValidatingUser"
 
@@ -76,23 +95,37 @@ class ValidatingUser(TortoiseUserMixin):
     is_active = tortoise_field.BooleanField(default=True)
 
     def is_valid(self):
+        """return `is_active` logic"""
         return self.is_active
 
     @classmethod
     async def cls_create(cls, **kwargs):
+        """``tortoise`` document create caller"""
         return await cls.create(**kwargs)
 
 
 class TotpUser(MixinUserTortoise):
+    """
+    TotpUser user class with TOTP additions for unit testing
+    """
+
     class Meta:
         table = "TotpUser"
 
     totp = tortoise_field.CharField(max_length=255, default=None, null=True)
     totp_last_counter = tortoise_field.IntField(default=None, null=True)
 
-    async def cache_verify(self, counter=None, seconds=None):
+    async def cache_verify(self, counter: int, seconds: Optional[int] = None):
+        """
+        simple totp validation counter flag
+
+        Args:
+            counter (int): counter value
+            seconds (int, optional): Not used for unit tests. Defaults to None.
+        """
         self.totp_last_counter = counter
         await self.save(update_fields=["totp_last_counter"])
 
     async def get_cache_verify(self):
+        """simple totp cache verifier for unit testing"""
         return self.totp_last_counter

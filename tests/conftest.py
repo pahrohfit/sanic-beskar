@@ -28,7 +28,17 @@ nest_asyncio.apply()
 
 
 # Hack for using the same DB instance directly and within the app
-async def init_tortoise(db_path=None):
+async def init_tortoise(db_path: str):
+    """
+    init_tortoise
+
+    Initialize ``Tortoise``, specifying a file path to the temp sqlite db
+
+    This assists sharing a common temp DB across the unit tests
+
+    Args:
+        db_path (string): 'sqllite://' file path to use
+    """
     await Tortoise.init(
         db_url=db_path,
         modules={"models": ["models"]},
@@ -38,6 +48,9 @@ async def init_tortoise(db_path=None):
 
 @pytest.fixture(params=["jwt", "paseto"])
 async def app(tmpdir_factory, request, monkeypatch):
+    """
+    Sanic App instance for unit testing
+    """
     db_path = tmpdir_factory.mktemp(
         "sanic-beskar-test",
         numbered=True,
@@ -120,12 +133,6 @@ def clean_sanic_app_config(app):
     This fixture ensures a clean `app.config` is available for each round
         of testing.
     """
-    """
-    with app.app_context():
-        stock_config = app.config.copy()
-        yield
-        app.config = stock_config.copy()
-    """
     stock_config = copy.copy(app.config)
     yield
     app.config = copy.copy(stock_config)
@@ -133,14 +140,35 @@ def clean_sanic_app_config(app):
 
 @pytest.fixture
 def client(app):
+    """
+    Fixture to hold the `asgi_client` test client
+    """
     yield app.asgi_client
 
 
 @pytest.fixture()
 def mock_users(user_class, default_guard):
+    """
+    Fixture to hold generator for test users for unit testing
+    """
+
     async def _get_user(
-        username: str = "", class_name: Any = user_class, guard_name: Any = default_guard, **kwargs
+        username: str, class_name: Any = user_class, guard_name: Any = default_guard, **kwargs
     ):
+        """
+        Generator for test user creations
+
+        Args:
+            username (str): Username to use.
+            class_name (obj, optional): User class to use. Defaults to user_class.
+            guard_name (obj, optional): Beskar guard instance to use. Defaults to default_guard.
+
+        Raises:
+            SanicException: Missing `username`
+
+        Returns:
+            obj: Generated temp user object
+        """
         if not username:
             raise SanicException("You must supply a valid test user name!")
 
@@ -192,10 +220,11 @@ def no_token_validation(monkeypatch):
       purposes, when this fixture is included.
     """
 
-    def mockreturn(*args, **kwargs):
+    def _mockreturn(*args, **kwargs):
+        """monkeypatcher to null out function"""
         return True
 
-    monkeypatch.setattr(Beskar, "_validate_token_data", mockreturn)
+    monkeypatch.setattr(Beskar, "_validate_token_data", _mockreturn)
 
 
 @pytest.fixture(autouse=True)
@@ -205,14 +234,19 @@ def no_email_sending(monkeypatch):
       sent from async_sender.
     """
 
-    async def mock_send_message(*args, **kwargs):
+    async def _mock_send_message(*args, **kwargs):
+        """monkeypatcher to null out function"""
         pass
 
-    monkeypatch.setattr(async_sender.api.Mail, "send_message", mock_send_message)
+    monkeypatch.setattr(async_sender.api.Mail, "send_message", _mock_send_message)
 
 
 @pytest.fixture(autouse=True)
 def speed_up_passlib_for_pytest_only(default_guard):
+    """
+    Fixture to lower down the hashing rounds simply to speed up unit testing where
+    the strength doesn't matter.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         default_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)

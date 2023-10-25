@@ -45,11 +45,17 @@ def create_app(db_path=None):
 
     @sanic_app.route("/unprotected")
     def unprotected(request):
+        """
+        Endpoint without any security decorators
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/kinda_protected")
     @sanic_beskar.auth_accepted
     async def kinda_protected(request):
+        """
+        Endpoint that allows an authentication header (to set a user)
+        """
         try:
             authed_user = await sanic_beskar.current_user()
             return json({"message": "success", "user": authed_user.username})
@@ -59,6 +65,9 @@ def create_app(db_path=None):
     class ProtectedView(HTTPMethodView):
         @sanic_beskar.auth_required
         async def get(self, request):
+            """
+            Endpoint that requires an authentication header, via `class` based setup
+            """
             return json({"message": "success"})
 
     sanic_app.add_route(ProtectedView.as_view(), "/protected_class")
@@ -66,50 +75,77 @@ def create_app(db_path=None):
     @sanic_app.route("/protected_route")
     @sanic_beskar.auth_required
     async def protected_route(request):
+        """
+        Endpoint requiring basic authentication header
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/rbac_protected")
     @sanic_beskar.auth_required
     @sanic_beskar.rights_required("sooper_access_right")
     async def rights_protected(request):
+        """
+        Endpoint looking for `sooper_access_right` RBAC rights
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_required")
     @sanic_beskar.auth_required
     @sanic_beskar.roles_required("admin")
     async def protected_admin_required(request):
+        """
+        Endpoint requiring the user has an 'admin' role
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_and_operator_required")
     @sanic_beskar.auth_required
     @sanic_beskar.roles_required("admin", "operator")
     async def protected_admin_and_operator_required(request):
+        """
+        Endpoint requiring both 'admin' and 'operator' roles
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_and_operator_accepted")
     @sanic_beskar.auth_required
     @sanic_beskar.roles_accepted("admin", "operator")
     async def protected_admin_and_operator_accepted(request):
+        """
+        endpoint that requires 'admin' *and*/*or* 'operator' role
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/undecorated_admin_required")
     @sanic_beskar.roles_required("admin")
     async def undecorated_admin_required(request):
+        """
+        Endpoint that doesn't use both decorators (which is supported)
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/undecorated_admin_accepted")
     @sanic_beskar.roles_accepted("admin")
     async def undecorated_admin_accepted(request):
+        """
+        Endpoint that doesn't use both decorators (which is supported)
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/reversed_decorators")
     @sanic_beskar.roles_required("admin", "operator")
     @sanic_beskar.auth_required
     async def reversed_decorators(request):
+        """
+        Endpoint with decorators in a different order (which is supported)
+        """
         return json({"message": "success"})
 
     @sanic_app.route("/registration_confirmation")
     def reg_confirm(request):
+        """
+        Endpoint for registration testing
+        """
         return json({"message": "fuck"})
 
     if not db_path:

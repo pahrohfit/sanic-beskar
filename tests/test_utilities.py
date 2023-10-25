@@ -26,6 +26,10 @@ from ujson import dumps
 
 
 class TestBeskarUtilities:
+    """
+    Unit tests against ``sanic_beskar.utilities``
+    """
+
     def test_app_context_has_token_data(self):
         """
         This test verifies that the app_context_has_token_data method can

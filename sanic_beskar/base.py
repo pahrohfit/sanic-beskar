@@ -126,6 +126,7 @@ class Beskar:
             )
 
     async def open_session(self, request: Request) -> None:
+        """required for Sanic"""
         pass
 
     def init_app(
@@ -313,12 +314,14 @@ class Beskar:
 
             @app.signal("beskar.rbac.update")
             async def rbac_populate() -> None:
+                """Sanic worker to popluate the RBAC policy"""
                 _rbac_dump = await self.rbac_populate_hook()  # type: ignore
                 self.rbac_definitions = normalize_rbac(_rbac_dump)
                 logger.debug(f"RBAC definitions updated: {self.rbac_definitions}")
 
             @app.before_server_start
             async def init_rbac_populate(app: Sanic) -> None:
+                """Sanic worker to call the RBAC policy updater at app init"""
                 logger.info("Populating initial RBAC definitions")
                 await app.dispatch("beskar.rbac.update")
 

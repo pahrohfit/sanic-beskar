@@ -27,7 +27,10 @@ from sanic_beskar.exceptions import BeskarError, ConfigurationError
 
 
 class JSONEncoder(json_JSONEncoder):  # pragma: no cover
+    """JSON encoder class to facilitate serializing datetimes and ObjectId's"""
+
     def default(self, o: Any) -> Any:
+        """hooks for the various types"""
         if hasattr(o, "__json__"):
             return o.__json__()
         if isinstance(o, Iterable):
@@ -49,6 +52,7 @@ class JSONEncoder(json_JSONEncoder):  # pragma: no cover
 
 
 def get_request(request: Request) -> Request:
+    """Get current Sanic Request"""
     try:
         if not request:
             return Request.get_current()

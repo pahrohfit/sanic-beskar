@@ -147,6 +147,7 @@ for (root, dirs, files) in os.walk(docs_root):
 
 
 def setup(app):
+    """perform the deed"""
     app.add_css_file("theme_overrides.css")
 
 

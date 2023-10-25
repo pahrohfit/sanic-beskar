@@ -28,6 +28,7 @@ class BeskarError(SanicException, Buzz):
         super().__init__(self.message, self.status)
 
     def __str__(self) -> str:
+        """string repr"""
         return f"{super().__str__()} ({self.status})"
 
 

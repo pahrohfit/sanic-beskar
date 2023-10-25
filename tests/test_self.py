@@ -34,10 +34,20 @@ from sanic_beskar.exceptions import (
 
 
 class TestBeskar:
+    """
+    Unit tests against the basic functionality of ``sanic_beskar``
+    """
+
     def test__validate_user_class__fails_if_class_has_no_lookup_classmethod(
         self,
         default_guard,
     ):
+        """
+        test__validate_user_class__fails_if_class_has_no_lookup_classmethod
+
+        Ensure init failure when not provided a `user_class`
+        """
+
         class NoLookupUser:
             @classmethod
             def identify(cls, id):
@@ -51,6 +61,12 @@ class TestBeskar:
         self,
         default_guard,
     ):
+        """
+        test__validate_user_class__fails_if_class_has_no_identify_classmethod
+
+        Ensure init fails if `user_class` is missing an `identify` attribute
+        """
+
         class NoIdentifyUser:
             @classmethod
             def lookup(cls, username):
@@ -64,6 +80,12 @@ class TestBeskar:
         self,
         default_guard,
     ):
+        """
+        test__validate_user_class__fails_if_class_has_no_identity_attribute
+
+        Ensure init fails if `user_class` is missing an `identity` attribute
+        """
+
         class NoIdentityUser:
             rolenames = []
             password = ""
@@ -84,6 +106,12 @@ class TestBeskar:
         self,
         default_guard,
     ):
+        """
+        test__validate_user_class__fails_if_class_has_no_rolenames_attribute
+
+        Ensure init fails if `user_class` is missing `rolenames` attribute
+        """
+
         class NoRolenamesUser:
             identity = 0
             password = ""
@@ -104,6 +132,12 @@ class TestBeskar:
         self,
         default_guard,
     ):
+        """
+        test__validate_user_class__fails_if_class_has_no_password_attribute
+
+        Ensure init fails if `user_class` has no `password` attribute
+        """
+
         class NoPasswordUser:
             identity = 0
             rolenames = []
@@ -122,6 +156,8 @@ class TestBeskar:
 
     async def test_rbac_policy_load(self, app, user_class):
         """
+        test_rbac_policy_load
+
         This test verifies the authenticate_totp() function, for use
         with TOTP two factor authentication.
         """
@@ -130,8 +166,10 @@ class TestBeskar:
         with pytest.raises(ConfigurationError):
             Beskar(app, user_class)
 
-    def test__audit(self, app, user_class):
+    def test_audit(self, app, user_class):
         """
+        test_audit
+
         This test will ensure we get proper validation of any custom PASSWORD_POLICY
         """
 
