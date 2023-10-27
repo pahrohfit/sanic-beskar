@@ -1,4 +1,4 @@
-name: sanic-beskar testing
+name: Unit Testing
 
 on:
   push:

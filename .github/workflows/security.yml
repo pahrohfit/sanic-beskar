@@ -1,4 +1,4 @@
-name: sanic-beskar security testing
+name: Security Testing
 
 on:
   push:
