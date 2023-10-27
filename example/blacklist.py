@@ -181,7 +181,7 @@ def create_app() -> Sanic:
 
     @sanic_app.route("/blacklist_token", methods=["POST"])
     @sanic_beskar.auth_required
-    @sanic_beskar.roles_required("admin")
+    @sanic_beskar.roles_required(["admin"])
     async def blacklist_token(request):
         """
         Blacklists an existing token by registering its jti claim in the blacklist.

@@ -203,7 +203,7 @@ def create_app() -> Sanic:
 
     @sanic_app.route("/disable_user", methods=["POST"])
     @sanic_beskar.auth_required
-    @sanic_beskar.roles_required("admin")
+    @sanic_beskar.roles_required(["admin"])
     async def disable_user(request):
         """
         Disables a user in the data store

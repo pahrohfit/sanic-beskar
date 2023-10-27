@@ -1,3 +1,5 @@
+from typing import Coroutine
+
 import secrets
 import string
 
@@ -128,8 +130,12 @@ rbac_base = {
 }
 
 
-async def rbac_dumper() -> dict:
-    """return dict"""
+async def rbac_dumper():
+    """
+    simple return of a dict
+
+    real use this would probably be pulling from a db or something
+    """
     return rbac_base
 
 
@@ -221,13 +227,13 @@ def create_app() -> Sanic:
         return json({"message": f"protected endpoint (allowed user {user.username})"})
 
     @sanic_app.route("/rights_protected")
-    @sanic_beskar.rights_required("update_rights")
+    @sanic_beskar.rights_required(["update_rights"])
     async def rights_protected(*args):
         """endpoint with rbac rights required"""
         return json({"message": "success"})
 
     @sanic_app.route("/update_rbac")
-    @sanic_beskar.roles_required("admin")
+    @sanic_beskar.roles_required(["admin"])
     async def update_rbac(*args):
         """update roles, call update signal"""
         rbac_base["admin"].remove("update_rights")
@@ -235,7 +241,7 @@ def create_app() -> Sanic:
         return json({"message": "success"})
 
     @sanic_app.route("/protected_admin_required")
-    @sanic_beskar.roles_required("admin")
+    @sanic_beskar.roles_required(["admin"])
     async def protected_admin_required(*args):
         """
         A protected endpoint that requires a role. The roles_required decorator
@@ -250,7 +256,7 @@ def create_app() -> Sanic:
         )
 
     @sanic_app.route("/protected_operator_accepted")
-    @sanic_beskar.roles_accepted("operator", "admin")
+    @sanic_beskar.roles_accepted(["operator", "admin"])
     async def protected_operator_accepted(*args):
         """
         A protected endpoint that accepts any of the listed roles. The

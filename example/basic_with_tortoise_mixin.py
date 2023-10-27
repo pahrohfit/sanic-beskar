@@ -122,7 +122,7 @@ def create_app() -> Sanic:
         return json({"message": f"protected endpoint (allowed user {user.username})"})
 
     @sanic_app.route("/protected_admin_required")
-    @sanic_beskar.roles_required("admin")
+    @sanic_beskar.roles_required(["admin"])
     async def protected_admin_required(*args):
         """
         A protected endpoint that requires a role. The roles_required decorator
@@ -137,7 +137,7 @@ def create_app() -> Sanic:
         )
 
     @sanic_app.route("/protected_operator_accepted")
-    @sanic_beskar.roles_accepted("operator", "admin")
+    @sanic_beskar.roles_accepted(["operator", "admin"])
     async def protected_operator_accepted(*args):
         """
         A protected endpoint that accepts any of the listed roles. The
