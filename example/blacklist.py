@@ -31,6 +31,7 @@ class User(Model):
     is_active = fields.BooleanField(default=True)
 
     def __str__(self):
+        """repr"""
         return f"User {self.id}: {self.username}"
 
     @property
@@ -97,7 +98,7 @@ class User(Model):
         return self.id
 
 
-def create_app():
+def create_app() -> Sanic:
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -116,7 +117,8 @@ def create_app():
 
     blacklist = set()
 
-    def is_blacklisted(jti):
+    def is_blacklisted(jti) -> bool:
+        """return True if the jti is blacklisted"""
         return jti in blacklist
 
     _guard.init_app(sanic_app, User, is_blacklisted=is_blacklisted)
@@ -132,6 +134,7 @@ def create_app():
     # Add users for the example
     @sanic_app.listener("before_server_start")
     async def populate_db(*args):
+        """Create a bunch of test users for examples"""
         await User.create(
             username="the_dude",
             email="the_dude@beskar.test.io",
@@ -198,4 +201,5 @@ app = create_app()
 
 # Run the example
 if __name__ == "__main__":
+    """entry point"""
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)

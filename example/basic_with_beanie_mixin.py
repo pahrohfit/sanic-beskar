@@ -27,6 +27,7 @@ class User(BeanieUserMixin):
     is_active: bool = True
 
     def __str__(self) -> str:
+        """repr"""
         return f"User {self.id}: {self.username}"
 
 
@@ -53,11 +54,13 @@ def create_app():
 
     @sanic_app.listener("before_server_start")
     async def beanie_launch(*kwargs):
+        """setup beanie at sanic load"""
         await init_beanie(database=client, document_models=[User])
 
     # Add users for the example
     @sanic_app.listener("before_server_start")
     async def populate_db(*kwargs):
+        """Create a bunch of test users for examples"""
         await User(
             username="the_dude",
             email="the_dude@beskar.test.io",
@@ -153,4 +156,5 @@ app = create_app()
 
 # Run the example
 if __name__ == "__main__":
+    """entry point"""
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)
