@@ -1,0 +1,56 @@
+name: tox validators
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          cache: 'poetry'
+
+      - name: Load cached dotvenv
+        id: cached-poetry-dotvenv
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          #key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/main.yml') }}
+
+      - name: Load cached dotlocal
+        id: cached-poetry-dotlocal
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: dotlocal-${{ runner.os }}-${{ hashFiles('.github/workflows/main.yml') }}
+
+        #----------------------------------------------
+        # install your root project, if required
+        #----------------------------------------------
+      - name: Install library
+        run: poetry install --no-interaction
+
+        #----------------------------------------------
+        #              run test suite
+        #----------------------------------------------
+      - name: mypy
+        run: |
+          poetry run tox -e py38-mypy
+
+      - name: pre-commit checks
+        run: |
+          poetry run tox -e pre-commit
