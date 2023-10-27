@@ -14,15 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python
         id: setup-python
         uses: actions/setup-python@v4
         with:
           python-version: 3.8
           cache: 'poetry'
-
-      - name: Install poetry
-        run: pipx install poetry
 
       - name: Load cached dotvenv
         id: cached-poetry-dotvenv
@@ -42,6 +41,10 @@ jobs:
         #----------------------------------------------
         # install your root project, if required
         #----------------------------------------------
+      - name: Show python
+        run: python -V
+      - name: Show poetry python
+        run: poetry run python -V
       - name: Install library
         run: poetry install --no-interaction --sync
 
