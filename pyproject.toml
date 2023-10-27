@@ -61,6 +61,8 @@ show_error_codes = true
 #no_implicit_optional = true
 #warn_return_any = true
 warn_unused_ignores = true
+pretty = true
+color_output = true
 exclude = ["docs/"]
 
 [tool.poetry.dependencies]
@@ -190,7 +192,7 @@ legacy_tox_ini = """
     labels = mypy
     description = py3 mypy validation
     commands =
-        poetry run mypy sanic_beskar tests
+        poetry run mypy sanic_beskar tests example
 
     [testenv:pre-commit]
     description = pre-commit validations
