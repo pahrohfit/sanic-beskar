@@ -77,18 +77,3 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: ./coverage.xml
-
-        #----------------------------------------------
-        #              run security test suite
-        #----------------------------------------------
-      - name: bandit security testing
-        run: |
-          poetry run bandit -r sanic_beskar/
-      - name: safety security testing
-        run: |
-          poetry run safety check
-      - name: Generate requirements.txt for Pysa
-        run: |
-          poetry export -o requirements.txt
-      - name: PyCharm Python Security Scanner
-        uses: tonybaloney/pycharm-security@master

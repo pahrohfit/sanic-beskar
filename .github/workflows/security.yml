@@ -1,0 +1,54 @@
+name: sanic-beskar security testing
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+
+permissions:
+  contents: read
+
+jobs:
+  security_checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+
+      - name: Load cached dotvenv
+        id: cached-poetry-dotvenv
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/main.yml') }}
+
+      - name: Load cached dotlocal
+        id: cached-poetry-dotlocal
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: dotlocal-${{ runner.os }}-${{ hashFiles('.github/workflows/main.yml') }}
+
+        #----------------------------------------------
+        # install your root project, if required
+        #----------------------------------------------
+      - name: Install library
+        run: poetry install --no-interaction
+
+        #----------------------------------------------
+        #              run security test suite
+        #----------------------------------------------
+      - name: bandit security testing
+        run: |
+          poetry run bandit -r sanic_beskar/
+      - name: safety security testing
+        run: |
+          poetry run safety check
+      - name: PyCharm Python Security Scanner
+        uses: tonybaloney/pycharm-security@master
