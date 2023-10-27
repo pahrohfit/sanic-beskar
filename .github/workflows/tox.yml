@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  mypy:
+  tox_pre_commit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -42,11 +42,11 @@ jobs:
         # install your root project, if required
         #----------------------------------------------
       - name: Install library
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --sync
 
         #----------------------------------------------
         #              run test suite
         #----------------------------------------------
 
       - name: pre-commit checks
-        run: poetry run tox -e pre-commit
+        run: poetry run-parallel tox -e pre-commit -- -- --all-files
