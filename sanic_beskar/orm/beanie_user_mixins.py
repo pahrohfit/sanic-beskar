@@ -1,6 +1,6 @@
 from typing import Optional
 
-from beanie import Document, PydanticObjectId
+from beanie import Document
 from bson.objectid import ObjectId
 
 
@@ -21,7 +21,7 @@ class BeanieUserMixin(Document):
     """
 
     @property
-    def identity(self) -> Optional[PydanticObjectId]:
+    def identity(self) -> str:
         """
         *Required Attribute or Property*
 
@@ -32,7 +32,7 @@ class BeanieUserMixin(Document):
         :returns: Provided :py:class:`User.id`
         :rtype: str
         """
-        return self.id
+        return str(self.id)
 
     @property
     def rolenames(self) -> list:

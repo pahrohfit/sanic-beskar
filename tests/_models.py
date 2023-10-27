@@ -1,6 +1,6 @@
 from typing import Optional
 from sanic_beskar.orm import TortoiseUserMixin, BeanieUserMixin, UmongoUserMixin
-from tortoise import fields as tortoise_field
+from tortoise import fields as tortoise_field, Model as TortoiseModel
 from pydantic import Field as pydantic_field
 from umongo import Document as UmongoDocument, fields as umongo_field  # type: ignore[import-untyped]
 
@@ -77,7 +77,7 @@ class MixinUserUmongo(UmongoDocument, UmongoUserMixin):
         return await cls.find_one({"id": _user.inserted_id})
 
 
-class ValidatingUser(TortoiseUserMixin):
+class ValidatingUser(BeanieUserMixin):
     """
     ValidatingUser for unit testing
     """
@@ -85,26 +85,22 @@ class ValidatingUser(TortoiseUserMixin):
     class Meta:
         table = "ValidatingUser"
 
-    id: tortoise_field.IntField = tortoise_field.IntField(pk=True)
-    username: tortoise_field.CharField = tortoise_field.CharField(unique=True, max_length=255)
-    password: tortoise_field.CharField = tortoise_field.CharField(max_length=255)
-    email: tortoise_field.CharField = tortoise_field.CharField(
-        max_length=255, unique=True, required=False
-    )
-    roles: tortoise_field.CharField = tortoise_field.CharField(max_length=255, default="")
-    is_active = tortoise_field.BooleanField(default=True)
+    username: str = pydantic_field(unique=True)
+    password: str = pydantic_field()
+    roles: str = pydantic_field(default="")
+    is_active: bool = pydantic_field(default=True)
+
+    @classmethod
+    async def cls_create(cls, **kwargs):
+        """``beanie`` document create caller"""
+        return await cls(**kwargs).insert()
 
     def is_valid(self):
         """return `is_active` logic"""
         return self.is_active
 
-    @classmethod
-    async def cls_create(cls, **kwargs):
-        """``tortoise`` document create caller"""
-        return await cls.create(**kwargs)
 
-
-class TotpUser(MixinUserTortoise):
+class TotpUser(MixinUserBeanie):
     """
     TotpUser user class with TOTP additions for unit testing
     """
@@ -112,8 +108,8 @@ class TotpUser(MixinUserTortoise):
     class Meta:
         table = "TotpUser"
 
-    totp = tortoise_field.CharField(max_length=255, default=None, null=True)
-    totp_last_counter = tortoise_field.IntField(default=None, null=True)
+    totp: str = pydantic_field(max_length=255, default=None, null=True)
+    totp_last_counter: Optional[int] = pydantic_field(default=None)
 
     async def cache_verify(self, counter: int, seconds: Optional[int] = None):
         """

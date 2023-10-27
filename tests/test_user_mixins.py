@@ -5,7 +5,9 @@ from sanic_beskar.base import Beskar
 
 from bson import ObjectId
 
-from models import MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
+from tests._models import MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
+
+ALL_MIXIN_MODELS = [MixinUserBeanie, MixinUserUmongo]
 
 
 class TestUserMixin:
@@ -13,7 +15,7 @@ class TestUserMixin:
     Unit tests for the ``sanic_beskar.orm`` included mixins
     """
 
-    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
+    @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
     async def test_basic(self, app, mixin_user, mock_users):
         """
         test_basic
@@ -36,7 +38,7 @@ class TestUserMixin:
             await mixin_guard.authenticate("the_dude", "is_undudelike")
         await the_dude.delete()
 
-    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
+    @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
     async def test_no_rolenames(self, app, mixin_user, mock_users):
         """
         test_no_rolenames
@@ -55,7 +57,7 @@ class TestUserMixin:
         assert the_noroles_dude.rolenames == []
         await the_noroles_dude.delete()
 
-    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
+    @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
     async def test_lookups(self, app, mixin_user, mock_users):
         """
         test_lookups

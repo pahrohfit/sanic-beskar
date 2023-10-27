@@ -473,7 +473,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         override_access_lifespan = pendulum.Duration(minutes=1)
@@ -493,7 +493,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         override_access_lifespan = pendulum.Duration(hours=1)
@@ -512,7 +512,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         validating_guard = Beskar(app, validating_user_class)
@@ -545,7 +545,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"
@@ -571,7 +571,7 @@ class TestBeskar:
             assert token_data["iat"] == moment.int_timestamp
             assert token_data["exp"] == (moment + VITAM_AETERNUM).int_timestamp
             assert token_data[REFRESH_EXPIRATION_CLAIM] == (moment + VITAM_AETERNUM).int_timestamp
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
 
     async def test_refresh_token(
         self,
@@ -624,7 +624,7 @@ class TestBeskar:
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert new_token_data["id"] == the_dude.id
+            assert new_token_data["id"] == the_dude.identity
             assert new_token_data["rls"] == "admin,operator"
 
         moment = plummet.momentize("2017-05-21 18:39:55")
@@ -725,7 +725,7 @@ class TestBeskar:
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert new_token_data["id"] == the_dude.id
+            assert new_token_data["id"] == the_dude.identity
             assert new_token_data["rls"] == "admin,operator"
             assert new_token_data["duder"] == "brief"
             assert new_token_data["el_duderino"] == "not brief"
@@ -805,7 +805,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         moment = plummet.momentize("2017-05-21 18:39:55")
@@ -827,7 +827,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
 
         moment = plummet.momentize("2018-08-14 09:08:39")
         with plummet.frozen_time(moment):
@@ -847,7 +847,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"

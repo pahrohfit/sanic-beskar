@@ -23,7 +23,6 @@ bcrypt = ">=4.0.1, <5"
 plummet = {version = ">=1.1", extras = ["time-machine"]}
 sanic-testing = ">=23.3"
 tortoise-orm = ">=0.19.2, < 21.0"
-nest-asyncio = ">=1.5.5"
 pytest-cov = ">=4.0.0"
 umongo = ">=3.1.0, <4.0"
 motor = ">=3.1.0, <4.0"
@@ -39,10 +38,9 @@ bandit = ">=1.7.4"
 flake8-async = ">=22.11.6"
 safety = ">=2.3"
 async-sender = ">=2.0.0"
-pytest-xdist = ">=3.0.2"
 tox = ">=4.11.3"
-alt-pytest-asyncio = ">=0.7.2"
 pytest-sugar = "^0.9.7"
+alt-pytest-asyncio = "^0.7.2"
 
 [tool.poetry.group.docs.dependencies]
 toml = ">=0.10.2"
@@ -88,7 +86,8 @@ minversion = "7.1"
 testpaths = [
     "tests",
 ]
-addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
+#addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
+addopts = "--color=auto --code-highlight=yes"
 filterwarnings = [
   "ignore:::marshmallow.*",
   "ignore:::umongo.*",
