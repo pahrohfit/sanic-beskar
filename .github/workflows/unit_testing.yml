@@ -59,9 +59,6 @@ jobs:
       - name: test
         run: |
           poetry run pytest -x --cov=sanic_beskar --cov-report=xml
-      - name: lint-src
-        run: |
-          poetry run flake8 sanic_beskar --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
