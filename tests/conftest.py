@@ -1,7 +1,7 @@
 import asyncio
 import uvloop
 
-# asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 from sanic_testing import TestManager  # type: ignore
 
@@ -368,16 +368,15 @@ def speed_up_passlib_for_pytest_only(default_guard):
 
 
 @pytest.fixture(scope="session", autouse=False)
-def in_memory_tortoise_db(request):
+async def in_memory_tortoise_db(request):
     """
     set up and tear down Tortoise as needed for testing
 
-    hack brought to you by:
+    (modified) hack brought to you by:
       https://github.com/tortoise/tortoise-orm/issues/1110#issuecomment-1521477988
     """
     config = getDBConfig(app_label="models", modules=["tests._models"])
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(_init_db(config))
+    await _init_db(config)
 
-    request.addfinalizer(lambda: loop.run_until_complete(Tortoise._drop_databases()))
+    request.addfinalizer(lambda: asyncio.run(Tortoise._drop_databases()))
