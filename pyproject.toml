@@ -177,6 +177,8 @@ legacy_tox_ini = """
     commands_pre =
         poetry lock
         poetry install --sync -v
+    set_env =
+        POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON = true
     pass_env =
         FORCE_COLOR
         NO_COLOR
@@ -192,16 +194,17 @@ legacy_tox_ini = """
     labels = mypy
     description = py3 mypy validation
     commands =
-        poetry run mypy sanic_beskar tests example
+        poetry run mypy {posargs} sanic_beskar tests example
 
     [testenv:pre-commit]
+    base_python = py38
     description = pre-commit validations
     skip_install = true
     deps = pre-commit
-    commands = pre-commit run
+    commands = pre-commit run {posargs}
 
     [testenv:docs]
     description = sphinix build
     changedir = docs
-    commands = sphinx-build -W -b html -d {envtmpdir}/doctrees . {envtmpdir}/html
+    commands = sphinx-build -W -b html -d {envtmpdir}/doctrees . {envtmpdir}/html {posargs}
 """
