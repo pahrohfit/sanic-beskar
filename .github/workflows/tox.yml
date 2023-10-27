@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  mypy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,8 +28,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          #key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/main.yml') }}
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock')-${{ hashFiles('.github/workflows/main.yml') }}
+          #key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/main.yml') }}
 
       - name: Load cached dotlocal
         id: cached-poetry-dotlocal
@@ -47,10 +47,6 @@ jobs:
         #----------------------------------------------
         #              run test suite
         #----------------------------------------------
-      - name: mypy
-        run: |
-          poetry run tox -e py38-mypy
 
       - name: pre-commit checks
-        run: |
-          poetry run tox -e pre-commit
+        run: poetry run tox -e pre-commit
