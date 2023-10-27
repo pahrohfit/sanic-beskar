@@ -1,7 +1,7 @@
 import asyncio
 import uvloop
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+# asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 from sanic_testing import TestManager  # type: ignore
 
@@ -18,6 +18,8 @@ from sanic.log import logger
 
 from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
 from beanie import init_beanie
+from tortoise import Tortoise
+from tortoise.contrib.test import _init_db, getDBConfig
 
 from tests._models import TotpUser, ValidatingUser, MixinUserBeanie
 
@@ -179,9 +181,16 @@ async def app(request, monkeypatch):
     # Init beanie
     client = AsyncMongoMockClient()
     await init_beanie(database=client.db_name, document_models=[MixinUserBeanie])
+    import logging
 
-    yield sanic_app
-    Sanic._app_registry.clear()
+    logging.basicConfig(level=logging.DEBUG)
+
+    # register_tortoise(
+    #    sanic_app, db_url="sqlite://:memory:", modules={"models": ["tests._models"]}, generate_schemas=True
+    # )
+
+    return sanic_app
+    # Sanic._app_registry.clear()
 
 
 @pytest.fixture(scope="session")
@@ -356,3 +365,19 @@ def speed_up_passlib_for_pytest_only(default_guard):
         warnings.simplefilter("ignore")
         default_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)
         default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
+
+
+@pytest.fixture(scope="session", autouse=False)
+def in_memory_tortoise_db(request):
+    """
+    set up and tear down Tortoise as needed for testing
+
+    hack brought to you by:
+      https://github.com/tortoise/tortoise-orm/issues/1110#issuecomment-1521477988
+    """
+    config = getDBConfig(app_label="models", modules=["tests._models"])
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(_init_db(config))
+
+    request.addfinalizer(lambda: loop.run_until_complete(Tortoise._drop_databases()))

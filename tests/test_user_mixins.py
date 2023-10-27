@@ -5,9 +5,10 @@ from sanic_beskar.base import Beskar
 
 from bson import ObjectId
 
+# TODO: Fix Tortoise testing
 from tests._models import MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
 
-ALL_MIXIN_MODELS = [MixinUserBeanie, MixinUserUmongo]
+ALL_MIXIN_MODELS = [MixinUserBeanie, MixinUserUmongo, MixinUserTortoise]
 
 
 class TestUserMixin:
@@ -16,7 +17,7 @@ class TestUserMixin:
     """
 
     @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
-    async def test_basic(self, app, mixin_user, mock_users):
+    async def test_basic(self, app, mixin_user, mock_users, in_memory_tortoise_db):
         """
         test_basic
 
@@ -39,7 +40,7 @@ class TestUserMixin:
         await the_dude.delete()
 
     @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
-    async def test_no_rolenames(self, app, mixin_user, mock_users):
+    async def test_no_rolenames(self, app, mixin_user, mock_users, in_memory_tortoise_db):
         """
         test_no_rolenames
 
@@ -58,7 +59,7 @@ class TestUserMixin:
         await the_noroles_dude.delete()
 
     @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
-    async def test_lookups(self, app, mixin_user, mock_users):
+    async def test_lookups(self, app, mixin_user, mock_users, in_memory_tortoise_db):
         """
         test_lookups
 
