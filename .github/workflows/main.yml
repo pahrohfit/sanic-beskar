@@ -32,16 +32,16 @@ jobs:
         #----------------------------------------------
         #       load cached venv if cache exists
         #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
+      - name: Load cached dotvenv
+        id: cached-poetry-dotvenv
         uses: actions/cache@v3
         with:
           path: .venv
           #key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/main.yml') }}
 
-      - name: Load cached venv
-        id: cached-poetry-dependencies
+      - name: Load cached dotlocal
+        id: cached-poetry-dotlocal
         uses: actions/cache@v3
         with:
           path: ~/.local
