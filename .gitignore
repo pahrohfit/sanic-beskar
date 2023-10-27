@@ -31,3 +31,4 @@ tramp
 *.swp
 
 .DS_Store
+.tox/
