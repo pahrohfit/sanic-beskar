@@ -34,7 +34,7 @@ beanie = ">=1.11.7, <=2.0"
 mongomock-motor = ">=0.0.19"
 mongomock = ">=4.1.2"
 ipdb = ">=0.13.9"
-bandit = ">=1.7.4"
+bandit = {version = ">=1.7.4", extras = ["toml"]}
 flake8-async = ">=22.11.6"
 safety = ">=2.3"
 async-sender = ">=2.0.0"
