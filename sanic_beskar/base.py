@@ -6,7 +6,7 @@ import warnings
 from collections.abc import Callable
 from importlib import import_module
 from importlib.util import find_spec
-from typing import TYPE_CHECKING, Any, Coroutine, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import aiofiles
 import jinja2
@@ -101,7 +101,7 @@ class Beskar:
         is_blacklisted: Optional[Callable] = None,
         encode_token_hook: Optional[Callable] = None,
         refresh_token_hook: Optional[Callable] = None,
-        rbac_populate_hook: Optional[Coroutine] = None,
+        rbac_populate_hook: Optional[Callable] = None,
     ) -> None:
         self.app: Sanic
         self.pwd_ctx: CryptContext = CryptContext()
@@ -136,7 +136,7 @@ class Beskar:
         is_blacklisted: Optional[Callable] = None,
         encode_token_hook: Optional[Callable] = None,
         refresh_token_hook: Optional[Callable] = None,
-        rbac_populate_hook: Optional[Coroutine] = None,
+        rbac_populate_hook: Optional[Callable] = None,
     ) -> Sanic:
         """
         Initializes the :py:class:`Beskar` extension
