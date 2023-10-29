@@ -88,7 +88,6 @@ minversion = "7.1"
 testpaths = [
     "tests",
 ]
-#addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
 addopts = "--color=auto --code-highlight=yes"
 filterwarnings = [
   "ignore:::marshmallow.*",
