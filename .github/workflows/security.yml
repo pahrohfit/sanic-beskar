@@ -8,6 +8,9 @@ on:
 
 permissions:
   contents: read
+  id-token: write
+  actions: read
+  security-events: write   # To upload sarif files
 
 jobs:
   security_checks:
