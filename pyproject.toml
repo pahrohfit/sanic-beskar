@@ -167,7 +167,8 @@ legacy_tox_ini = """
     env_list =
         pre-commit,
         py3{8,9,10,11,12}-{tests},
-        py3{8}-{mypy}
+        py3{8}-{mypy},
+	coverage
 
     [testenv]
     description = defaults for all environments
@@ -206,4 +207,16 @@ legacy_tox_ini = """
     description = sphinix build
     changedir = docs
     commands = sphinx-build -W -b html -d {envtmpdir}/doctrees . {envtmpdir}/html {posargs}
+
+    [testenv:coverage-report]
+    # Keep in sync with .python-version
+    base_python = py311
+    deps = coverage[toml]
+    skip_install = true
+    parallel_show_output = true
+    depends = py3{8,11}-{tests,mypy}
+    commands =
+        poetry run coverage combine
+        poetry run coverage report
+
 """
