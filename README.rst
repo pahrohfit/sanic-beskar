@@ -25,9 +25,9 @@
    :alt:    Codacy Badge
    :target: https://app.codacy.com/gh/pahrohfit/sanic-beskar?utm_source=github.com&utm_medium=referral&utm_content=pahrohfit/sanic-beskar&utm_campaign=Badge_Grade_Settings
 
-.. image::  https://mayhem4api.forallsecure.com/api/v1/api-target/pahrohfit/pahrohfit-sanic-beskar/badge/icon.svg?scm_branch=master
-   :alt:    Mayhem for API
-   :target: https://mayhem4api.forallsecure.com/pahrohfit/pahrohfit-sanic-beskar/latest-job?scm_branch=master
+.. image::  docs/_static/interrogate_badge.svg
+   :alt:    Interrogate Badge
+   :target: http://sanic-beskar.readthedocs.io/en/latest
 
 .. image::   https://img.shields.io/badge/security-bandit-yellow.svg
     :target: https://github.com/PyCQA/bandit

@@ -10,7 +10,6 @@ dist/*
 docs/build/*
 docs/_build/*
 !docs/build/.gitignore
-docs/_static/interrogate_badge.svg
 .cache/*
 .pytest_cache/*
 .vscode
