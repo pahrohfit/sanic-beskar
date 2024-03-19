@@ -50,5 +50,8 @@ jobs:
         #              run test suite
         #----------------------------------------------
 
-      - name: pre-commit checks
-        run: poetry run tox -e pre-commit -- -- --all-files -v
+      #- name: pre-commit checks
+      #  run: poetry run tox -e pre-commit -- -- --all-files -v
+
+      - name: pre-commit
+        uses: pre-commit/action@v3.0.1
