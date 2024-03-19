@@ -181,6 +181,7 @@ async def app(request, monkeypatch):
     # Init beanie
     client = AsyncMongoMockClient()
     await init_beanie(database=client.db_name, document_models=[MixinUserBeanie])
+    
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
@@ -242,7 +243,7 @@ def mail():
 
 
 @pytest.fixture(autouse=True)
-def clean_sanic_app_config(app):
+def clean_sanic_app_config(app: Sanic):
     """
     This fixture ensures a clean `app.config` is available for each round
         of testing.

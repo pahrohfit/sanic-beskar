@@ -2,6 +2,7 @@ from typing import Optional
 from sanic_beskar.orm import TortoiseUserMixin, BeanieUserMixin, UmongoUserMixin
 from tortoise import fields as tortoise_field, Model as TortoiseModel
 from pydantic import Field as pydantic_field
+from beanie import Indexed
 from umongo import Document as UmongoDocument, fields as umongo_field  # type: ignore[import-untyped]
 
 from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
@@ -43,9 +44,9 @@ class MixinUserBeanie(BeanieUserMixin):
     class Meta:
         table = "BeanieMixinUser"
 
-    username: str = pydantic_field(unique=True)
+    username: str = Indexed(unique=True)
     password: str = pydantic_field()
-    email: str = pydantic_field(unique=True, required=False)
+    email: str = Indexed(unique=True, required=False)
     roles: str = pydantic_field(default="")
 
     @classmethod
@@ -85,7 +86,7 @@ class ValidatingUser(BeanieUserMixin):
     class Meta:
         table = "ValidatingUser"
 
-    username: str = pydantic_field(unique=True)
+    username: str = Indexed(unique=True)
     password: str = pydantic_field()
     roles: str = pydantic_field(default="")
     is_active: bool = pydantic_field(default=True)
@@ -108,7 +109,7 @@ class TotpUser(MixinUserBeanie):
     class Meta:
         table = "TotpUser"
 
-    totp: str = pydantic_field(max_length=255, default=None, null=True)
+    totp: str = pydantic_field(max_length=255, default=None)
     totp_last_counter: Optional[int] = pydantic_field(default=None)
 
     async def cache_verify(self, counter: int, seconds: Optional[int] = None):
