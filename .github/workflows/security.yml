@@ -16,15 +16,19 @@ jobs:
   security_checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
+      - uses: actions/checkout@v4
       - name: Set up Python
         id: setup-python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
           cache: 'poetry'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+            virtualenvs-create: true
+            virtualenvs-in-project: true
+            installer-parallel: true
 
       - name: Load cached dotvenv
         id: cached-poetry-dotvenv
