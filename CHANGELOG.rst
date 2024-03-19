@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
-v2.3.3 - 2024-03-19
+v2.3.3_01 - 2024-03-19
 -------------------
 - Updated Dependencies
 - Enhancements to `tox` configuration
