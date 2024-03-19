@@ -153,8 +153,9 @@ quiet = false
 whitelist-regex = []
 color = true
 omit-covered-files = false
-generate-badge = "docs/"
+generate-badge = "docs/_static"
 badge-format = "svg"
+python-version = 3.11
 
 [tool.codespell]
 skip = 'poetry.lock'
