@@ -1,10 +1,10 @@
 from typing import Optional
 
 from bson.objectid import ObjectId
-from umongo import Document  # type: ignore
+from umongo import Document, MixinDocument  # type: ignore
 
 
-class UmongoUserMixin:
+class UmongoUserMixin(MixinDocument):
     """
     A short-cut providing required methods and attributes for a user class
     implemented with `uMongo <https://github.com/Scille/umongo/blob/master/docs/index.rst>`_
@@ -20,17 +20,20 @@ class UmongoUserMixin:
     * The model has a ``password`` column that contains its hashed password
     """
 
+    class Meta:
+        abstract = True
+
     @property
     def rolenames(self) -> Optional[list]:
         """
         *Required Attribute or Property*
 
         sanic-beskar requires that the user class has a
-        :py:attr:`rolenames` instance attribute or property that
+        :py:attr:`roles` instance attribute or property that
         provides a list of strings that describe the roles attached to
         the user instance.
 
-        This can be a seperate table (probably sane), so long as this attribute
+        This can be a separate table (probably sane), so long as this attribute
         or property properly returns the associated values for the user as a
         RBAC dict, as:
         {'rolename', ['permissions'],}

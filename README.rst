@@ -25,13 +25,17 @@
    :alt:    Codacy Badge
    :target: https://app.codacy.com/gh/pahrohfit/sanic-beskar?utm_source=github.com&utm_medium=referral&utm_content=pahrohfit/sanic-beskar&utm_campaign=Badge_Grade_Settings
 
-.. image::  https://mayhem4api.forallsecure.com/api/v1/api-target/pahrohfit/pahrohfit-sanic-beskar/badge/icon.svg?scm_branch=master
-   :alt:    Mayhem for API
-   :target: https://mayhem4api.forallsecure.com/pahrohfit/pahrohfit-sanic-beskar/latest-job?scm_branch=master
+.. image::  docs/_static/interrogate_badge.svg
+   :alt:    Interrogate Badge
+   :target: http://sanic-beskar.readthedocs.io/en/latest
 
 .. image::   https://img.shields.io/badge/security-bandit-yellow.svg
     :target: https://github.com/PyCQA/bandit
     :alt:    Security Status
+
+.. image::   https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt:    Code style: black
 
 ******************
  sanic-beskar
@@ -45,7 +49,7 @@
 Strong, Simple, and Precise security for Sanic APIs
 ---------------------------------------------------
 
-This project's begining was fully lifted from the awesome
+This project's beginning was fully lifted from the awesome
 `Flask-Praetorian <https://github.com/dusktreader/flask-praetorian>`_.
 
 Why `beskar <https://starwars.fandom.com/wiki/Beskar>`_? Why not -- what
@@ -61,10 +65,10 @@ accessing your API's endpoints are provisioned with the correct roles for
 access.
 
 The goal of this project is to offer simplistic protection, without
-forcing nonsense, excessivly complicatated implimentation, or
+forcing nonsense, excessivly complicatated implementation, or
 mandated/opinionated ORM usage. Providing this usability for small
 scaled Sanic applications, while allowing the flexibility and
-scalability for enterprise grade solutions, seperates this from your
+scalability for enterprise grade solutions, separates this from your
 other options.
 
 The *sanic-beskar* package can be used to:

@@ -9,7 +9,7 @@ Requirements
 * Sanic-Ext 22.6+ `provides CORS`
 * cryptography 37+ `for encrypting stuff`
 * Any `async` Mail plugin, providing :py:func:`mail()` and :py:class:`Mailer()`,
-  similiar to `async-sender <https://github.com/theruziev/async_sender>`_
+  similar to `async-sender <https://github.com/theruziev/async_sender>`_
 
 Note on Requirements
 ....................
@@ -36,7 +36,7 @@ Installation
 .. note::
 
     sanic-beskar does not support distutils or setuptools because the
-    origional author, as well as this maintainer, have very strong feelings
+    original author, as well as this maintainer, have very strong feelings
     about python packaging and the role pip plays in taking us into a bright
     new future of standardized and usable python packaging
 

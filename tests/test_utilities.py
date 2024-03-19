@@ -2,6 +2,7 @@ from io import BytesIO, StringIO
 
 import pendulum
 import pytest
+from bson import ObjectId
 from sanic import Sanic
 from sanic_beskar.exceptions import (
     BeskarError,
@@ -26,6 +27,10 @@ from ujson import dumps
 
 
 class TestBeskarUtilities:
+    """
+    Unit tests against ``sanic_beskar.utilities``
+    """
+
     def test_app_context_has_token_data(self):
         """
         This test verifies that the app_context_has_token_data method can
@@ -78,14 +83,15 @@ class TestBeskarUtilities:
             await current_user()
         assert "Could not fetch an id" in str(err_info.value)
 
-        token_data = {"id": 31}
+        token_data = {"id": ObjectId()}
         add_token_data_to_app_context(token_data)
         with pytest.raises(BeskarError) as err_info:
             await current_user()
         assert "Could not identify the current user" in str(err_info.value)
 
-        the_dude = await mock_users(username="the_dude", password="Abides", id=13)
-        token_data = {"id": 13}
+        test_id = ObjectId()
+        the_dude = await mock_users(username="the_dude", password="Abides", id=test_id)
+        token_data = {"id": test_id}
         add_token_data_to_app_context(token_data)
         assert await current_user() == the_dude
 

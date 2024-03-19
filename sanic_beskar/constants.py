@@ -23,8 +23,8 @@ DEFAULT_PASSWORD_POLICY: dict = {
     "attempt_lockout": 6,
 }
 
-DEFAULT_CONFIRMATION_TEMPLATE = "{}/sanic_beskar/templates/registration_email.html".format(
-    dirname(dirname(abspath(__file__))),
+DEFAULT_CONFIRMATION_TEMPLATE = (
+    f"{dirname(dirname(abspath(__file__)))}/sanic_beskar/templates/registration_email.html"
 )
 
 DEFAULT_CONFIRMATION_SENDER: str = "you@whatever.com"
@@ -72,11 +72,13 @@ RESERVED_CLAIMS = {
     IS_RESET_TOKEN_CLAIM,
 }
 
-# 1M days seems reasonable. If this code is being used in 3000 years...welp
+# 1M days seems reasonable. If this code is being used in 3000 years...whelp
 VITAM_AETERNUM: Duration = duration(days=1000000)
 
 
 class AccessType(enum.Enum):
+    """enum for the various Access token types"""
+
     access: str = "ACCESS"
     refresh: str = "REFRESH"
     register: str = "REGISTER"

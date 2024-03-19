@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sanic-beskar"
-version = "2.3.3"
+version = "2.3.3-01"
 description = "Strong, Simple, (now async!) and Precise security for Sanic APIs"
 authors = ["Rob Dailey <rob@suspected.org>"]
 license = "MIT"
@@ -15,15 +15,14 @@ types-toml = ">=0.10"
 types-aiofiles = ">=23"
 types-passlib = ">=1.7"
 mongo-types = ">=0.15"
-mypy = ">=1.1"
+mypy = ">=1.3"
+types-python-dateutil = ">=2.8.19.14"
 
 [tool.poetry.group.dev.dependencies]
 bcrypt = ">=4.0.1"
 plummet = {version = ">=1.1", extras = ["time-machine"]}
 sanic-testing = ">=23.3"
-pytest-asyncio = ">=0.21"
-tortoise-orm = ">=0.19.0"
-nest-asyncio = ">=1.5.5"
+tortoise-orm = ">=0.19.2"
 pytest-cov = ">=4.0.0"
 umongo = ">=3.1.0"
 motor = ">=3.1.0"
@@ -35,12 +34,13 @@ beanie = ">=1.11.7"
 mongomock-motor = ">=0.0.19"
 mongomock = ">=4.1.2"
 ipdb = ">=0.13.9"
-bandit = ">=1.7.4"
+bandit = {version = ">=1.7.4", extras = ["toml"]}
 flake8-async = ">=22.11.6"
 safety = ">=2.3"
 async-sender = ">=2.0.0"
-pytest-xdist = ">=3.0.2"
 tox = ">=4.11.3"
+pytest-sugar = ">=0.9.7"
+alt-pytest-asyncio = ">=0.7.2"
 
 [tool.poetry.group.docs.dependencies]
 toml = ">=0.10.2"
@@ -56,18 +56,20 @@ exclude_lines = [
 
 [tool.mypy]
 python_version = "3.11"
-disallow_untyped_defs = true
+#disallow_untyped_defs = true
 show_error_codes = true
-no_implicit_optional = true
-warn_return_any = true
+#no_implicit_optional = true
+#warn_return_any = true
 warn_unused_ignores = true
-exclude = ["example/", "docs/", "tests/"]
+pretty = true
+color_output = true
+exclude = ["docs/"]
 
 [tool.poetry.dependencies]
 python = ">=3.9, <4.0"
 pyjwt = ">=2.6"
 pendulum = [
-    { version = ">=2.1, <=3.1", allow-prereleases = true, python = ">=3.8,<3.12" },
+    { version = ">=2.1, <3.0", allow-prereleases = true, python = ">=3.9,<3.12" },
     { version = "3.0.*", allow-prereleases = true, python = ">=3.12" },
 ]
 passlib = ">=1.7"
@@ -86,12 +88,7 @@ minversion = "7.1"
 testpaths = [
     "tests",
 ]
-asyncio_mode = "auto"
-#log_format = "%(asctime)-15s | %(levelname)-6s | %(threadName)-12s | %(filename)s:%(lineno)d | %(message)s"
-#log_date_format = "%Y-%m-%d %H:%M:%S"
-#log_cli = "false"
-#log_level = "DEBUG"
-addopts = "--color=auto --code-highlight=yes -n auto --maxprocesses=4"
+addopts = "--color=auto --code-highlight=yes"
 filterwarnings = [
   "ignore:::marshmallow.*",
   "ignore:::umongo.*",
@@ -113,8 +110,8 @@ filterwarnings = [
 [tool.black]
 line-length = 100
 #preview-string-processing = true
-target-version = ['py311']
-include = ['sanic_beskar/', 'tests']
+target-version = ['py39']
+#include = ['sanic_beskar/', 'tests']
 
 [tool.bandit]
 skips = ['B101']
@@ -122,14 +119,107 @@ exclude_dirs = ['tests/']
 
 [tool.ruff]
 line-length = 100
-target-version = 'py38'
+target-version = 'py39'
 src = ["sanic_beskar", "tests"]
+
+[tool.ruff.lint]
 ignore = ["E501", "E402", "N818", "A002", "A003", "B904", "N805", "B006", "E712", "S106", "S105", "B028"]
-exclude = [".mypy_cache", ".vscode", ".git", ".pytest_cache", ".github", "__pycache__", "example", "docs", "tests"]
+exclude = [".mypy_cache", ".vscode", ".git", ".pytest_cache", ".github", "__pycache__", "example/*.py", "docs/*.py", "tests/*.py"]
 select = ["E", "F", "B", "W", "I", "N", "UP", "ASYNC", "S", "A", "RSE", "RET"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["S101", "D100", "D102", "D101", "D103", "S311", "D104"]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = false
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = true
+ignore-nested-functions = false
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 100
+exclude = ["setup.py", "docs", "build", "example"]
+#ignore-regex = ["^get$", "^mock_.*", ".*BaseClass.*"]
+# possible values: 0 (minimal output), 1 (-v), 2 (-vv)
+verbose = 2
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
+generate-badge = "docs/_static"
+badge-format = "svg"
+python-version = 3.11
+
+[tool.codespell]
+skip = 'poetry.lock'
+count = ''
+quiet-level = 3
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    min_version = 4
+    isolated_build = true
+    env_list =
+        pre-commit,
+        py3{9,10,11,12}-{tests},
+        py3{9}-{mypy},
+	    coverage
+
+    [testenv]
+    description = defaults for all environments
+    skip_install = true
+    allowlist_externals = poetry, pre-commit
+    commands_pre =
+        poetry lock
+        poetry install --sync -v
+    set_env =
+        POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON = true
+    pass_env =
+        FORCE_COLOR
+        NO_COLOR
+        *
+
+    [testenv:py3{9,10,11,12}-tests]
+    labels = pytest
+    description = py3 sanic-beskar testing
+    commands =
+        poetry run pytest --cov=sanic_beskar --cov-report=html --cov-report=term tests/ {posargs}
+
+    [testenv:py3{9}-mypy]
+    labels = mypy
+    description = py3 mypy validation
+    commands =
+        poetry run mypy {posargs} sanic_beskar tests example
+
+    [testenv:pre-commit]
+    base_python = py39
+    description = pre-commit validations
+    skip_install = true
+    deps = pre-commit
+    commands = pre-commit run {posargs}
+
+    [testenv:docs]
+    description = sphinix build
+    changedir = docs
+    commands = sphinx-build -W -b html -d {envtmpdir}/doctrees . {envtmpdir}/html {posargs}
+
+    [testenv:coverage-report]
+    # Keep in sync with .python-version
+    base_python = py39
+    deps = coverage[toml]
+    skip_install = true
+    parallel_show_output = true
+    depends = py3{9,11}-{tests,mypy}
+    commands =
+        poetry run coverage combine
+        poetry run coverage report
+
+"""

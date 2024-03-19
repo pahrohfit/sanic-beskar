@@ -15,7 +15,7 @@ _guard = Beskar()
 _mail = Mail()
 
 
-def create_app():
+def create_app() -> Sanic:
     """
     Initializes the sanic app for the test suite. Also prepares a set of routes
     to use in testing with varying levels of protections
@@ -60,6 +60,7 @@ def create_app():
         is_active = fields.BooleanField(load_default=True)
 
         def __str__(self):
+            """repr"""
             return f"User {self.id}: {self.username}"
 
         @property
@@ -71,7 +72,7 @@ def create_app():
             instance attribute or property that provides a list of strings that
             describe the roles attached to the user instance.
 
-            This can be a seperate table (probably sane), so long as this attribute
+            This can be a separate table (probably sane), so long as this attribute
             or property properly returns the associated values for the user as a
             list of strings.
             """
@@ -133,6 +134,7 @@ def create_app():
     # Add users for the example
     @sanic_app.listener("before_server_start")
     async def setup_example_db(*args):
+        """Create a bunch of test users for examples"""
         await User.ensure_indexes()
 
         await User(
@@ -194,7 +196,7 @@ def create_app():
         return json({"message": f"protected endpoint (allowed user {user.username})"})
 
     @sanic_app.route("/protected_admin_required")
-    @sanic_beskar.roles_required("admin")
+    @sanic_beskar.roles_required(["admin"])
     async def protected_admin_required(*args):
         """
         A protected endpoint that requires a role. The roles_required decorator
@@ -209,7 +211,7 @@ def create_app():
         )
 
     @sanic_app.route("/protected_operator_accepted")
-    @sanic_beskar.roles_accepted("operator", "admin")
+    @sanic_beskar.roles_accepted(["operator", "admin"])
     async def protected_operator_accepted(*args):
         """
         A protected endpoint that accepts any of the listed roles. The
@@ -231,4 +233,5 @@ app = create_app()
 
 # Run the example
 if __name__ == "__main__":
+    """entry point"""
     app.run(host="127.0.0.1", port=8000, workers=1, debug=True)

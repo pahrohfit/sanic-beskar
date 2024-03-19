@@ -44,8 +44,14 @@ from sanic_beskar.exceptions import (
 
 
 class TestBeskar:
+    """
+    Unit tests against core components
+    """
+
     async def test_hash_password(self, default_guard):
         """
+        test_hash_password
+
         This test verifies that Beskar hashes passwords using the scheme
         specified by the HASH_SCHEME setting. If no scheme is supplied, the
         test verifies that the default scheme is used. Otherwise, the test
@@ -54,8 +60,10 @@ class TestBeskar:
         secret = default_guard.hash_password("some password")
         assert default_guard.pwd_ctx.identify(secret) == "pbkdf2_sha512"
 
-    async def test__verify_password(self, app, user_class, default_guard):
+    async def test_verify_password(self, app, user_class, default_guard):
         """
+        test_verify_password
+
         This test verifies that the _verify_password function can be used to
         successfully compare a raw password against its hashed version
         """
@@ -74,6 +82,8 @@ class TestBeskar:
 
     async def test_authenticate(self, user_class, default_guard, mock_users):
         """
+        test_authenticate
+
         This test verifies that the authenticate function can be used to
         retrieve a User instance when the correct username and password are
         supplied. It also verifies that an AuthenticationError is raised
@@ -94,18 +104,29 @@ class TestBeskar:
 
         await the_dude.delete()
 
-    def test__validate_user_class__success_with_valid_user_class(
+    def test_validate_user_class_success_with_valid_user_class(
         self,
         user_class,
         default_guard,
     ):
+        """
+        test_validate_user_class_success_with_valid_user_class
+
+        Ensure basic functionality of the setup of the user class validator
+        """
         assert default_guard._validate_user_class(user_class)
 
-    def test__validate_user_class__skips_rolenames_check_if_roles_are_disabled(
+    def test_validate_user_class_skips_rolenames_check_if_roles_are_disabled(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_user_class_skips_rolenames_check_if_roles_are_disabled
+
+        Ensure the user validator still functions if role checking is disabled
+        """
+
         class NoRolenamesUser:
             identity = 0
             password = ""
@@ -122,10 +143,16 @@ class TestBeskar:
         guard = Beskar(app, user_class)
         assert guard._validate_user_class(NoRolenamesUser)
 
-    def test__validate_user_class__skips_inst_check_if_constructor_req_params(
+    def test_validate_user_class_skips_inst_check_if_constructor_req_params(
         self,
         default_guard,
     ):
+        """
+        test_validate_user_class_skips_inst_check_if_constructor_req_params
+
+        Ensure the user class validator functions if missing req_params
+        """
+
         class EmptyInitBlowsUpUser:
             def __init__(self, *args):
                 BeskarError.require_condition(len(args) > 0, "BOOM")
@@ -140,54 +167,79 @@ class TestBeskar:
 
         assert default_guard._validate_user_class(EmptyInitBlowsUpUser)
 
-    def test__validate_token_data__fails_when_missing_jti(
+    def test_validate_token_data_fails_when_missing_jti(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_when_missing_jti
+
+        Ensure JTI is required to pass token validation checks
+        """
         guard = Beskar(app, user_class)
         data = dict()
         with pytest.raises(MissingClaimError) as err_info:
             guard._validate_token_data(data, AccessType.access)
         assert "missing jti" in str(err_info.value)
 
-    def test__validate_token_data__fails_when_jit_is_blacklisted(
+    def test_validate_token_data_fails_when_jti_is_blacklisted(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_when_jti_is_blacklisted
+
+        Ensure token validation fails if a presented JTI has been blacklisted
+        """
         guard = Beskar(app, user_class, is_blacklisted=(lambda jti: True))
         data = dict(jti="jti")
         with pytest.raises(BlacklistedError):
             guard._validate_token_data(data, AccessType.access)
 
-    def test__validate_token_data__fails_when_id_is_missing(
+    def test_validate_token_data_fails_when_id_is_missing(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_when_id_is_missing
+
+        Ensure token validation fails if the `id` is missing
+        """
         guard = Beskar(app, user_class)
         data = dict(jti="jti")
         with pytest.raises(MissingClaimError) as err_info:
             guard._validate_token_data(data, AccessType.access)
         assert "missing id" in str(err_info.value)
 
-    def test__validate_token_data__fails_when_exp_is_missing(
+    def test_validate_token_data_fails_when_exp_is_missing(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_when_exp_is_missing
+
+        Ensure token validation fails when presented with missing expiration
+        """
         guard = Beskar(app, user_class)
         data = dict(jti="jti", id=1)
         with pytest.raises(MissingClaimError) as err_info:
             guard._validate_token_data(data, AccessType.access)
         assert "missing exp" in str(err_info.value)
 
-    def test__validate_token_data__fails_when_refresh_is_missing(
+    def test_validate_token_data_fails_when_refresh_is_missing(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_when_refresh_is_missing
+
+        Validate token validation fails when the refresh attribute is missing
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -198,11 +250,16 @@ class TestBeskar:
             guard._validate_token_data(data, AccessType.access)
         assert f"missing {REFRESH_EXPIRATION_CLAIM}" in str(err_info.value)
 
-    def test__validate_token_data__fails_when_access_has_expired(
+    def test_validate_token_data_fails_when_access_has_expired(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_when_access_has_expired
+
+        Ensure token validation fails when the token is expired
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -214,11 +271,16 @@ class TestBeskar:
             with pytest.raises(ExpiredAccessError):
                 guard._validate_token_data(data, AccessType.access)
 
-    def test__validate_token_data__fails_on_early_refresh(
+    def test_validate_token_data_fails_on_early_refresh(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_on_early_refresh
+
+        Ensure token validation fails if refresh is too early
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -230,11 +292,16 @@ class TestBeskar:
             with pytest.raises(EarlyRefreshError):
                 guard._validate_token_data(data, AccessType.refresh)
 
-    def test__validate_token_data__fails_when_refresh_has_expired(
+    def test_validate_token_data_fails_when_refresh_has_expired(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_when_refresh_has_expired
+
+        Ensure token validation fails after the refresh span has expired
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -246,11 +313,16 @@ class TestBeskar:
             with pytest.raises(ExpiredRefreshError):
                 guard._validate_token_data(data, AccessType.refresh)
 
-    def test__validate_token_data__fails_on_access_with_register_claim(
+    def test_validate_token_data_fails_on_access_with_register_claim(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_on_access_with_register_claim
+
+        Ensure token validation fails if the claim is invalid
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -263,11 +335,16 @@ class TestBeskar:
             with pytest.raises(MisusedRegistrationToken):
                 guard._validate_token_data(data, AccessType.access)
 
-    def test__validate_token_data__fails_on_refresh_with_register_claim(
+    def test_validate_token_data_fails_on_refresh_with_register_claim(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_on_refresh_with_register_claim
+
+        Ensure token validations fails to refresh with invalid claims
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -280,11 +357,16 @@ class TestBeskar:
             with pytest.raises(MisusedRegistrationToken):
                 guard._validate_token_data(data, AccessType.refresh)
 
-    def test__validate_token_data__fails_on_access_with_reset_claim(
+    def test_validate_token_data_fails_on_access_with_reset_claim(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_fails_on_access_with_reset_claim
+
+        Ensure token validations fail if it contains a reset claim
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -297,11 +379,16 @@ class TestBeskar:
             with pytest.raises(MisusedResetToken):
                 guard._validate_token_data(data, AccessType.access)
 
-    def test__validate_token_data__succeeds_with_valid_token(
+    def test_validate_token_data_succeeds_with_valid_token(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_succeeds_with_valid_token
+
+        Ensure token validations pass with a valid claim presented
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -312,11 +399,16 @@ class TestBeskar:
         with plummet.frozen_time("2017-05-21 19:54:28"):
             guard._validate_token_data(data, AccessType.access)
 
-    def test__validate_token_data__succeeds_when_refreshing(
+    def test_validate_token_data_succeeds_when_refreshing(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_succeeds_when_refreshing
+
+        Ensure token validations succeed on valid refresh requests
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -327,11 +419,16 @@ class TestBeskar:
         with plummet.frozen_time("2017-05-21 19:54:32"):
             guard._validate_token_data(data, AccessType.refresh)
 
-    def test__validate_token_data__succeeds_when_registering(
+    def test_validate_token_data_succeeds_when_registering(
         self,
         app,
         user_class,
     ):
+        """
+        test_validate_token_data_succeeds_when_registering
+
+        Ensure token validations succeed for registration attempts
+        """
         guard = Beskar(app, user_class)
         data = {
             "jti": "jti",
@@ -347,6 +444,8 @@ class TestBeskar:
         self, app, validating_user_class, mock_users, default_guard, no_token_validation
     ):
         """
+        test_encode_token
+
         This test::
             * verifies that the encode_token correctly encodes token
               data based on a user instance.
@@ -374,7 +473,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         override_access_lifespan = pendulum.Duration(minutes=1)
@@ -394,7 +493,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         override_access_lifespan = pendulum.Duration(hours=1)
@@ -413,7 +512,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         validating_guard = Beskar(app, validating_user_class)
@@ -446,7 +545,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"
@@ -458,6 +557,8 @@ class TestBeskar:
 
     async def test_encode_eternal_token(self, mock_users, no_token_validation, default_guard):
         """
+        test_encode_eternal_token
+
         This test verifies that the encode_eternal_token correctly encodes
         token data based on a user instance. Also verifies that the lifespan is
         set to the constant VITAM_AETERNUM
@@ -470,7 +571,7 @@ class TestBeskar:
             assert token_data["iat"] == moment.int_timestamp
             assert token_data["exp"] == (moment + VITAM_AETERNUM).int_timestamp
             assert token_data[REFRESH_EXPIRATION_CLAIM] == (moment + VITAM_AETERNUM).int_timestamp
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
 
     async def test_refresh_token(
         self,
@@ -480,6 +581,8 @@ class TestBeskar:
         default_guard,
     ):
         """
+        test_refresh_token
+
         This test::
             * verifies that the refresh_token properly generates
               a refreshed token.
@@ -521,7 +624,7 @@ class TestBeskar:
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert new_token_data["id"] == the_dude.id
+            assert new_token_data["id"] == the_dude.identity
             assert new_token_data["rls"] == "admin,operator"
 
         moment = plummet.momentize("2017-05-21 18:39:55")
@@ -622,7 +725,7 @@ class TestBeskar:
                 new_token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert new_token_data["id"] == the_dude.id
+            assert new_token_data["id"] == the_dude.identity
             assert new_token_data["rls"] == "admin,operator"
             assert new_token_data["duder"] == "brief"
             assert new_token_data["el_duderino"] == "not brief"
@@ -633,6 +736,8 @@ class TestBeskar:
 
     async def test_read_token_from_header(self, client, mock_users, default_guard):
         """
+        test_read_token_from_header
+
         This test verifies that a token may be properly read from a flask
         request's header using the configuration settings for header name and
         type
@@ -657,6 +762,8 @@ class TestBeskar:
 
     async def test_read_token_from_cookie(self, client, mock_users, default_guard):
         """
+        test_read_token_from_cookie
+
         This test verifies that a token may be properly read from a flask
         request's cookies using the configuration settings for cookie
         """
@@ -675,6 +782,8 @@ class TestBeskar:
 
     async def test_pack_header_for_user(self, mock_users, no_token_validation, default_guard):
         """
+        test_pack_header_for_user
+
         This test::
           * verifies that the pack_header_for_user method can be used to
             package a token into a header dict for a specified user
@@ -696,7 +805,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
 
         moment = plummet.momentize("2017-05-21 18:39:55")
@@ -718,7 +827,7 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + override_refresh_lifespan).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
 
         moment = plummet.momentize("2018-08-14 09:08:39")
         with plummet.frozen_time(moment):
@@ -738,13 +847,15 @@ class TestBeskar:
                 token_data[REFRESH_EXPIRATION_CLAIM]
                 == (moment + DEFAULT_TOKEN_REFRESH_LIFESPAN).int_timestamp
             )
-            assert token_data["id"] == the_dude.id
+            assert token_data["id"] == the_dude.identity
             assert token_data["rls"] == "admin,operator"
             assert token_data["duder"] == "brief"
             assert token_data["el_duderino"] == "not brief"
 
     async def test_reset_email(self, app, tmpdir, default_guard, mock_users):
         """
+        test_reset_email
+
         This test verifies email based password reset functions as expected.
         This includes sending messages with valid time expiring tokens
            and ensuring the body matches the expected body, as well
@@ -805,6 +916,8 @@ class TestBeskar:
         mock_users,
     ):
         """
+        test_registration_email
+
         This test verifies email based registration functions as expected.
         This includes sending messages with valid time expiring tokens
            and ensuring the body matches the expected body, as well
@@ -851,6 +964,8 @@ class TestBeskar:
         mock_users,
     ):
         """
+        test_get_user_from_registration_token
+
         This test verifies that a user can be extracted from an email based
         registration token. Also verifies that a token that has expired
         cannot be used to fetch a user. Also verifies that a registration
@@ -885,6 +1000,8 @@ class TestBeskar:
 
     async def test_validate_and_update(self, app, user_class, default_guard, mock_users):
         """
+        test_validate_and_update
+
         This test verifies that Beskar hashes passwords using the scheme
         specified by the HASH_SCHEME setting. If no scheme is supplied, the
         test verifies that the default scheme is used. Otherwise, the test
@@ -943,6 +1060,8 @@ class TestBeskar:
         self, app, user_class, mock_users, default_guard
     ):
         """
+        test_authenticate_validate_and_update
+
         This test verifies the authenticate() function, when altered by
         either 'BESKAR_HASH_AUTOUPDATE' or 'BESKAR_HASH_AUTOTEST'
         performs the authentication and the required subaction.
@@ -1007,6 +1126,8 @@ class TestBeskar:
 
     async def test_totp(self, app, user_class, totp_user_class, mock_users, default_guard):
         """
+        test_totp
+
         This test verifies the authenticate_totp() function, for use
         with TOTP two factor authentication.
         """

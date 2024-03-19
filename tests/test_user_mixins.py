@@ -1,16 +1,27 @@
 import pytest
 import sanic_beskar
 import sanic_beskar.exceptions
+from bson import ObjectId
 from sanic_beskar.base import Beskar
 
-from bson import ObjectId
+# TODO: Fix Tortoise testing
+from tests._models import MixinUserBeanie, MixinUserTortoise, MixinUserUmongo
 
-from models import MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
+ALL_MIXIN_MODELS = [MixinUserBeanie, MixinUserUmongo, MixinUserTortoise]
 
 
 class TestUserMixin:
-    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
-    async def test_basic(self, app, mixin_user, mock_users):
+    """
+    Unit tests for the ``sanic_beskar.orm`` included mixins
+    """
+
+    @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
+    async def test_basic(self, app, mixin_user, mock_users, in_memory_tortoise_db):
+        """
+        test_basic
+
+        Tests against the default guard to ensure base functionality
+        """
         mixin_guard = sanic_beskar.Beskar(app, mixin_user)
 
         the_dude = await mock_users(
@@ -27,8 +38,13 @@ class TestUserMixin:
             await mixin_guard.authenticate("the_dude", "is_undudelike")
         await the_dude.delete()
 
-    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
-    async def test_no_rolenames(self, app, mixin_user, mock_users):
+    @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
+    async def test_no_rolenames(self, app, mixin_user, mock_users, in_memory_tortoise_db):
+        """
+        test_no_rolenames
+
+        Test missing ``user.roles`` attribute to ensure a blank list is at least available
+        """
         mixin_guard = sanic_beskar.Beskar(app, mixin_user)
 
         the_noroles_dude = await mock_users(
@@ -41,8 +57,13 @@ class TestUserMixin:
         assert the_noroles_dude.rolenames == []
         await the_noroles_dude.delete()
 
-    @pytest.mark.parametrize("mixin_user", [MixinUserTortoise, MixinUserBeanie, MixinUserUmongo])
-    async def test_lookups(self, app, mixin_user, mock_users):
+    @pytest.mark.parametrize("mixin_user", ALL_MIXIN_MODELS)
+    async def test_lookups(self, app, mixin_user, mock_users, in_memory_tortoise_db):
+        """
+        test_lookups
+
+        Tests to ensure the expected lookup functions work for the includes ORMs
+        """
         mixin_guard = sanic_beskar.Beskar(app, mixin_user)
 
         the_dude = await mock_users(
@@ -71,6 +92,11 @@ class TestUserMixin:
         await the_dude.delete()
 
     async def test_totp(self, app, totp_user_class, mock_users):
+        """
+        test_totp
+
+        Tests against OTP functionality of the included ORM mixins
+        """
         totp_guard = sanic_beskar.Beskar(app, totp_user_class)
 
         the_dude = await mock_users(

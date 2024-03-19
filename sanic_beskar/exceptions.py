@@ -28,6 +28,7 @@ class BeskarError(SanicException, Buzz):
         super().__init__(self.message, self.status)
 
     def __str__(self) -> str:
+        """string repr"""
         return f"{super().__str__()} ({self.status})"
 
 
@@ -193,10 +194,10 @@ class ConfigurationError(BeskarError):
 
 class TOTPRequired(AuthenticationError):
     """
-    The user requires TOTP authentication, per configuation
+    The user requires TOTP authentication, per configuration
     `BESKAR_TOTP_ENFORCE` which was not performed
     by this call to `authenticate()`. A call to
-    `authenticate_totp()` should be performed seperately,
+    `authenticate_totp()` should be performed separately,
     or a call to `authenticate()` again, but providing the
     users `token` value should be done.
     """

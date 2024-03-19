@@ -52,6 +52,23 @@ files = [
 ]
 
 [[package]]
+name = "alt-pytest-asyncio"
+version = "0.7.2"
+description = "Alternative pytest plugin to pytest-asyncio"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "alt_pytest_asyncio-0.7.2-py3-none-any.whl", hash = "sha256:965f60f4c9590b30eca643e863a1c8e13502859e57e3f5c1b9dd73304459f627"},
+    {file = "alt_pytest_asyncio-0.7.2.tar.gz", hash = "sha256:d9cc49b1b6330ff77ef0ebfa3495932b8dafdbf290317fe8b58df19d7c9d9878"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0"
+
+[package.extras]
+tests = ["nest-asyncio (==1.0.0)", "noseofyeti[black] (==2.4.1)", "pytest (==7.3.0)"]
+
+[[package]]
 name = "annotated-types"
 version = "0.6.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -203,6 +220,7 @@ colorama = {version = ">=0.3.9", markers = "platform_system == \"Windows\""}
 PyYAML = ">=5.3.1"
 rich = "*"
 stevedore = ">=1.20.0"
+tomli = {version = ">=1.1.0", optional = true, markers = "python_version < \"3.11\" and extra == \"toml\""}
 
 [package.extras]
 baseline = ["GitPython (>=3.1.30)"]
@@ -725,20 +743,6 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
-name = "execnet"
-version = "2.0.2"
-description = "execnet: rapid multi-Python deployment"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "execnet-2.0.2-py3-none-any.whl", hash = "sha256:88256416ae766bc9e8895c76a87928c0012183da3cc4fc18016e6f050e025f41"},
-    {file = "execnet-2.0.2.tar.gz", hash = "sha256:cc59bc4423742fd71ad227122eb0dd44db51efb3dc4095b45ac9a08c770096af"},
-]
-
-[package.extras]
-testing = ["hatch", "pre-commit", "pytest", "tox"]
-
-[[package]]
 name = "executing"
 version = "2.0.1"
 description = "Get the currently executing AST node of a frame, and other information"
@@ -800,13 +804,13 @@ pyflakes = ">=3.2.0,<3.3.0"
 
 [[package]]
 name = "flake8-async"
-version = "24.3.3"
+version = "24.3.4"
 description = "A highly opinionated flake8 plugin for Trio-related problems."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "flake8-async-24.3.3.tar.gz", hash = "sha256:bc5e8fa6d174bed60fa28dffb2869b8e4b92db267204bb24865e1451cd784da0"},
-    {file = "flake8_async-24.3.3-py3-none-any.whl", hash = "sha256:8d81eab8f0eb27c6f9ecddf366acf939341a8aadb2935521c676b05660de9d6f"},
+    {file = "flake8-async-24.3.4.tar.gz", hash = "sha256:f326d581dd39ac9e4683179aefd1ffb4b7b5118f393625655fb537e8c539ea92"},
+    {file = "flake8_async-24.3.4-py3-none-any.whl", hash = "sha256:e352bd0e55be904e0b5b5159761f83efbd52d1d380c382e8eaf7b6055812915d"},
 ]
 
 [package.dependencies]
@@ -1534,17 +1538,6 @@ files = [
 ]
 
 [[package]]
-name = "nest-asyncio"
-version = "1.6.0"
-description = "Patch asyncio to allow nested event loops"
-optional = false
-python-versions = ">=3.5"
-files = [
-    {file = "nest_asyncio-1.6.0-py3-none-any.whl", hash = "sha256:87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c"},
-    {file = "nest_asyncio-1.6.0.tar.gz", hash = "sha256:6f172d5449aca15afd6c646851f4e31e02c598d553a667e38cafa997cfec55fe"},
-]
-
-[[package]]
 name = "packaging"
 version = "24.0"
 description = "Core utilities for Python packages"
@@ -1597,6 +1590,40 @@ files = [
     {file = "pbr-6.0.0-py2.py3-none-any.whl", hash = "sha256:4a7317d5e3b17a3dccb6a8cfe67dab65b20551404c52c8ed41279fa4f0cb4cda"},
     {file = "pbr-6.0.0.tar.gz", hash = "sha256:d1377122a5a00e2f940ee482999518efe16d745d423a670c27773dfbc3c9a7d9"},
 ]
+
+[[package]]
+name = "pendulum"
+version = "2.1.2"
+description = "Python datetimes made easy"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+files = [
+    {file = "pendulum-2.1.2-cp27-cp27m-macosx_10_15_x86_64.whl", hash = "sha256:b6c352f4bd32dff1ea7066bd31ad0f71f8d8100b9ff709fb343f3b86cee43efe"},
+    {file = "pendulum-2.1.2-cp27-cp27m-win_amd64.whl", hash = "sha256:318f72f62e8e23cd6660dbafe1e346950281a9aed144b5c596b2ddabc1d19739"},
+    {file = "pendulum-2.1.2-cp35-cp35m-macosx_10_15_x86_64.whl", hash = "sha256:0731f0c661a3cb779d398803655494893c9f581f6488048b3fb629c2342b5394"},
+    {file = "pendulum-2.1.2-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:3481fad1dc3f6f6738bd575a951d3c15d4b4ce7c82dce37cf8ac1483fde6e8b0"},
+    {file = "pendulum-2.1.2-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:9702069c694306297ed362ce7e3c1ef8404ac8ede39f9b28b7c1a7ad8c3959e3"},
+    {file = "pendulum-2.1.2-cp35-cp35m-win_amd64.whl", hash = "sha256:fb53ffa0085002ddd43b6ca61a7b34f2d4d7c3ed66f931fe599e1a531b42af9b"},
+    {file = "pendulum-2.1.2-cp36-cp36m-macosx_10_15_x86_64.whl", hash = "sha256:c501749fdd3d6f9e726086bf0cd4437281ed47e7bca132ddb522f86a1645d360"},
+    {file = "pendulum-2.1.2-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:c807a578a532eeb226150d5006f156632df2cc8c5693d778324b43ff8c515dd0"},
+    {file = "pendulum-2.1.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:2d1619a721df661e506eff8db8614016f0720ac171fe80dda1333ee44e684087"},
+    {file = "pendulum-2.1.2-cp36-cp36m-win_amd64.whl", hash = "sha256:f888f2d2909a414680a29ae74d0592758f2b9fcdee3549887779cd4055e975db"},
+    {file = "pendulum-2.1.2-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:e95d329384717c7bf627bf27e204bc3b15c8238fa8d9d9781d93712776c14002"},
+    {file = "pendulum-2.1.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:4c9c689747f39d0d02a9f94fcee737b34a5773803a64a5fdb046ee9cac7442c5"},
+    {file = "pendulum-2.1.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:1245cd0075a3c6d889f581f6325dd8404aca5884dea7223a5566c38aab94642b"},
+    {file = "pendulum-2.1.2-cp37-cp37m-win_amd64.whl", hash = "sha256:db0a40d8bcd27b4fb46676e8eb3c732c67a5a5e6bfab8927028224fbced0b40b"},
+    {file = "pendulum-2.1.2-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:f5e236e7730cab1644e1b87aca3d2ff3e375a608542e90fe25685dae46310116"},
+    {file = "pendulum-2.1.2-cp38-cp38-manylinux1_i686.whl", hash = "sha256:de42ea3e2943171a9e95141f2eecf972480636e8e484ccffaf1e833929e9e052"},
+    {file = "pendulum-2.1.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:7c5ec650cb4bec4c63a89a0242cc8c3cebcec92fcfe937c417ba18277d8560be"},
+    {file = "pendulum-2.1.2-cp38-cp38-win_amd64.whl", hash = "sha256:33fb61601083f3eb1d15edeb45274f73c63b3c44a8524703dc143f4212bf3269"},
+    {file = "pendulum-2.1.2-cp39-cp39-manylinux1_i686.whl", hash = "sha256:29c40a6f2942376185728c9a0347d7c0f07905638c83007e1d262781f1e6953a"},
+    {file = "pendulum-2.1.2-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:94b1fc947bfe38579b28e1cccb36f7e28a15e841f30384b5ad6c5e31055c85d7"},
+    {file = "pendulum-2.1.2.tar.gz", hash = "sha256:b06a0ca1bfe41c990bbf0c029f0b6501a7f2ec4e38bfec730712015e8860f207"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.6,<3.0"
+pytzdata = ">=2020.1"
 
 [[package]]
 name = "pendulum"
@@ -2202,24 +2229,6 @@ tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
-name = "pytest-asyncio"
-version = "0.23.6"
-description = "Pytest support for asyncio"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "pytest-asyncio-0.23.6.tar.gz", hash = "sha256:ffe523a89c1c222598c76856e76852b787504ddb72dd5d9b6617ffa8aa2cde5f"},
-    {file = "pytest_asyncio-0.23.6-py3-none-any.whl", hash = "sha256:68516fdd1018ac57b846c9846b954f0393b26f094764a28c955eabb0536a4e8a"},
-]
-
-[package.dependencies]
-pytest = ">=7.0.0,<9"
-
-[package.extras]
-docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
-testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
-
-[[package]]
 name = "pytest-cov"
 version = "4.1.0"
 description = "Pytest plugin for measuring coverage."
@@ -2257,24 +2266,23 @@ six = "*"
 tests = ["pytest-virtualenv"]
 
 [[package]]
-name = "pytest-xdist"
-version = "3.5.0"
-description = "pytest xdist plugin for distributed testing, most importantly across multiple CPUs"
+name = "pytest-sugar"
+version = "1.0.0"
+description = "pytest-sugar is a plugin for pytest that changes the default look and feel of pytest (e.g. progressbar, show tests that fail instantly)."
 optional = false
-python-versions = ">=3.7"
+python-versions = "*"
 files = [
-    {file = "pytest-xdist-3.5.0.tar.gz", hash = "sha256:cbb36f3d67e0c478baa57fa4edc8843887e0f6cfc42d677530a36d7472b32d8a"},
-    {file = "pytest_xdist-3.5.0-py3-none-any.whl", hash = "sha256:d075629c7e00b611df89f490a5063944bee7a4362a5ff11c7cc7824a03dfce24"},
+    {file = "pytest-sugar-1.0.0.tar.gz", hash = "sha256:6422e83258f5b0c04ce7c632176c7732cab5fdb909cb39cca5c9139f81276c0a"},
+    {file = "pytest_sugar-1.0.0-py3-none-any.whl", hash = "sha256:70ebcd8fc5795dc457ff8b69d266a4e2e8a74ae0c3edc749381c64b5246c8dfd"},
 ]
 
 [package.dependencies]
-execnet = ">=1.1"
+packaging = ">=21.3"
 pytest = ">=6.2.0"
+termcolor = ">=2.1.0"
 
 [package.extras]
-psutil = ["psutil (>=3.0)"]
-setproctitle = ["setproctitle"]
-testing = ["filelock"]
+dev = ["black", "flake8", "pre-commit"]
 
 [[package]]
 name = "python-dateutil"
@@ -2299,6 +2307,17 @@ python-versions = "*"
 files = [
     {file = "pytz-2024.1-py2.py3-none-any.whl", hash = "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"},
     {file = "pytz-2024.1.tar.gz", hash = "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812"},
+]
+
+[[package]]
+name = "pytzdata"
+version = "2020.1"
+description = "The Olson timezone database for Python."
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "pytzdata-2020.1-py2.py3-none-any.whl", hash = "sha256:e1e14750bcf95016381e4d472bad004eef710f2d6417240904070b3d6654485f"},
+    {file = "pytzdata-2020.1.tar.gz", hash = "sha256:3efa13b335a00a8de1d345ae41ec78dd11c9f8807f522d39850f2dd828681540"},
 ]
 
 [[package]]
@@ -2823,6 +2842,20 @@ files = [
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
+name = "termcolor"
+version = "2.4.0"
+description = "ANSI color formatting for output in terminal"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "termcolor-2.4.0-py3-none-any.whl", hash = "sha256:9297c0df9c99445c2412e832e882a7884038a25617c60cea2ad69488d4040d63"},
+    {file = "termcolor-2.4.0.tar.gz", hash = "sha256:aab9e56047c8ac41ed798fa36d892a37aca6b3e9159f3e0c24bc64a9b3ac7b7a"},
+]
+
+[package.extras]
+tests = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "time-machine"
 version = "2.14.0"
 description = "Travel through time in your tests."
@@ -3013,6 +3046,17 @@ python-versions = ">=3.8"
 files = [
     {file = "types-passlib-1.7.7.20240311.tar.gz", hash = "sha256:287dd27cec5421daf6be5c295f681baf343c146038c8bde4db783bcac1beccb7"},
     {file = "types_passlib-1.7.7.20240311-py3-none-any.whl", hash = "sha256:cd44166e9347ae516f4830046cd1673c1ef90a5cc7ddd1356cf8a14892f29249"},
+]
+
+[[package]]
+name = "types-python-dateutil"
+version = "2.9.0.20240316"
+description = "Typing stubs for python-dateutil"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-python-dateutil-2.9.0.20240316.tar.gz", hash = "sha256:5d2f2e240b86905e40944dd787db6da9263f0deabef1076ddaed797351ec0202"},
+    {file = "types_python_dateutil-2.9.0.20240316-py3-none-any.whl", hash = "sha256:6b8cb66d960771ce5ff974e9dd45e38facb81718cc1e208b10b1baccbfdbee3b"},
 ]
 
 [[package]]
@@ -3359,4 +3403,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <4.0"
-content-hash = "f2db69522951dea9b239f21eadce2d0609dbfafda3df387ca383b384a9467402"
+content-hash = "3b6e68c490cce40dbbe6323ea1b2d9f01fb840efa37d51f197ee096078b1dc25"

@@ -1,0 +1,74 @@
+name: Security Testing
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  security-events: write   # To upload sarif files
+
+jobs:
+  security_checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+          #cache: 'poetry'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Load cached dotvenv
+        id: cached-poetry-dotvenv
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/main.yml') }}
+
+      - name: Load cached dotlocal
+        id: cached-poetry-dotlocal
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: dotlocal-${{ runner.os }}-${{ hashFiles('.github/workflows/main.yml') }}
+
+        #----------------------------------------------
+        # install your root project, if required
+        #----------------------------------------------
+      - name: Install library
+        run: poetry install --no-interaction --sync
+
+        #----------------------------------------------
+        #              run security test suite
+        #----------------------------------------------
+      - name: bandit security testing
+        run: |
+          poetry run bandit -r sanic_beskar/
+      - name: safety security testing
+        run: |
+          poetry run safety check
+      - name: PyCharm Python Security Scanner
+        uses: tonybaloney/pycharm-security@master
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'

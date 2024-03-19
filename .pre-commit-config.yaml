@@ -1,37 +1,59 @@
+ci:
+  autoupdate_schedule: monthly
+
+default_language_version:
+  # Keep in-sync with .python-version
+  python: python3.9
+
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 24.3.0
     hooks:
       - id: black
-        language_version: python3.8
+        language_version: python3
         args: [--config=./pyproject.toml]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.292
+    rev: v0.3.3
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
 
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 24.3.0
     hooks:
       - id: black
-        language_version: python3.8
+        language_version: python3
         args: [--config=./pyproject.toml]
 
-  #- repo: local
-  #  hooks:
-  #    - id: mypy
-  #      name: mypy
-  #      # or `entry: poetry run mypy`, but perhaps both are the same
-  #      entry: poetry run mypy
-  #      require_serial: true
-  #      # From the docs it is not clear the difference between `language: python` VS `language: system`
-  #      language: system
-  #      types: [ python ]
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+        language_version: python3.9
+        args: [-cpyproject.toml, sanic_beskar, tests]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        args: [-w, -L, alog]
+        additional_dependencies:
+          - tomli
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        # or `entry: poetry run mypy`, but perhaps both are the same
+        entry: poetry run mypy
+        require_serial: true
+        # From the docs it is not clear the difference between `language: python` VS `language: system`
+        language: system
+        types: [ python ]
 
   - repo: https://github.com/PyCQA/bandit
-    rev: '1.7.5'
+    rev: '1.7.8'
     hooks:
       - id: bandit
         name: bandit
@@ -42,6 +64,8 @@ repos:
         types: [python]
         require_serial: true
         args: ['--configfile=./pyproject.toml']
+        additional_dependencies: [".[toml]"]
+
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -57,7 +81,7 @@ repos:
       - id: trailing-whitespace # trims trailing whitespace.
 
   - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.27.0
+    rev: 0.28.0
     hooks:
       - id: check-github-actions
       - id: check-github-workflows

@@ -1,66 +1,192 @@
-from os import path as os_path
-from sys import path as sys_path
+import asyncio
 
-from sanic_testing import TestManager  # type: ignore
+import uvloop
 
-sys_path.insert(0, os_path.join(os_path.dirname(os_path.abspath(__file__)), ".."))
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 import copy
 import warnings
 from typing import Any
 
 import async_sender  # type: ignore
-import nest_asyncio  # type: ignore
 import pytest
-from sanic.exceptions import SanicException
-from sanic.log import logger
-from sanic_beskar.base import Beskar
-
-from tortoise import Tortoise, run_async
-from mongomock_motor import AsyncMongoMockClient
+import sanic_beskar
+from async_sender import Mail
 from beanie import init_beanie
+from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
+from sanic import Sanic, json
+from sanic.exceptions import SanicException
+from sanic.views import HTTPMethodView
+from sanic_beskar.base import Beskar
+from sanic_beskar.exceptions import BeskarError
+from sanic_testing import TestManager  # type: ignore
+from tortoise import Tortoise
+from tortoise.contrib.test import _init_db, getDBConfig
+from ujson import dumps as ujson_dumps
+from ujson import loads as ujson_loads
 
-from models import MixinUserTortoise, TotpUser, ValidatingUser, MixinUserBeanie
-from server import _guard, _mail, create_app
+from tests._models import MixinUserBeanie, TotpUser, ValidatingUser
 
-nest_asyncio.apply()
-
-
-# Hack for using the same DB instance directly and within the app
-async def init(db_path=None):
-    await Tortoise.init(
-        db_url=db_path,
-        modules={"models": ["models"]},
-    )
-    await Tortoise.generate_schemas()
+_guard = Beskar()
+_mail = Mail()
 
 
 @pytest.fixture(params=["jwt", "paseto"])
-async def app(tmpdir_factory, request, monkeypatch):
-    db_path = tmpdir_factory.mktemp(
-        "sanic-beskar-test",
-        numbered=True,
-    ).join("sqlite.db")
-    logger.info(f"Using DB_Path: {str(db_path)}")
-    run_async(init(db_path=f"sqlite://{str(db_path)}"))
+async def app(request, monkeypatch):
+    """
+    Sanic App instance for unit testing
+    """
 
     # Use the fixture params to test all our token providers
     monkeypatch.setenv("SANIC_BESKAR_TOKEN_PROVIDER", request.param)
 
-    sanic_app = create_app(db_path=f"sqlite://{str(db_path)}")
-    TestManager(sanic_app)
-    # Hack to do some poor code work in the app for some workarounds for broken fucntions under pytest
+    """
+    Initializes the sanic app for the test suite. Also prepares a set of routes
+    to use in testing with varying levels of protections
+    """
+    sanic_app = Sanic("sanic-testing", dumps=ujson_dumps, loads=ujson_loads)
+    # In order to process more requests after initializing the app,
+    # we have to set degug to false so that it will not check to see if there
+    # has already been a request before a setup function
+    sanic_app.state.mode = "Mode.DEBUG"
+    sanic_app.config.TESTING = True
     sanic_app.config["PYTESTING"] = True
-    sanic_app.prepare()
+    sanic_app.config.SECRET_KEY = "top secret 4nd comPLex radness!!"
 
-    sanic_app.config.SUPPRESS_SEND = 1  # Don't actually send mails
+    sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
+
+    _guard.init_app(sanic_app, MixinUserBeanie)
+    _guard.rbac_definitions = {
+        "sooper_access_right": ["admin", "uber_admin"],
+        "lame_access_right": ["not_admin"],
+    }
+    sanic_app.ctx.mail = _mail
+
+    @sanic_app.route("/unprotected")
+    def unprotected(request):
+        """
+        Endpoint without any security decorators
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/kinda_protected")
+    @sanic_beskar.auth_accepted
+    async def kinda_protected(request):
+        """
+        Endpoint that allows an authentication header (to set a user)
+        """
+        try:
+            authed_user = await sanic_beskar.current_user()
+            return json({"message": "success", "user": authed_user.username})
+        except BeskarError:
+            return json({"message": "success", "user": None})
+
+    class ProtectedView(HTTPMethodView):
+        """
+        Class based Endpoint that requires an authentication header, via `class` based setup
+        """
+
+        @sanic_beskar.auth_required
+        async def get(self, request):
+            """
+            Endpoint that requires an authentication header, via `class` based setup
+            """
+            return json({"message": "success"})
+
+    sanic_app.add_route(ProtectedView.as_view(), "/protected_class")
+
+    @sanic_app.route("/protected_route")
+    @sanic_beskar.auth_required
+    async def protected_route(request):
+        """
+        Endpoint requiring basic authentication header
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/rbac_protected")
+    @sanic_beskar.auth_required
+    @sanic_beskar.rights_required("sooper_access_right")
+    async def rights_protected(request):
+        """
+        Endpoint looking for `sooper_access_right` RBAC rights
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/protected_admin_required")
+    @sanic_beskar.auth_required
+    @sanic_beskar.roles_required("admin")
+    async def protected_admin_required(request):
+        """
+        Endpoint requiring the user has an 'admin' role
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/protected_admin_and_operator_required")
+    @sanic_beskar.auth_required
+    @sanic_beskar.roles_required("admin", "operator")
+    async def protected_admin_and_operator_required(request):
+        """
+        Endpoint requiring both 'admin' and 'operator' roles
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/protected_admin_and_operator_accepted")
+    @sanic_beskar.auth_required
+    @sanic_beskar.roles_accepted("admin", "operator")
+    async def protected_admin_and_operator_accepted(request):
+        """
+        endpoint that requires 'admin' *and*/*or* 'operator' role
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/undecorated_admin_required")
+    @sanic_beskar.roles_required("admin")
+    async def undecorated_admin_required(request):
+        """
+        Endpoint that doesn't use both decorators (which is supported)
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/undecorated_admin_accepted")
+    @sanic_beskar.roles_accepted("admin")
+    async def undecorated_admin_accepted(request):
+        """
+        Endpoint that doesn't use both decorators (which is supported)
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/reversed_decorators")
+    @sanic_beskar.roles_required("admin", "operator")
+    @sanic_beskar.auth_required
+    async def reversed_decorators(request):
+        """
+        Endpoint with decorators in a different order (which is supported)
+        """
+        return json({"message": "success"})
+
+    @sanic_app.route("/registration_confirmation")
+    def reg_confirm(request):
+        """
+        Endpoint for registration testing
+        """
+        return json({"message": "fuck"})
+
+    TestManager(sanic_app)
 
     # Init beanie
     client = AsyncMongoMockClient()
     await init_beanie(database=client.db_name, document_models=[MixinUserBeanie])
 
-    yield sanic_app
-    sanic_app = None
+    import logging
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    # register_tortoise(
+    #    sanic_app, db_url="sqlite://:memory:", modules={"models": ["tests._models"]}, generate_schemas=True
+    # )
+
+    return sanic_app
+    # Sanic._app_registry.clear()
 
 
 @pytest.fixture(scope="session")
@@ -68,7 +194,7 @@ def user_class():
     """
     This fixture simply fetches the user_class to be used in testing
     """
-    return MixinUserTortoise
+    return MixinUserBeanie
 
 
 @pytest.fixture(scope="session")
@@ -76,7 +202,7 @@ def mixin_user_class():
     """
     This fixture simply fetches the mixin user_class to be used in testing
     """
-    return MixinUserTortoise
+    return MixinUserBeanie
 
 
 @pytest.fixture(scope="session")
@@ -112,16 +238,10 @@ def mail():
 
 
 @pytest.fixture(autouse=True)
-def clean_sanic_app_config(app):
+def clean_sanic_app_config(app: Sanic):
     """
     This fixture ensures a clean `app.config` is available for each round
         of testing.
-    """
-    """
-    with app.app_context():
-        stock_config = app.config.copy()
-        yield
-        app.config = stock_config.copy()
     """
     stock_config = copy.copy(app.config)
     yield
@@ -130,14 +250,35 @@ def clean_sanic_app_config(app):
 
 @pytest.fixture
 def client(app):
+    """
+    Fixture to hold the `asgi_client` test client
+    """
     yield app.asgi_client
 
 
 @pytest.fixture()
 def mock_users(user_class, default_guard):
+    """
+    Fixture to hold generator for test users for unit testing
+    """
+
     async def _get_user(
-        username: str = "", class_name: Any = user_class, guard_name: Any = default_guard, **kwargs
+        username: str, class_name: Any = user_class, guard_name: Any = default_guard, **kwargs
     ):
+        """
+        Generator for test user creations
+
+        Args:
+            username (str): Username to use.
+            class_name (obj, optional): User class to use. Defaults to user_class.
+            guard_name (obj, optional): Beskar guard instance to use. Defaults to default_guard.
+
+        Raises:
+            SanicException: Missing `username`
+
+        Returns:
+            obj: Generated temp user object
+        """
         if not username:
             raise SanicException("You must supply a valid test user name!")
 
@@ -189,10 +330,11 @@ def no_token_validation(monkeypatch):
       purposes, when this fixture is included.
     """
 
-    def mockreturn(*args, **kwargs):
+    def _mockreturn(*args, **kwargs):
+        """monkeypatcher to null out function"""
         return True
 
-    monkeypatch.setattr(Beskar, "_validate_token_data", mockreturn)
+    monkeypatch.setattr(Beskar, "_validate_token_data", _mockreturn)
 
 
 @pytest.fixture(autouse=True)
@@ -202,15 +344,35 @@ def no_email_sending(monkeypatch):
       sent from async_sender.
     """
 
-    async def mock_send_message(*args, **kwargs):
+    async def _mock_send_message(*args, **kwargs):
+        """monkeypatcher to null out function"""
         pass
 
-    monkeypatch.setattr(async_sender.api.Mail, "send_message", mock_send_message)
+    monkeypatch.setattr(async_sender.api.Mail, "send_message", _mock_send_message)
 
 
 @pytest.fixture(autouse=True)
 def speed_up_passlib_for_pytest_only(default_guard):
+    """
+    Fixture to lower down the hashing rounds simply to speed up unit testing where
+    the strength doesn't matter.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         default_guard.pwd_ctx.update(pkdbf2_sha512__default_rounds=1)
         default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
+
+
+@pytest.fixture(scope="session", autouse=False)
+async def in_memory_tortoise_db(request):
+    """
+    set up and tear down Tortoise as needed for testing
+
+    (modified) hack brought to you by:
+      https://github.com/tortoise/tortoise-orm/issues/1110#issuecomment-1521477988
+    """
+    config = getDBConfig(app_label="models", modules=["tests._models"])
+
+    await _init_db(config)
+
+    request.addfinalizer(lambda: asyncio.run(Tortoise._drop_databases()))

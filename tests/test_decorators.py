@@ -9,8 +9,14 @@ from sanic_beskar.exceptions import MissingRightError, MissingRoleError
 
 
 class TestBeskarDecorators:
-    async def test__verify_password(self, app, user_class, default_guard):
+    """
+    Unit tests against the included route decorators
+    """
+
+    async def test_verify_password(self, app, user_class, default_guard):
         """
+        test_verify_password
+
         This test verifies that the _verify_password function can be used to
         successfully compare a raw password against its hashed version
         """
@@ -29,6 +35,8 @@ class TestBeskarDecorators:
 
     async def test_auth_accepted(self, default_guard, mock_users, client, app, user_class):
         """
+        test_auth_accepted
+
         This test verifies that the @auth_accepted decorator can be used
         to optionally use a properly structured auth header including
         a valid token, setting the `current_user()`.
@@ -57,6 +65,8 @@ class TestBeskarDecorators:
 
     async def test_auth_required(self, default_guard, mock_users, client):
         """
+        test_auth_required
+
         This test verifies that the @auth_required decorator can be used
         to ensure that any access to a protected endpoint must have a properly
         structured auth header or cookie including a valid token.
@@ -120,6 +130,8 @@ class TestBeskarDecorators:
 
     async def test_roles_required(self, default_guard, mock_users, client):
         """
+        test_roles_required
+
         This test verifies that the @roles_required decorator can be used
         to ensure that any users attempting to access a given endpoint must
         have all of the roles listed. If the correct roles are not supplied,
@@ -182,6 +194,8 @@ class TestBeskarDecorators:
 
     async def test_roles_accepted(self, default_guard, client, mock_users):
         """
+        test_roles_accepted
+
         This test verifies that the @roles_accepted decorator can be used
         to ensure that any users attempting to access a given endpoint must
         have one of the roles listed. If one of the correct roles are not
@@ -233,6 +247,8 @@ class TestBeskarDecorators:
 
     async def test_rights_required(self, client, mock_users, default_guard):
         """
+        test_rights_required
+
         This test verifies that the @rights_required decorator can be used
         to ensure that any users attempting to access a given endpoint or
         resource must have all of the rights listed.  If a rights failure,

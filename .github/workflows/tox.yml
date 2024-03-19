@@ -1,0 +1,57 @@
+name: tox validators
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+
+permissions:
+  contents: read
+
+jobs:
+  tox_pre_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Load cached dotvenv
+        id: cached-poetry-dotvenv
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock')}}-${{ hashFiles('.github/workflows/main.yml') }}
+
+      - name: Load cached dotlocal
+        id: cached-poetry-dotlocal
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: dotlocal-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('.github/workflows/main.yml') }}
+
+        #----------------------------------------------
+        # install your root project, if required
+        #----------------------------------------------
+      - name: Show python
+        run: python -V
+      - name: Show poetry python
+        run: poetry run python -V
+      - name: Install library
+        run: poetry install --no-interaction --sync
+
+        #----------------------------------------------
+        #              run test suite
+        #----------------------------------------------
+
+      #- name: pre-commit checks
+      #  run: poetry run tox -e pre-commit -- -- --all-files -v
+
+      - name: pre-commit
+        uses: pre-commit/action@v3.0.1
