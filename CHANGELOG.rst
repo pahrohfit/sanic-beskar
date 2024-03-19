@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased
 ----------
 
+v2.3.3 - 2024-03-19
+-------------------
+- Updated Dependancies
+- Dropped support for Python 3.7
+
 v2.3.2 - 2023-10-21
 -------------------
 - Updated Dependancies
