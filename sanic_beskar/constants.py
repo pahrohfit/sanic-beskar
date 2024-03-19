@@ -23,8 +23,8 @@ DEFAULT_PASSWORD_POLICY: dict = {
     "attempt_lockout": 6,
 }
 
-DEFAULT_CONFIRMATION_TEMPLATE = "{}/sanic_beskar/templates/registration_email.html".format(
-    dirname(dirname(abspath(__file__))),
+DEFAULT_CONFIRMATION_TEMPLATE = (
+    f"{dirname(dirname(abspath(__file__)))}/sanic_beskar/templates/registration_email.html"
 )
 
 DEFAULT_CONFIRMATION_SENDER: str = "you@whatever.com"

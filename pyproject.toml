@@ -121,14 +121,16 @@ exclude_dirs = ['tests/']
 line-length = 100
 target-version = 'py39'
 src = ["sanic_beskar", "tests"]
+
+[tool.ruff.lint]
 ignore = ["E501", "E402", "N818", "A002", "A003", "B904", "N805", "B006", "E712", "S106", "S105", "B028"]
-exclude = [".mypy_cache", ".vscode", ".git", ".pytest_cache", ".github", "__pycache__", "example", "docs", "tests"]
+exclude = [".mypy_cache", ".vscode", ".git", ".pytest_cache", ".github", "__pycache__", "example/*.py", "docs/*.py", "tests/*.py"]
 select = ["E", "F", "B", "W", "I", "N", "UP", "ASYNC", "S", "A", "RSE", "RET"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["S101", "D100", "D102", "D101", "D103", "S311", "D104"]
 
 [tool.interrogate]
@@ -151,8 +153,8 @@ quiet = false
 whitelist-regex = []
 color = true
 omit-covered-files = false
-#generate-badge = "."
-#badge-format = "svg"
+generate-badge = "docs/"
+badge-format = "svg"
 
 [tool.codespell]
 skip = 'poetry.lock'

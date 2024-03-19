@@ -1,9 +1,8 @@
 import asyncio
+
 import uvloop
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-
-from sanic_testing import TestManager  # type: ignore
 
 import copy
 import warnings
@@ -11,26 +10,22 @@ from typing import Any
 
 import async_sender  # type: ignore
 import pytest
-from sanic import Sanic, json
-from sanic.views import HTTPMethodView
-from sanic.exceptions import SanicException
-from sanic.log import logger
-
-from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
-from beanie import init_beanie
-from tortoise import Tortoise
-from tortoise.contrib.test import _init_db, getDBConfig
-
-from tests._models import TotpUser, ValidatingUser, MixinUserBeanie
-
 import sanic_beskar
+from async_sender import Mail
+from beanie import init_beanie
+from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
+from sanic import Sanic, json
+from sanic.exceptions import SanicException
+from sanic.views import HTTPMethodView
 from sanic_beskar.base import Beskar
 from sanic_beskar.exceptions import BeskarError
-from async_sender import Mail
-
+from sanic_testing import TestManager  # type: ignore
+from tortoise import Tortoise
+from tortoise.contrib.test import _init_db, getDBConfig
 from ujson import dumps as ujson_dumps
 from ujson import loads as ujson_loads
 
+from tests._models import MixinUserBeanie, TotpUser, ValidatingUser
 
 _guard = Beskar()
 _mail = Mail()
@@ -181,7 +176,7 @@ async def app(request, monkeypatch):
     # Init beanie
     client = AsyncMongoMockClient()
     await init_beanie(database=client.db_name, document_models=[MixinUserBeanie])
-    
+
     import logging
 
     logging.basicConfig(level=logging.DEBUG)

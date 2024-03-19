@@ -1,12 +1,11 @@
 import pytest
 import sanic_beskar
 import sanic_beskar.exceptions
+from bson import ObjectId
 from sanic_beskar.base import Beskar
 
-from bson import ObjectId
-
 # TODO: Fix Tortoise testing
-from tests._models import MixinUserTortoise, MixinUserBeanie, MixinUserUmongo
+from tests._models import MixinUserBeanie, MixinUserTortoise, MixinUserUmongo
 
 ALL_MIXIN_MODELS = [MixinUserBeanie, MixinUserUmongo, MixinUserTortoise]
 

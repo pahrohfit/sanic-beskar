@@ -1,9 +1,8 @@
 from io import BytesIO, StringIO
 
-from bson import ObjectId
-
 import pendulum
 import pytest
+from bson import ObjectId
 from sanic import Sanic
 from sanic_beskar.exceptions import (
     BeskarError,
