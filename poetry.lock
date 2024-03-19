@@ -804,13 +804,13 @@ pyflakes = ">=3.2.0,<3.3.0"
 
 [[package]]
 name = "flake8-async"
-version = "24.3.3"
+version = "24.3.4"
 description = "A highly opinionated flake8 plugin for Trio-related problems."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "flake8-async-24.3.3.tar.gz", hash = "sha256:bc5e8fa6d174bed60fa28dffb2869b8e4b92db267204bb24865e1451cd784da0"},
-    {file = "flake8_async-24.3.3-py3-none-any.whl", hash = "sha256:8d81eab8f0eb27c6f9ecddf366acf939341a8aadb2935521c676b05660de9d6f"},
+    {file = "flake8-async-24.3.4.tar.gz", hash = "sha256:f326d581dd39ac9e4683179aefd1ffb4b7b5118f393625655fb537e8c539ea92"},
+    {file = "flake8_async-24.3.4-py3-none-any.whl", hash = "sha256:e352bd0e55be904e0b5b5159761f83efbd52d1d380c382e8eaf7b6055812915d"},
 ]
 
 [package.dependencies]
