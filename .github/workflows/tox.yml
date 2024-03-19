@@ -51,4 +51,4 @@ jobs:
         #----------------------------------------------
 
       - name: pre-commit checks
-        run: poetry run tox -e pre-commit -- -- --all-files
+        run: poetry run tox -e pre-commit -- -- --all-files -v
