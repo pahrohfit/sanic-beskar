@@ -283,18 +283,18 @@ class Beskar:
                 'provide a valid value for "BESKAR_TOTP_SECRETS_DATA"',
             )
             if self.totp_secrets_type == "file":
-                self.totp_ctx = TOTP.using(secrets_path=app.config.get("BESKAR_TOTP_SECRETS_DATA"))
+                self.totp_ctx = TOTP.using(secrets_path=app.config.get("BESKAR_TOTP_SECRETS_DATA"))  # type: ignore
             elif self.totp_secrets_type == "string":
-                self.totp_ctx = TOTP.using(secrets=app.config.get("BESKAR_TOTP_SECRETS_DATA"))
+                self.totp_ctx = TOTP.using(secrets=app.config.get("BESKAR_TOTP_SECRETS_DATA"))  # type: ignore
             elif self.totp_secrets_type == "wallet":
-                self.totp_ctx = TOTP.using(wallet=app.config.get("BESKAR_TOTP_SECRETS_DATA"))
+                self.totp_ctx = TOTP.using(wallet=app.config.get("BESKAR_TOTP_SECRETS_DATA"))  # type: ignore
             else:
                 raise ConfigurationError(
                     f'If {"BESKAR_TOTP_SECRETS_TYPE"} is set, it must be one'
                     f'of the following schemes: {["file", "string", "wallet"]}'
                 )
         else:
-            self.totp_ctx = TOTP.using()
+            self.totp_ctx = TOTP.using()  # type: ignore
 
         self.is_testing = app.config.get("TESTING", False)
 
