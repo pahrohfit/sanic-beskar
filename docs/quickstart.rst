@@ -105,6 +105,10 @@ directory:
    * - `examples/basic_with_rbac.py
        <https://github.com/pahrohfit/sanic-beskar/blob/master/example/basic_with_rbac.py>`_
      - Simple example showing RBAC based usage and ``rbac_populate_hook``
+   * - `examples/passkey_with_beanie_mixin.py
+       <https://github.com/pahrohfit/sanic-beskar/blob/master/example/passkey_with_beanie_mixin.py>`_
+     - Passwordless Passkey (WebAuthn) authentication using the Beanie mixin
+       (see :doc:`passkeys` for the full guide)
 
 
 The most basic utilization of the :py:mod:`sanic_beskar` decorators is included:

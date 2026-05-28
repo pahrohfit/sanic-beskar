@@ -16,6 +16,12 @@ class UmongoUserMixin(MixinDocument):
       user instance as a comma separated list of roles
     * The model has a ``username`` column that is a unique string for each instance
     * The model has a ``password`` column that contains its hashed password
+
+    To use Passkey support, the concrete model must also define::
+
+        from umongo import fields as umongo_field
+        webauthn_credentials = umongo_field.ListField(umongo_field.DictField(), missing=list)
+
     """
 
     class Meta:
@@ -101,3 +107,38 @@ class UmongoUserMixin(MixinDocument):
         :rtype: str
         """
         return str(self.id)
+
+    def get_webauthn_credential(self, credential_id_b64: str) -> dict | None:
+        """
+        Return the stored credential dict whose ``id`` matches ``credential_id_b64``,
+        or ``None`` if no such credential exists on this user.
+
+        Requires the concrete model to define a ``webauthn_credentials`` ListField.
+
+        :param credential_id_b64: Base64url-encoded credential ID to search for
+        :type credential_id_b64: str
+        :returns: Matching credential dict, or ``None``
+        :rtype: dict | None
+        """
+        for cred in getattr(self, "webauthn_credentials", []):
+            if cred.get("id") == credential_id_b64:
+                return cred
+        return None
+
+    @classmethod
+    async def find_by_webauthn_credential_id(
+        cls, credential_id_b64: str
+    ) -> tuple[Document | None, dict | None]:
+        """
+        Return ``(user, credential)`` for the user that owns ``credential_id_b64``,
+        or ``(None, None)`` if no user has that credential registered.
+
+        :param credential_id_b64: Base64url-encoded credential ID to search for
+        :type credential_id_b64: str
+        :returns: Tuple of (user, credential dict) or (None, None)
+        :rtype: tuple
+        """
+        user = await cls.find_one({"webauthn_credentials.id": credential_id_b64})
+        if not user:
+            return None, None
+        return user, user.get_webauthn_credential(credential_id_b64)

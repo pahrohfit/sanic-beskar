@@ -83,6 +83,16 @@ satisfy the following requirements:
 Although the example given in the documentation uses a SQLAlchemy model for the
 userclass, this is not a requirement.
 
+If you intend to use Passkey (WebAuthn) authentication, the user class must
+also expose:
+
+* A ``webauthn_credentials`` list attribute — each entry is a dict with keys
+  ``id`` (base64url str), ``public_key`` (base64url str), ``sign_count``
+  (int), and ``transports`` (list[str]).
+
+The built-in :py:class:`~sanic_beskar.orm.BeanieUserMixin` provides this
+field automatically.  See :doc:`passkeys` for the complete guide.
+
 .. _rbac-populate-hook-requirements:
 
 Requirements for the `rbac_populate_hook`

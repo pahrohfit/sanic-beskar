@@ -58,6 +58,11 @@ DEFAULT_TOTP_SECRETS_DATA: str = ""
 DEFAULT_TOKEN_PROVIDER: str = "jwt"  # jwt|paseto
 DEFAULT_PASETO_VERSION: int = 4  # 1|2|3|4
 
+DEFAULT_WEBAUTHN_RP_ID: str = "localhost"
+DEFAULT_WEBAUTHN_RP_NAME: str = "sanic-beskar"
+DEFAULT_WEBAUTHN_ORIGIN: str = "http://localhost"
+DEFAULT_WEBAUTHN_CHALLENGE_TTL: int = 60
+
 REFRESH_EXPIRATION_CLAIM: str = "rf_exp"
 IS_REGISTRATION_TOKEN_CLAIM: str = "is_ert"
 IS_RESET_TOKEN_CLAIM: str = "is_prt"

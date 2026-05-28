@@ -1,5 +1,8 @@
+from typing import Optional
+
 from beanie import Document
 from bson.objectid import ObjectId
+from pydantic import Field
 
 
 class BeanieUserMixin(Document):
@@ -16,7 +19,12 @@ class BeanieUserMixin(Document):
     * The model has a ``username`` column that is a unique string for each instance
     * The model has a ``password`` column that contains its hashed password
 
+    The ``webauthn_credentials`` list field is provided by this mixin with an empty
+    default. Each entry is a dict with keys: ``id`` (base64url str), ``public_key``
+    (base64url str), ``sign_count`` (int), ``transports`` (list[str]).
     """
+
+    webauthn_credentials: list = Field(default_factory=list)
 
     @property
     def identity(self) -> str:
@@ -96,3 +104,36 @@ class BeanieUserMixin(Document):
         :rtype: str, None
         """
         return await cls.find({"_id": ObjectId(id)}).first_or_none()
+
+    def get_webauthn_credential(self, credential_id_b64: str) -> dict | None:
+        """
+        Return the stored credential dict whose ``id`` matches ``credential_id_b64``,
+        or ``None`` if no such credential exists on this user.
+
+        :param credential_id_b64: Base64url-encoded credential ID to search for
+        :type credential_id_b64: str
+        :returns: Matching credential dict, or ``None``
+        :rtype: dict | None
+        """
+        for cred in self.webauthn_credentials:
+            if cred.get("id") == credential_id_b64:
+                return cred
+        return None
+
+    @classmethod
+    async def find_by_webauthn_credential_id(
+        cls, credential_id_b64: str
+    ) -> tuple[Optional["BeanieUserMixin"], dict | None]:
+        """
+        Return ``(user, credential)`` for the user that owns ``credential_id_b64``,
+        or ``(None, None)`` if no user has that credential registered.
+
+        :param credential_id_b64: Base64url-encoded credential ID to search for
+        :type credential_id_b64: str
+        :returns: Tuple of (user, credential dict) or (None, None)
+        :rtype: tuple
+        """
+        user = await cls.find_one({"webauthn_credentials.id": credential_id_b64})
+        if not user:
+            return None, None
+        return user, user.get_webauthn_credential(credential_id_b64)

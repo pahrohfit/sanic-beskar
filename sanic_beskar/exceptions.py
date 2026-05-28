@@ -192,6 +192,30 @@ class ConfigurationError(BeskarError):
     pass
 
 
+class PasskeyError(BeskarError):
+    """
+    Base error for WebAuthn/Passkey operations
+    """
+
+    pass
+
+
+class PasskeyChallengeError(PasskeyError):
+    """
+    WebAuthn challenge is missing, expired, or invalid
+    """
+
+    pass
+
+
+class PasskeyVerificationError(PasskeyError):
+    """
+    WebAuthn credential response verification failed
+    """
+
+    pass
+
+
 class TOTPRequired(AuthenticationError):
     """
     The user requires TOTP authentication, per configuration

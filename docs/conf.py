@@ -92,6 +92,11 @@ exclude_patterns: list = []
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+# Suppress warnings about symbols that are intentionally re-exported from
+# sanic_beskar.__init__ (e.g. Passkey exceptions appear in both
+# sanic_beskar and sanic_beskar.exceptions namespaces).
+suppress_warnings = ["ref.python"]
+
 
 # -- Options for HTML output ----------------------------------------------
 

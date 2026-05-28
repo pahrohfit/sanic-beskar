@@ -46,6 +46,10 @@ from sanic_beskar.constants import (
     DEFAULT_TOTP_SECRETS_DATA,
     DEFAULT_TOTP_SECRETS_TYPE,
     DEFAULT_USER_CLASS_VALIDATION_METHOD,
+    DEFAULT_WEBAUTHN_CHALLENGE_TTL,
+    DEFAULT_WEBAUTHN_ORIGIN,
+    DEFAULT_WEBAUTHN_RP_ID,
+    DEFAULT_WEBAUTHN_RP_NAME,
     IS_REGISTRATION_TOKEN_CLAIM,
     IS_RESET_TOKEN_CLAIM,
     REFRESH_EXPIRATION_CLAIM,
@@ -72,6 +76,9 @@ from sanic_beskar.exceptions import (
     MissingUserError,
     MisusedRegistrationToken,
     MisusedResetToken,
+    PasskeyChallengeError,
+    PasskeyError,
+    PasskeyVerificationError,
     TOTPRequired,
 )
 from sanic_beskar.utilities import (
@@ -102,6 +109,8 @@ class Beskar:
         encode_token_hook: Callable | None = None,
         refresh_token_hook: Callable | None = None,
         rbac_populate_hook: Callable | None = None,
+        webauthn_store_challenge: Callable | None = None,
+        webauthn_get_challenge: Callable | None = None,
     ) -> None:
         self.app: Sanic
         self.pwd_ctx: CryptContext = CryptContext()
@@ -114,6 +123,8 @@ class Beskar:
         self.paseto_key: bytes | str
         self.paseto_token: Token
         self.rbac_definitions: dict = {}
+        self.webauthn_store_challenge: Callable | None = None
+        self.webauthn_get_challenge: Callable | None = None
 
         if app is not None and user_class is not None:
             self.init_app(
@@ -123,6 +134,8 @@ class Beskar:
                 encode_token_hook,
                 refresh_token_hook,
                 rbac_populate_hook,
+                webauthn_store_challenge,
+                webauthn_get_challenge,
             )
 
     async def open_session(self, request: Request) -> None:
@@ -137,6 +150,8 @@ class Beskar:
         encode_token_hook: Callable | None = None,
         refresh_token_hook: Callable | None = None,
         rbac_populate_hook: Callable | None = None,
+        webauthn_store_challenge: Callable | None = None,
+        webauthn_get_challenge: Callable | None = None,
     ) -> Sanic:
         """
         Initializes the :py:class:`Beskar` extension
@@ -159,6 +174,14 @@ class Beskar:
             rbac_populate_hook (Callable, optional): A method that may optionally be called
                 at Beskar init time, or periodcally, to populate a RBAC dictionary mapping
                 user Roles to RBAC rights. Defaults to `None`.
+            webauthn_store_challenge (Callable, optional): An async callable
+                ``(user_id: str, challenge: bytes, ttl: int) -> None`` that
+                persists a WebAuthn challenge.  Required for Passkey support.
+                Defaults to `None`.
+            webauthn_get_challenge (Callable, optional): An async callable
+                ``(user_id: str) -> bytes | None`` that retrieves and consumes
+                a stored WebAuthn challenge.  Required for Passkey support.
+                Defaults to `None`.
 
         Returns:
             Object: Initialized sanic-beskar object.
@@ -216,6 +239,8 @@ class Beskar:
         self.encode_token_hook = encode_token_hook
         self.refresh_token_hook = refresh_token_hook
         self.rbac_populate_hook = rbac_populate_hook
+        self.webauthn_store_challenge = webauthn_store_challenge
+        self.webauthn_get_challenge = webauthn_get_challenge
         self.access_lifespan: pendulum.Duration
         self.refresh_lifespan: pendulum.Duration
 
@@ -463,6 +488,26 @@ class Beskar:
         for setting in DEFAULT_PASSWORD_POLICY:
             if setting not in self.password_policy:
                 self.password_policy[setting] = DEFAULT_PASSWORD_POLICY[setting]
+
+        self.webauthn_rp_id = self.app.config.get(
+            "BESKAR_WEBAUTHN_RP_ID",
+            DEFAULT_WEBAUTHN_RP_ID,
+        )
+
+        self.webauthn_rp_name = self.app.config.get(
+            "BESKAR_WEBAUTHN_RP_NAME",
+            DEFAULT_WEBAUTHN_RP_NAME,
+        )
+
+        self.webauthn_origin = self.app.config.get(
+            "BESKAR_WEBAUTHN_ORIGIN",
+            DEFAULT_WEBAUTHN_ORIGIN,
+        )
+
+        self.webauthn_challenge_ttl = self.app.config.get(
+            "BESKAR_WEBAUTHN_CHALLENGE_TTL",
+            DEFAULT_WEBAUTHN_CHALLENGE_TTL,
+        )
 
     def audit(self) -> None:
         """
@@ -817,6 +862,239 @@ class Beskar:
             "Beskar must be initialized before this method is available",
         )
         return self.pwd_ctx.verify(raw_password, hashed_password)
+
+    def _require_webauthn(self) -> None:
+        """
+        Verify that the ``webauthn`` package is installed and that both challenge
+        store callables were provided to :py:meth:`init_app`.
+
+        :raises: :py:exc:`~sanic_beskar.exceptions.ConfigurationError` if the
+            ``webauthn`` package is not installed or the challenge hooks are missing.
+        """
+        try:
+            import webauthn  # noqa: F401
+        except ImportError as e:
+            raise ConfigurationError(
+                "The 'webauthn' package is required for Passkey support. "
+                "Install it with: pip install sanic-beskar[webauthn]"
+            ) from e
+        ConfigurationError.require_condition(
+            self.webauthn_store_challenge is not None and self.webauthn_get_challenge is not None,
+            "webauthn_store_challenge and webauthn_get_challenge must be provided "
+            "to init_app() to use Passkey authentication",
+        )
+
+    async def webauthn_generate_registration_options(self, user: Any) -> dict:
+        """Generate WebAuthn registration options for *user* and persist the challenge.
+
+        The returned dict is JSON-safe and should be forwarded directly to the
+        browser's ``navigator.credentials.create()`` call.  The challenge is
+        automatically stored via the ``webauthn_store_challenge`` callable
+        supplied to :py:meth:`init_app`.
+
+        Args:
+            user: The authenticated user instance initiating Passkey registration.
+
+        Returns:
+            dict: JSON-serialisable ``PublicKeyCredentialCreationOptions``.
+
+        Raises:
+            ConfigurationError: If the ``webauthn`` package is not installed or
+                the challenge hooks were not provided to ``init_app()``.
+        """
+        import json
+
+        self._require_webauthn()
+        from webauthn import generate_registration_options, options_to_json
+        from webauthn.helpers.structs import (
+            AuthenticatorSelectionCriteria,
+            ResidentKeyRequirement,
+            UserVerificationRequirement,
+        )
+
+        options = generate_registration_options(
+            rp_id=self.webauthn_rp_id,
+            rp_name=self.webauthn_rp_name,
+            user_id=str(user.identity).encode(),
+            user_name=getattr(user, "username", str(user.identity)),
+            user_display_name=getattr(
+                user, "display_name", getattr(user, "username", str(user.identity))
+            ),
+            authenticator_selection=AuthenticatorSelectionCriteria(
+                resident_key=ResidentKeyRequirement.PREFERRED,
+                user_verification=UserVerificationRequirement.PREFERRED,
+            ),
+        )
+        await self.webauthn_store_challenge(  # type: ignore[misc]
+            str(user.identity), options.challenge, self.webauthn_challenge_ttl
+        )
+        return json.loads(options_to_json(options))
+
+    async def webauthn_verify_registration_response(self, user: Any, credential_json: str) -> dict:
+        """
+        Verify a WebAuthn registration response from the client and return the
+        credential dict that should be appended to ``user.webauthn_credentials``
+        and persisted by the caller.
+
+        The stored challenge for *user* is consumed automatically.
+
+        Args:
+            user: The user instance that initiated registration.
+            credential_json (str): Raw JSON string returned by the client's
+                ``navigator.credentials.create()`` call.
+
+        Returns:
+            dict: Credential entry with keys ``id`` (base64url), ``public_key``
+            (base64url), ``sign_count`` (int), and ``transports`` (list[str]).
+
+        Raises:
+            PasskeyChallengeError: If the challenge is missing or expired.
+            PasskeyVerificationError: If attestation verification fails.
+        """
+        self._require_webauthn()
+        from webauthn import verify_registration_response
+        from webauthn.helpers import bytes_to_base64url
+
+        challenge = await self.webauthn_get_challenge(str(user.identity))  # type: ignore[misc]
+        PasskeyChallengeError.require_condition(
+            challenge is not None,
+            "WebAuthn registration challenge not found or expired",
+        )
+
+        try:
+            verified = verify_registration_response(
+                credential=credential_json,
+                expected_challenge=challenge,
+                expected_rp_id=self.webauthn_rp_id,
+                expected_origin=self.webauthn_origin,
+            )
+        except PasskeyChallengeError:
+            raise
+        except Exception as e:
+            raise PasskeyVerificationError(f"WebAuthn registration verification failed: {e}") from e
+
+        raw = ujson.loads(credential_json)
+        transports = raw.get("response", {}).get("transports", [])
+        return {
+            "id": bytes_to_base64url(verified.credential_id),
+            "public_key": bytes_to_base64url(verified.credential_public_key),
+            "sign_count": verified.sign_count,
+            "transports": transports,
+        }
+
+    async def webauthn_generate_authentication_options(self, user: Any) -> dict:
+        """
+        Generate WebAuthn authentication options for *user* and store the challenge.
+
+        The returned dict is JSON-safe and should be forwarded directly to the
+        browser's ``navigator.credentials.get()`` call.
+
+        Args:
+            user: The user instance initiating Passkey authentication.
+
+        Returns:
+            dict: JSON-serialisable ``PublicKeyCredentialRequestOptions``.
+
+        Raises:
+            PasskeyError: If the user has no registered Passkeys.
+            ConfigurationError: If the ``webauthn`` package is not installed or
+                challenge hooks were not provided to ``init_app()``.
+        """
+        import json
+
+        self._require_webauthn()
+        from webauthn import generate_authentication_options, options_to_json
+        from webauthn.helpers import base64url_to_bytes
+        from webauthn.helpers.structs import (
+            PublicKeyCredentialDescriptor,
+            UserVerificationRequirement,
+        )
+
+        credentials = getattr(user, "webauthn_credentials", [])
+        PasskeyError.require_condition(
+            len(credentials) > 0,
+            "User has no registered Passkeys",
+        )
+
+        allow_credentials = [
+            PublicKeyCredentialDescriptor(id=base64url_to_bytes(cred["id"])) for cred in credentials
+        ]
+        options = generate_authentication_options(
+            rp_id=self.webauthn_rp_id,
+            allow_credentials=allow_credentials,
+            user_verification=UserVerificationRequirement.PREFERRED,
+        )
+        await self.webauthn_store_challenge(  # type: ignore[misc]
+            str(user.identity), options.challenge, self.webauthn_challenge_ttl
+        )
+        return json.loads(options_to_json(options))
+
+    async def webauthn_verify_authentication_response(self, user: Any, credential_json: str) -> Any:
+        """
+        Verify a WebAuthn authentication response from the client.
+
+        On success, updates the stored sign count on the matching credential
+        in-place (clone-detection) and returns the authenticated *user* object.
+        The caller is responsible for persisting the updated sign count.
+
+        Args:
+            user: The user instance that initiated authentication.
+            credential_json (str): Raw JSON string returned by the client's
+                ``navigator.credentials.get()`` call.
+
+        Returns:
+            object: The authenticated user instance with updated sign count.
+
+        Raises:
+            PasskeyChallengeError: If the challenge is missing or expired.
+            PasskeyVerificationError: If verification fails or the credential
+                is not found on the user.
+        """
+        self._require_webauthn()
+        from webauthn import verify_authentication_response
+        from webauthn.helpers import base64url_to_bytes
+
+        challenge = await self.webauthn_get_challenge(str(user.identity))  # type: ignore[misc]
+        PasskeyChallengeError.require_condition(
+            challenge is not None,
+            "WebAuthn authentication challenge not found or expired",
+        )
+
+        try:
+            raw = ujson.loads(credential_json)
+        except Exception as e:
+            raise PasskeyVerificationError(f"Invalid WebAuthn credential format: {e}") from e
+
+        credential_id_b64: str = raw.get("id", "")
+        stored_cred: dict | None = None
+        for cred in getattr(user, "webauthn_credentials", []):
+            if cred.get("id") == credential_id_b64:
+                stored_cred = cred
+                break
+
+        PasskeyVerificationError.require_condition(
+            stored_cred is not None,
+            "No stored credential matching the provided credential_id",
+        )
+
+        try:
+            verified = verify_authentication_response(
+                credential=credential_json,
+                expected_challenge=challenge,
+                expected_rp_id=self.webauthn_rp_id,
+                expected_origin=self.webauthn_origin,
+                credential_public_key=base64url_to_bytes(stored_cred["public_key"]),  # type: ignore[index]
+                credential_current_sign_count=stored_cred["sign_count"],  # type: ignore[index]
+            )
+        except PasskeyVerificationError:
+            raise
+        except Exception as e:
+            raise PasskeyVerificationError(
+                f"WebAuthn authentication verification failed: {e}"
+            ) from e
+
+        stored_cred["sign_count"] = verified.new_sign_count  # type: ignore[index]
+        return user
 
     def _check_user(self, user: object) -> bool:
         """

@@ -19,6 +19,7 @@ Table of Contents
 
    Quickstart <quickstart>
    Configuration <configuration>
+   Passkeys (WebAuthn) <passkeys>
    Notes <notes>
    Developer Guide <developer_guide>
    Contribution Guide <contributing>

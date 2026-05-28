@@ -6,7 +6,12 @@ from sanic_beskar.decorators import (
     roles_accepted,
     roles_required,
 )
-from sanic_beskar.exceptions import BeskarError
+from sanic_beskar.exceptions import (
+    BeskarError,
+    PasskeyChallengeError,
+    PasskeyError,
+    PasskeyVerificationError,
+)
 from sanic_beskar.utilities import (
     current_custom_claims,
     current_rolenames,
@@ -18,6 +23,9 @@ from sanic_beskar.utilities import (
 __all__ = [
     "Beskar",
     "BeskarError",
+    "PasskeyError",
+    "PasskeyChallengeError",
+    "PasskeyVerificationError",
     "auth_required",
     "auth_accepted",
     "roles_required",

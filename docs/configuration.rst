@@ -135,8 +135,36 @@ OTP Configuration Settings
        initialization.
      - ``None``
 
+Passkey (WebAuthn) Configuration Settings
+-----------------------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: auto
+
+   * - Flag
+     - Description
+     - Default Value
+   * - ``BESKAR_WEBAUTHN_RP_ID``
+     - The Relying Party identifier — must match the domain of your application
+       (e.g. ``"example.com"``).  Browsers reject credentials whose ``rpId``
+       does not match the origin.
+     - ``'localhost'``
+   * - ``BESKAR_WEBAUTHN_RP_NAME``
+     - A human-readable name for your application shown in the authenticator UI.
+     - ``'sanic-beskar'``
+   * - ``BESKAR_WEBAUTHN_ORIGIN``
+     - The full origin of your application (scheme + host + optional port,
+       e.g. ``"https://example.com"``).  Must match the origin the browser
+       uses when creating or asserting credentials.
+     - ``'http://localhost'``
+   * - ``BESKAR_WEBAUTHN_CHALLENGE_TTL``
+     - How long (in seconds) a generated WebAuthn challenge remains valid before
+       it is considered expired.
+     - ``60``
+
 Mailer Configuration Settings
------------------------------
+------------------------------
 
 .. list-table::
    :header-rows: 1

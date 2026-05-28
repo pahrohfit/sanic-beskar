@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bson.objectid import ObjectId
 from tortoise.exceptions import DoesNotExist
 from tortoise.models import Model
@@ -16,6 +18,17 @@ class TortoiseUserMixin(Model):
       user instance as a comma separated list of roles
     * The model has a ``username`` column that is a unique string for each instance
     * The model has a ``password`` column that contains its hashed password
+
+    To use Passkey support, the concrete model must also define::
+
+        import ujson
+        from tortoise import fields as tortoise_field
+
+        webauthn_credentials_json = tortoise_field.TextField(default="[]")
+
+        @property
+        def webauthn_credentials(self) -> list:
+            return ujson.loads(self.webauthn_credentials_json or "[]")
 
     """
 
@@ -102,3 +115,43 @@ class TortoiseUserMixin(Model):
             return await cls.filter(id=id).get()
         except DoesNotExist:
             return None
+
+    def get_webauthn_credential(self, credential_id_b64: str) -> dict | None:
+        """
+        Return the stored credential dict whose ``id`` matches ``credential_id_b64``,
+        or ``None`` if no such credential exists on this user.
+
+        Requires the concrete model to define a ``webauthn_credentials`` property
+        backed by a ``webauthn_credentials_json`` TextField.
+
+        :param credential_id_b64: Base64url-encoded credential ID to search for
+        :type credential_id_b64: str
+        :returns: Matching credential dict, or ``None``
+        :rtype: dict | None
+        """
+        for cred in getattr(self, "webauthn_credentials", []):
+            if cred.get("id") == credential_id_b64:
+                return cred
+        return None
+
+    @classmethod
+    async def find_by_webauthn_credential_id(
+        cls, credential_id_b64: str
+    ) -> tuple[Optional["TortoiseUserMixin"], dict | None]:
+        """
+        Return ``(user, credential)`` for the user that owns ``credential_id_b64``,
+        or ``(None, None)`` if no user has that credential registered.
+
+        Scans all users; for large tables consider a custom implementation with a
+        dedicated credentials table or a JSON index.
+
+        :param credential_id_b64: Base64url-encoded credential ID to search for
+        :type credential_id_b64: str
+        :returns: Tuple of (user, credential dict) or (None, None)
+        :rtype: tuple
+        """
+        for user in await cls.all():
+            cred = user.get_webauthn_credential(credential_id_b64)
+            if cred:
+                return user, cred
+        return None, None
