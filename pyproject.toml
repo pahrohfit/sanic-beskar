@@ -1,13 +1,36 @@
-[tool.poetry]
+[project]
 name = "sanic-beskar"
-version = "3.1.0-01"
+version = "3.1.0.post1"
 description = "Strong, Simple, and Precise security for Sanic APIs"
-authors = ["Rob Dailey <rob@suspected.org>"]
-license = "MIT"
 readme = "README.rst"
-homepage = "https://sanic-beskar.readthedocs.io/en/latest/"
-documentation = "https://sanic-beskar.readthedocs.io/en/latest/"
-repository = "https://github.com/pahrohfit/sanic-beskar"
+license = "MIT"
+authors = [
+    { name = "Rob Dailey", email = "rob@suspected.org" }
+]
+requires-python = ">=3.11, <4.0"
+dependencies = [
+    "pyjwt>=2.6",
+    "pendulum>=3.0",
+    "passlib>=1.7",
+    "sanic>=22.6.0",
+    "pyseto>=1.6.9",
+    "py-buzz>3.2.0",
+    "cryptography>=39.0.0",
+    "jinja2>=3.1.2",
+    "ujson>=5.0",
+    "aiofiles>=23.0",
+]
+
+[project.optional-dependencies]
+webauthn = ["webauthn>=2.0.0"]
+
+[project.urls]
+Homepage = "https://sanic-beskar.readthedocs.io/en/latest/"
+Documentation = "https://sanic-beskar.readthedocs.io/en/latest/"
+Repository = "https://github.com/pahrohfit/sanic-beskar"
+
+[tool.poetry]
+packages = [{ include = "sanic_beskar" }]
 
 [tool.poetry.group.typing.dependencies]
 types-ujson = ">=5.7"
@@ -49,6 +72,10 @@ toml = ">=0.10.2"
 sphinx = ">=7.1"
 furo = ">=2023.5.20"
 
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.coverage.report]
 exclude_lines = [
     'pragma: no cover',
@@ -67,28 +94,6 @@ pretty = true
 color_output = true
 exclude = ["docs/"]
 
-[tool.poetry.dependencies]
-python = ">=3.11, <4.0"
-pyjwt = ">=2.6"
-webauthn = {version = ">=2.0.0", optional = true}
-pendulum = [
-    { version = ">=2.1, <3.0", allow-prereleases = true, python = ">=3.11,<3.12" },
-    { version = "3.0.*", allow-prereleases = true, python = ">=3.12" },
-]
-passlib = ">=1.7"
-sanic = ">=22.6.0"
-pyseto = ">=1.6.9"
-py-buzz = ">3.2.0"
-cryptography = ">=39.0.0"
-jinja2 = ">=3.1.2"
-
-[tool.poetry.extras]
-webauthn = ["webauthn"]
-
-[build-system]
-requires = ["poetry-core>=1.2"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
@@ -106,6 +111,7 @@ filterwarnings = [
   "ignore:::httpx._models",
   "ignore:::passlib.utils",
   "ignore:::websockets.connection",
+  "ignore:::websockets.legacy",
   "ignore:::pkg_resources",
   "ignore:::mongomock.__version__",
   "ignore:::tracerite",
@@ -172,56 +178,52 @@ count = ''
 quiet-level = 3
 
 [tool.tox]
-legacy_tox_ini = """
-    [tox]
-    min_version = 4
-    isolated_build = true
-    env_list =
-        pre-commit,
-        py3{11,12,13,14}-{tests},
-	    coverage
+min_version = "4"
+env_list = [
+    "pre-commit",
+    "py3{11,12,13,14}-tests",
+    "coverage",
+]
 
-    [testenv]
-    description = defaults for all environments
-    skip_install = true
-    allowlist_externals = poetry, pre-commit
-    commands_pre =
-        poetry lock
-        poetry install --sync -v
-    set_env =
-        POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON = true
-    pass_env =
-        FORCE_COLOR
-        NO_COLOR
-        *
+[tool.tox.env_run_base]
+description = "defaults for all environments"
+skip_install = true
+allowlist_externals = ["poetry", "pre-commit"]
+commands_pre = [
+    ["poetry", "lock"],
+    ["poetry", "install", "--sync", "-v"],
+]
+set_env = { POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON = "true" }
+pass_env = ["FORCE_COLOR", "NO_COLOR", "*"]
 
-    [testenv:py3{11,12,13,14}-tests]
-    labels = pytest
-    description = py3 sanic-beskar testing
-    commands =
-        poetry run pytest --cov=sanic_beskar --cov-report=html --cov-report=term tests/ {posargs}
+[tool.tox.env."py3{11,12,13,14}-tests"]
+labels = ["pytest"]
+description = "py3 sanic-beskar testing"
+commands = [
+    ["poetry", "run", "pytest", "--cov=sanic_beskar", "--cov-report=html", "--cov-report=term", "tests/", "{posargs}"],
+]
 
-    [testenv:pre-commit]
-    base_python = py311
-    description = pre-commit validations
-    skip_install = true
-    deps = pre-commit
-    commands = pre-commit run {posargs}
+[tool.tox.env.pre-commit]
+base_python = "py311"
+description = "pre-commit validations"
+skip_install = true
+deps = ["pre-commit"]
+commands = [["pre-commit", "run", "{posargs}"]]
 
-    [testenv:docs]
-    description = sphinix build
-    changedir = docs
-    commands = sphinx-build -W -b html -d {envtmpdir}/doctrees . {envtmpdir}/html {posargs}
+[tool.tox.env.docs]
+description = "sphinx build"
+change_dir = "docs"
+commands = [
+    ["sphinx-build", "-W", "-b", "html", "-d", "{envtmpdir}/doctrees", ".", "{envtmpdir}/html", "{posargs}"],
+]
 
-    [testenv:coverage-report]
-    # Keep in sync with .python-version
-    base_python = py311
-    deps = coverage[toml]
-    skip_install = true
-    parallel_show_output = true
-    depends = py3{11,12,13,14}-{tests,mypy}
-    commands =
-        poetry run coverage combine
-        poetry run coverage report
-
-"""
+[tool.tox.env.coverage-report]
+base_python = "py311"
+deps = ["coverage[toml]"]
+skip_install = true
+parallel_show_output = true
+depends = ["py3{11,12,13,14}-tests"]
+commands = [
+    ["poetry", "run", "coverage", "combine"],
+    ["poetry", "run", "coverage", "report"],
+]
