@@ -5,7 +5,6 @@ import pendulum
 import plummet  # type: ignore
 import pytest
 import ujson
-from httpx import Cookies
 from passlib.exc import (
     InvalidTokenError,
     MalformedTokenError,
@@ -770,11 +769,11 @@ class TestBeskar:
         """
         the_dude = await mock_users(username="the_dude", roles="admin,operator")
 
-        cookies = Cookies()
         with plummet.frozen_time("2017-05-21 18:39:55"):
             token = await default_guard.encode_token(the_dude)
-            cookies[default_guard.cookie_name] = token
-            request, _ = await client.get("/unprotected", cookies=cookies)
+            client.cookies[default_guard.cookie_name] = token
+            request, _ = await client.get("/unprotected")
+            client.cookies.clear()
 
         assert default_guard.read_token_from_cookie(request) == token
         assert default_guard.read_token(request) == token

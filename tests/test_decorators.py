@@ -3,7 +3,6 @@ import warnings
 
 import pendulum
 import plummet  # type: ignore
-from httpx import Cookies
 from sanic_beskar import Beskar
 from sanic_beskar.exceptions import MissingRightError, MissingRoleError
 
@@ -120,10 +119,10 @@ class TestBeskarDecorators:
 
                 assert response.status == 200
 
-                cookies = Cookies()
                 token = await default_guard.encode_token(the_dude)
-                cookies[default_guard.cookie_name] = token
-                _, response = await client.get(route_name, cookies=cookies)
+                client.cookies[default_guard.cookie_name] = token
+                _, response = await client.get(route_name)
+                client.cookies.clear()
                 assert response.status == 200
 
     async def test_roles_required(self, default_guard, mock_users, client):
