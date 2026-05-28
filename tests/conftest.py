@@ -1,3 +1,5 @@
+import mongomock
+
 import asyncio
 
 import uvloop
@@ -8,12 +10,25 @@ import copy
 import warnings
 from typing import Any
 
+## Hack to fix the mongomock libs not being current enough for newer pymongo
+_orig_list_collection_names = mongomock.Database.list_collection_names  # type: ignore[attr-defined]
+
+
+def _patched_list_collection_names(self: "mongomock.Database", **kwargs: Any) -> list[str]:
+    """Drop every new-ass parameter mongomock is too slow and dumb to support."""
+    for bad_key in ("authorizedCollections", "nameOnly", "comment"):
+        kwargs.pop(bad_key, None)
+    return _orig_list_collection_names(self, **kwargs)
+
+
+mongomock.Database.list_collection_names = _patched_list_collection_names  # type: ignore[attr-defined]
+
 import async_sender  # type: ignore
 import pytest
 import sanic_beskar
 from async_sender import Mail
 from beanie import init_beanie
-from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
+from mongomock_motor import AsyncMongoMockClient
 from sanic import Sanic, json
 from sanic.exceptions import SanicException
 from sanic.views import HTTPMethodView
@@ -21,9 +36,11 @@ from sanic_beskar.base import Beskar
 from sanic_beskar.exceptions import BeskarError
 from sanic_testing import TestManager  # type: ignore
 from tortoise import Tortoise
-from tortoise.contrib.test import _init_db, getDBConfig
+from tortoise.contrib.test import tortoise_test_context
 from ujson import dumps as ujson_dumps
 from ujson import loads as ujson_loads
+import pytest_asyncio
+
 
 from tests._models import MixinUserBeanie, TotpUser, ValidatingUser
 
@@ -31,7 +48,7 @@ _guard = Beskar()
 _mail = Mail()
 
 
-@pytest.fixture(params=["jwt", "paseto"])
+@pytest_asyncio.fixture(params=["jwt", "paseto"])
 async def app(request, monkeypatch):
     """
     Sanic App instance for unit testing
@@ -363,16 +380,13 @@ def speed_up_passlib_for_pytest_only(default_guard):
         default_guard.pwd_ctx.update(bcrypt__default_rounds=1)
 
 
-@pytest.fixture(scope="session", autouse=False)
-async def in_memory_tortoise_db(request):
-    """
-    set up and tear down Tortoise as needed for testing
-
-    (modified) hack brought to you by:
-      https://github.com/tortoise/tortoise-orm/issues/1110#issuecomment-1521477988
-    """
-    config = getDBConfig(app_label="models", modules=["tests._models"])
-
-    await _init_db(config)
-
-    request.addfinalizer(lambda: asyncio.run(Tortoise._drop_databases()))
+@pytest_asyncio.fixture(scope="function")
+async def in_memory_tortoise_db(request):  # or whatever the fuck yo fixture name was
+    """Yo isolated DB context for every test, nigga."""
+    db_url = "sqlite://:memory:"  # or yo postgres url or whatever
+    async with tortoise_test_context(
+        ["tests._models"],  # put ALL yo model modules here, ya forgetful fuck
+        db_url=db_url,
+        app_label="models",  # or whatever yo app label is
+    ) as ctx:
+        yield ctx

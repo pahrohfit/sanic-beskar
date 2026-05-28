@@ -48,6 +48,7 @@ class TestBeskar:
     Unit tests against core components
     """
 
+    @pytest.mark.asyncio
     async def test_hash_password(self, default_guard):
         """
         test_hash_password
