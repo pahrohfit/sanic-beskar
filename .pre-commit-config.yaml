@@ -3,7 +3,7 @@ ci:
 
 default_language_version:
   # Keep in-sync with .python-version
-  python: python3.9
+  python: python3.11
 
 repos:
   - repo: https://github.com/psf/black
@@ -30,7 +30,7 @@ repos:
     rev: 1.5.0
     hooks:
       - id: interrogate
-        language_version: python3.9
+        language_version: python3.11
         args: [-cpyproject.toml, sanic_beskar, tests]
 
   - repo: https://github.com/codespell-project/codespell
