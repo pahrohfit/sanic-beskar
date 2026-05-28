@@ -1,5 +1,3 @@
-from typing import Optional
-
 from beanie import Document
 from bson.objectid import ObjectId
 
@@ -57,9 +55,7 @@ class BeanieUserMixin(Document):
         return _roles
 
     @classmethod
-    async def lookup(
-        cls, username: Optional[str] = None, email: Optional[str] = None
-    ) -> Optional[Document]:
+    async def lookup(cls, username: str | None = None, email: str | None = None) -> Document | None:
         """
         *Required Method*
 
@@ -84,7 +80,7 @@ class BeanieUserMixin(Document):
         return None
 
     @classmethod
-    async def identify(cls, id: str) -> Optional[Document]:
+    async def identify(cls, id: str) -> Document | None:
         """
         *Required Attribute or Property*
 

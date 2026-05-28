@@ -1,5 +1,3 @@
-from typing import Optional
-
 from bson.objectid import ObjectId
 from umongo import Document, MixinDocument  # type: ignore
 
@@ -24,7 +22,7 @@ class UmongoUserMixin(MixinDocument):
         abstract = True
 
     @property
-    def rolenames(self) -> Optional[list]:
+    def rolenames(self) -> list | None:
         """
         *Required Attribute or Property*
 
@@ -45,9 +43,7 @@ class UmongoUserMixin(MixinDocument):
         return _roles
 
     @classmethod
-    async def lookup(
-        cls, username: Optional[str] = None, email: Optional[str] = None
-    ) -> Optional[Document]:
+    async def lookup(cls, username: str | None = None, email: str | None = None) -> Document | None:
         """
         *Required Method*
 
@@ -71,7 +67,7 @@ class UmongoUserMixin(MixinDocument):
         return None
 
     @classmethod
-    async def identify(cls, id: str) -> Optional[Document]:
+    async def identify(cls, id: str) -> Document | None:
         """
         *Required Attribute or Property*
 

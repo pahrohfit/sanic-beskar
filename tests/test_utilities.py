@@ -61,7 +61,7 @@ class TestBeskarUtilities:
         determined based on token data that has been added to the current
         sanic app's context.
         """
-        token_data = {}
+        token_data = {"jti": "test"}
         add_token_data_to_app_context(token_data)
         with pytest.raises(BeskarError) as err_info:
             await current_user()
@@ -77,7 +77,7 @@ class TestBeskarUtilities:
         determined based on token data that has been added to the current
         sanic app's context.
         """
-        token_data = {}
+        token_data = {"jti": "test"}
         add_token_data_to_app_context(token_data)
         with pytest.raises(BeskarError) as err_info:
             await current_user()
@@ -101,7 +101,7 @@ class TestBeskarUtilities:
         can be extracted from the token data that has been added to the
         current sanic app's context
         """
-        token_data = {}
+        token_data = {"jti": "test"}
         add_token_data_to_app_context(token_data)
         assert (await current_rolenames()) == set(["non-empty-but-definitely-not-matching-subset"])
 

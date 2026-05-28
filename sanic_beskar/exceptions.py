@@ -7,7 +7,7 @@ from sanic.response import JSONResponse
 class BeskarError(SanicException, Buzz):
     """
     Provides a custom exception class for sanic-beskar based on py-buzz.
-    `py-buzz on gitub <https://github.com/dusktreader/py-buzz>`_
+    `py-buzz on github <https://github.com/dusktreader/py-buzz>`_
     """
 
     status: int = 401

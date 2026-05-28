@@ -82,12 +82,10 @@ class TestBeskarDecorators:
                 headers={},
             )
 
-            exc_msg = textwrap.dedent(
-                f"""
+            exc_msg = textwrap.dedent(f"""
                     Could not find token in any
                      of the given locations: {default_guard.token_places}
-                    """
-            ).replace("\n", "")
+                    """).replace("\n", "")
 
             assert exc_msg in response.json["message"]
             assert response.status == 401

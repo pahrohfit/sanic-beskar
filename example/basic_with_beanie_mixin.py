@@ -5,7 +5,7 @@ from typing import Optional
 import sanic_beskar
 from async_sender import Mail  # type: ignore
 from beanie import Indexed, init_beanie
-from mongomock_motor import AsyncMongoMockClient  # type: ignore
+from mongomock_motor import AsyncMongoMockClient
 from sanic import Sanic, json
 from sanic_beskar import Beskar
 from sanic_beskar.orm import BeanieUserMixin

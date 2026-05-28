@@ -1,10 +1,11 @@
 import secrets
 import string
+from typing import Any
 
 import sanic_beskar
 from async_sender import Mail  # type: ignore
 from bson.objectid import ObjectId
-from mongomock_motor import AsyncMongoMockClient  # type: ignore
+from mongomock_motor import AsyncMongoMockClient
 from sanic import Sanic, json
 from sanic_beskar import Beskar
 from umongo import Document, fields, validate  # type: ignore
@@ -34,7 +35,7 @@ def create_app() -> Sanic:
 
     sanic_app.ctx.mail = _mail
 
-    db = AsyncMongoMockClient()["test"]
+    db: Any = AsyncMongoMockClient()["test"]
     instance = MotorAsyncIOInstance(db)
     instance.set_db(db)
 

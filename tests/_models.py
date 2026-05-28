@@ -1,7 +1,7 @@
-from typing import Optional
+from typing import Any, Optional
 
 from beanie import Indexed
-from mongomock_motor import AsyncMongoMockClient  # type: ignore[import-untyped]
+from mongomock_motor import AsyncMongoMockClient
 from pydantic import Field as pydantic_field
 from sanic_beskar.orm import BeanieUserMixin, TortoiseUserMixin, UmongoUserMixin
 from tortoise import fields as tortoise_field
@@ -9,7 +9,7 @@ from umongo import Document as UmongoDocument  # type: ignore[import-untyped]
 from umongo import fields as umongo_field
 from umongo.frameworks import MotorAsyncIOInstance  # type: ignore[import-untyped]
 
-umongo_db = AsyncMongoMockClient()["umongo_test"]
+umongo_db: Any = AsyncMongoMockClient()["umongo_test"]
 umongo_instance = MotorAsyncIOInstance(umongo_db)
 umongo_instance.set_db(umongo_db)
 
@@ -109,7 +109,7 @@ class TotpUser(MixinUserBeanie):
     class Meta:
         table = "TotpUser"
 
-    totp: str = pydantic_field(max_length=255, default=None)
+    totp: Optional[str] = pydantic_field(max_length=255, default=None)
     totp_last_counter: Optional[int] = pydantic_field(default=None)
 
     async def cache_verify(self, counter: int, seconds: Optional[int] = None):

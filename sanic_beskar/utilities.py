@@ -2,9 +2,9 @@ import datetime as dt
 import re
 from collections.abc import Iterable
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
-# If we are using `beanie`, we need to patch JSONEncoder to undersand its objectid
+# If we are using `beanie`, we need to patch JSONEncoder to understand its objectid
 try:  # pragma: no cover
     from beanie import PydanticObjectId as ObjectId
 except (ImportError, ModuleNotFoundError):  # pragma: no cover
@@ -150,7 +150,7 @@ def duration_from_string(text: str) -> pendulum.Duration:
         return pendulum.duration(**clean)
 
 
-def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> "BeskarType":
+def current_guard(ctx: Sanic | SimpleNamespace | None = None) -> "BeskarType":
     """
     Fetches the current instance of :py:class:`~sanic_beskar.Beskar`
     that is attached to the current sanic app
@@ -177,7 +177,7 @@ def current_guard(ctx: Union[Sanic, SimpleNamespace, None] = None) -> "BeskarTyp
     return guard
 
 
-def app_context_has_token_data(ctx: Optional[Sanic] = None) -> bool:
+def app_context_has_token_data(ctx: Sanic | None = None) -> bool:
     """
     Checks if there is already token_data added to the app context
 
@@ -216,7 +216,7 @@ def get_token_data_from_app_context() -> dict:
     ctx = Sanic.get_app().ctx
     token_data = getattr(ctx, "token_data", {})
     BeskarError.require_condition(
-        token_data is not {},
+        token_data != {},
         """
         No token_data found in app context.
         Make sure @auth_required decorator is specified *first* for route
@@ -234,7 +234,7 @@ def remove_token_data_from_app_context() -> None:
         del ctx.token_data
 
 
-def current_user_id() -> Union[str, None]:
+def current_user_id() -> str | None:
     """
     This method returns the user id retrieved from token data attached to
     the current sanic app's context
@@ -244,7 +244,7 @@ def current_user_id() -> Union[str, None]:
     :raises: :py:exc:`~sanic_beskar.BeskarError` if no user/token found
     """
     token_data = get_token_data_from_app_context()
-    user_id: str = token_data.get("id", None)
+    user_id: str | None = token_data.get("id", None)
     BeskarError.require_condition(
         user_id is not None,
         "Could not fetch an id for the current user",

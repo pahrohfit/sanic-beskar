@@ -79,7 +79,7 @@ VITAM_AETERNUM: Duration = duration(days=1000000)
 class AccessType(enum.Enum):
     """enum for the various Access token types"""
 
-    access: str = "ACCESS"
-    refresh: str = "REFRESH"
-    register: str = "REGISTER"
-    reset: str = "RESET"
+    access = "ACCESS"
+    refresh = "REFRESH"
+    register = "REGISTER"
+    reset = "RESET"
