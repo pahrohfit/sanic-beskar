@@ -29,6 +29,7 @@ jobs:
         uses: microsoft/DevSkim-Action@v1
 
       - name: Upload DevSkim scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4  # <- v4 or die
         with:
           sarif_file: devskim-results.sarif
+          category: devskim  # <- unique category so it don't fight with the others
