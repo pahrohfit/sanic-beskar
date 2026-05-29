@@ -15,8 +15,13 @@ This example demonstrates the full two-round-trip WebAuthn flow:
   4. POST /passkey/authenticate/complete – client returns signed assertion; a
                                            sanic-beskar JWT is returned on success
 
+  Credential management (authenticated)
+  --------------------------------------
+  5. GET  /passkey/credentials             – list the current user's passkeys
+  6. DELETE /passkey/credentials/<cred_id> – remove a specific passkey by ID
+
   Protected routes work exactly as in the password-based flow:
-  5. GET /protected – requires a valid Bearer token
+  7. GET /protected – requires a valid Bearer token
 
 Typical curl flow
 -----------------
@@ -28,7 +33,7 @@ Typical curl flow
   # Step 2 (paste the attestation returned by your WebAuthn client)
   curl -s localhost:8000/passkey/register/complete \\
        -X POST -H "Content-Type: application/json" \\
-       -d '{"username": "the_dude", "credential": <attestation_json>}'
+       -d '{"username": "the_dude", "name": "MacBook Touch ID", "credential": <attestation_json>}'
 
   # Step 3
   curl -s localhost:8000/passkey/authenticate/begin \\
@@ -40,7 +45,14 @@ Typical curl flow
        -X POST -H "Content-Type: application/json" \\
        -d '{"username": "the_dude", "credential": <assertion_json>}'
 
-  # Step 5
+  # Step 5 – list registered passkeys
+  curl localhost:8000/passkey/credentials -H "Authorization: Bearer <token>"
+
+  # Step 6 – remove a specific passkey
+  curl -X DELETE localhost:8000/passkey/credentials/<cred_id> \\
+       -H "Authorization: Bearer <token>"
+
+  # Step 7
   curl localhost:8000/protected -H "Authorization: Bearer <token>"
 
 Challenge storage
@@ -193,12 +205,14 @@ def create_app() -> Sanic:
 
             {
                 "username":   "the_dude",
-                "credential": <JSON string from navigator.credentials.create()>
+                "credential": <JSON string from navigator.credentials.create()>,
+                "name":       "MacBook Touch ID"   (optional, human-readable label)
             }
         """
         body = request.json or {}
         username = body.get("username")
         credential_json = body.get("credential")
+        name: str = body.get("name", "")
 
         if not username or not credential_json:
             return json({"error": "username and credential required"}, status=400)
@@ -211,6 +225,7 @@ def create_app() -> Sanic:
             new_cred = await _guard.webauthn_verify_registration_response(
                 user,
                 credential_json if isinstance(credential_json, str) else str(credential_json),
+                name=name,
             )
         except PasskeyChallengeError as exc:
             return json({"error": str(exc)}, status=400)
@@ -294,6 +309,47 @@ def create_app() -> Sanic:
 
         access_token = await _guard.encode_token(user)
         return json({"access_token": access_token})
+
+    # -----------------------------------------------------------------------
+    # Credential management endpoints (require a valid Bearer token)
+    # -----------------------------------------------------------------------
+
+    @sanic_app.route("/passkey/credentials", methods=["GET"])
+    @sanic_beskar.auth_required
+    async def passkey_list_credentials(request):
+        """
+        Step 5 – list the authenticated user's registered Passkeys.
+
+        Returns only the public metadata (id, name, created_at, transports);
+        the raw public key and sign count are never exposed here.
+
+        Response::
+
+            {"credentials": [{"id": "...", "name": "...", "created_at": "...", "transports": [...]}]}
+        """
+        user = await sanic_beskar.current_user()
+        return json({"credentials": _guard.webauthn_list_credentials(user)})
+
+    @sanic_app.route("/passkey/credentials/<credential_id:str>", methods=["DELETE"])
+    @sanic_beskar.auth_required
+    async def passkey_remove_credential(request, credential_id: str):
+        """
+        Step 6 – remove a specific Passkey from the authenticated user's account.
+
+        ``credential_id`` is the base64url credential ID returned by the list
+        endpoint.  Returns 404 if the ID is not found on the user's account.
+
+        Response::
+
+            {"message": "passkey removed", "credential_id": "..."}
+        """
+        user = await sanic_beskar.current_user()
+        try:
+            user = await _guard.webauthn_remove_credential(user, credential_id)
+        except PasskeyError as exc:
+            return json({"error": str(exc)}, status=404)
+        await user.save()
+        return json({"message": "passkey removed", "credential_id": credential_id})
 
     # -----------------------------------------------------------------------
     # Protected routes (identical to the password-based flow)

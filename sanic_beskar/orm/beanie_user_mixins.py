@@ -21,7 +21,8 @@ class BeanieUserMixin(Document):
 
     The ``webauthn_credentials`` list field is provided by this mixin with an empty
     default. Each entry is a dict with keys: ``id`` (base64url str), ``public_key``
-    (base64url str), ``sign_count`` (int), ``transports`` (list[str]).
+    (base64url str), ``sign_count`` (int), ``transports`` (list[str]),
+    ``name`` (str, human-readable label), ``created_at`` (ISO-8601 UTC str).
     """
 
     webauthn_credentials: list = Field(default_factory=list)
@@ -119,6 +120,25 @@ class BeanieUserMixin(Document):
             if cred.get("id") == credential_id_b64:
                 return cred
         return None
+
+    def remove_webauthn_credential(self, credential_id_b64: str) -> bool:
+        """
+        Remove the credential whose ``id`` matches *credential_id_b64* from
+        ``webauthn_credentials``.  Returns ``True`` if a credential was removed,
+        ``False`` if no matching credential was found.
+
+        The caller is responsible for persisting the document after calling this.
+
+        :param credential_id_b64: Base64url-encoded credential ID to remove
+        :type credential_id_b64: str
+        :returns: ``True`` if removed, ``False`` if not found
+        :rtype: bool
+        """
+        original_count = len(self.webauthn_credentials)
+        self.webauthn_credentials = [
+            c for c in self.webauthn_credentials if c.get("id") != credential_id_b64
+        ]
+        return len(self.webauthn_credentials) < original_count
 
     @classmethod
     async def find_by_webauthn_credential_id(

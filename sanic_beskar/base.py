@@ -929,7 +929,9 @@ class Beskar:
         )
         return json.loads(options_to_json(options))
 
-    async def webauthn_verify_registration_response(self, user: Any, credential_json: str) -> dict:
+    async def webauthn_verify_registration_response(
+        self, user: Any, credential_json: str, name: str | None = None
+    ) -> dict:
         """
         Verify a WebAuthn registration response from the client and return the
         credential dict that should be appended to ``user.webauthn_credentials``
@@ -941,10 +943,13 @@ class Beskar:
             user: The user instance that initiated registration.
             credential_json (str): Raw JSON string returned by the client's
                 ``navigator.credentials.create()`` call.
+            name (str, optional): Human-readable label for this credential
+                (e.g. ``"iPhone Face ID"``).  Stored as-is; defaults to ``""``.
 
         Returns:
             dict: Credential entry with keys ``id`` (base64url), ``public_key``
-            (base64url), ``sign_count`` (int), and ``transports`` (list[str]).
+            (base64url), ``sign_count`` (int), ``transports`` (list[str]),
+            ``name`` (str), and ``created_at`` (ISO-8601 UTC timestamp).
 
         Raises:
             PasskeyChallengeError: If the challenge is missing or expired.
@@ -979,6 +984,8 @@ class Beskar:
             "public_key": bytes_to_base64url(verified.credential_public_key),
             "sign_count": verified.sign_count,
             "transports": transports,
+            "name": name or "",
+            "created_at": pendulum.now("UTC").isoformat(),
         }
 
     async def webauthn_generate_authentication_options(self, user: Any) -> dict:
@@ -1093,6 +1100,58 @@ class Beskar:
             ) from e
 
         stored_cred["sign_count"] = verified.new_sign_count  # type: ignore[index]
+        return user
+
+    def webauthn_list_credentials(self, user: Any) -> list[dict]:
+        """
+        Return a safe summary of all Passkeys registered to *user*.
+
+        Only the fields needed for a credential-management UI are included;
+        the raw ``public_key`` bytes and ``sign_count`` counter are never
+        exposed through this method.
+
+        Args:
+            user: The authenticated user whose credentials to list.
+
+        Returns:
+            list[dict]: One entry per credential, each containing ``id``
+            (base64url str), ``name`` (str), ``created_at`` (ISO-8601 str),
+            and ``transports`` (list[str]).
+        """
+        return [
+            {
+                "id": cred["id"],
+                "name": cred.get("name", ""),
+                "created_at": cred.get("created_at", ""),
+                "transports": cred.get("transports", []),
+            }
+            for cred in getattr(user, "webauthn_credentials", [])
+        ]
+
+    async def webauthn_remove_credential(self, user: Any, credential_id: str) -> Any:
+        """
+        Remove the Passkey identified by *credential_id* from *user*.
+
+        The caller is responsible for persisting the returned user object.
+
+        Args:
+            user: The authenticated user from whose account the credential is removed.
+            credential_id (str): Base64url-encoded credential ID to remove.
+
+        Returns:
+            object: The user instance with the credential removed from
+            ``webauthn_credentials``.
+
+        Raises:
+            PasskeyError: If no credential with that ID is registered to the user.
+        """
+        credentials: list = list(getattr(user, "webauthn_credentials", []))
+        updated = [c for c in credentials if c.get("id") != credential_id]
+        PasskeyError.require_condition(
+            len(updated) < len(credentials),
+            f"No registered Passkey with id '{credential_id}'",
+        )
+        user.webauthn_credentials = updated
         return user
 
     def _check_user(self, user: object) -> bool:

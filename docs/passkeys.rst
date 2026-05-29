@@ -82,7 +82,15 @@ of credential dicts.  Each dict has the shape::
         "public_key":  "<base64url COSE public key>",
         "sign_count":  <int>,
         "transports":  ["internal", ...],
+        "name":        "<human-readable label, e.g. 'iPhone Face ID'>",
+        "created_at":  "<ISO-8601 UTC timestamp>",
     }
+
+The ``name`` and ``created_at`` fields are populated automatically by
+:py:meth:`~sanic_beskar.Beskar.webauthn_verify_registration_response`.
+``name`` defaults to ``""`` unless you pass one explicitly (see `Credential
+management`_ below).  Legacy credential entries that pre-date these fields are
+handled gracefully — missing keys are surfaced as empty strings.
 
 The built-in :py:class:`~sanic_beskar.orm.BeanieUserMixin` already includes
 this field.  For Tortoise-ORM, add a ``TextField`` backed property as shown
@@ -120,7 +128,8 @@ Then configure the relying-party settings to match your domain
 Endpoints
 ---------
 
-Wire up four routes — two for registration, two for authentication:
+Wire up four routes — two for registration, two for authentication, plus
+optional credential-management routes (see `Credential management`_ below):
 
 .. code-block:: python
 
@@ -140,7 +149,9 @@ Wire up four routes — two for registration, two for authentication:
         user = await User.lookup(username=request.json["username"])
         try:
             cred = await guard.webauthn_verify_registration_response(
-                user, request.json["credential"]
+                user,
+                request.json["credential"],
+                name=request.json.get("name", ""),   # optional human-readable label
             )
         except (PasskeyChallengeError, PasskeyVerificationError) as exc:
             return json({"error": str(exc)}, status=400)
@@ -183,6 +194,65 @@ Use it exactly as you would a password-issued token:
     async def protected(request):
         user = await sanic_beskar.current_user()
         return json({"message": f"Hello, {user.username}"})
+
+Credential management
+---------------------
+
+Users can register multiple Passkeys (e.g. laptop + phone + hardware key).
+Two helpers let you build a management UI so authenticated users can see and
+remove their own devices.
+
+**Listing credentials**
+
+:py:meth:`~sanic_beskar.Beskar.webauthn_list_credentials` returns a
+list of safe summaries — ``id``, ``name``, ``created_at``, and ``transports``
+only.  The raw ``public_key`` bytes and ``sign_count`` counter are never
+included in this output.
+
+.. code-block:: python
+
+    import sanic_beskar
+
+    @app.route("/passkey/credentials", methods=["GET"])
+    @sanic_beskar.auth_required
+    async def list_credentials(request):
+        user = await sanic_beskar.current_user()
+        return json({"credentials": guard.webauthn_list_credentials(user)})
+
+**Removing a credential**
+
+:py:meth:`~sanic_beskar.Beskar.webauthn_remove_credential` filters out the
+matching entry and returns the updated user object.  Persist it yourself
+after the call.  Raises :py:exc:`~sanic_beskar.exceptions.PasskeyError` if
+the credential ID is not found.
+
+The library places no minimum on the number of remaining credentials — if your
+application requires at least one Passkey, add that check before calling this
+method.
+
+.. code-block:: python
+
+    from sanic_beskar.exceptions import PasskeyError
+
+    @app.route("/passkey/credentials/<credential_id:str>", methods=["DELETE"])
+    @sanic_beskar.auth_required
+    async def remove_credential(request, credential_id: str):
+        user = await sanic_beskar.current_user()
+        try:
+            user = await guard.webauthn_remove_credential(user, credential_id)
+        except PasskeyError as exc:
+            return json({"error": str(exc)}, status=404)
+        await user.save()
+        return json({"removed": credential_id})
+
+The :py:class:`~sanic_beskar.orm.BeanieUserMixin` also exposes a lower-level
+helper directly on the user instance:
+
+.. code-block:: python
+
+    removed: bool = user.remove_webauthn_credential(credential_id)
+    if removed:
+        await user.save()
 
 Full working example
 --------------------

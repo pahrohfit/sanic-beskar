@@ -38,13 +38,20 @@ FAKE_AUTH_JSON = json.dumps(
 )
 
 
-def _make_cred_entry(cred_id: bytes = FAKE_CRED_ID, sign_count: int = 0) -> dict:
+def _make_cred_entry(
+    cred_id: bytes = FAKE_CRED_ID,
+    sign_count: int = 0,
+    name: str = "Test Key",
+    created_at: str = "2024-01-01T00:00:00+00:00",
+) -> dict:
     """Return a stored credential dict matching the fake credential."""
     return {
         "id": bytes_to_base64url(cred_id),
         "public_key": bytes_to_base64url(FAKE_PUBKEY),
         "sign_count": sign_count,
         "transports": ["internal"],
+        "name": name,
+        "created_at": created_at,
     }
 
 
@@ -151,6 +158,8 @@ class TestBeskarWebAuthn:
         assert result["public_key"] == bytes_to_base64url(FAKE_PUBKEY)
         assert result["sign_count"] == 0
         assert result["transports"] == ["internal"]
+        assert result["name"] == ""
+        assert result["created_at"] != ""
 
     async def test_verify_registration_response_no_challenge_raises(
         self, webauthn_guard, mock_users
@@ -374,3 +383,164 @@ class TestBeskarWebAuthn:
         user = await mock_users("wauthn_mixin_empty")
         result = user.get_webauthn_credential("anything")
         assert result is None
+
+    # ------------------------------------------------------------------
+    # Registration – name parameter
+    # ------------------------------------------------------------------
+
+    async def test_verify_registration_response_with_name(
+        self, webauthn_guard, challenge_store, mock_users
+    ):
+        """
+        Passing a name to webauthn_verify_registration_response stores it in
+        the returned credential dict along with a non-empty created_at timestamp.
+        """
+        store_fn, _, _ = challenge_store
+        user = await mock_users("wauthn_reg_name")
+        await store_fn(str(user.identity), FAKE_CHALLENGE, 60)
+
+        mock_verified = MagicMock()
+        mock_verified.credential_id = FAKE_CRED_ID
+        mock_verified.credential_public_key = FAKE_PUBKEY
+        mock_verified.sign_count = 0
+
+        with patch("webauthn.verify_registration_response", return_value=mock_verified):
+            result = await webauthn_guard.webauthn_verify_registration_response(
+                user, FAKE_REG_JSON, name="YubiKey 5 NFC"
+            )
+
+        assert result["name"] == "YubiKey 5 NFC"
+        assert result["created_at"] != ""
+
+    # ------------------------------------------------------------------
+    # webauthn_list_credentials
+    # ------------------------------------------------------------------
+
+    async def test_list_credentials_returns_safe_fields_only(self, webauthn_guard, mock_users):
+        """
+        webauthn_list_credentials returns id, name, created_at, and transports
+        for each credential — never public_key or sign_count.
+        """
+        user = await mock_users("wauthn_list_safe")
+        entry1 = _make_cred_entry(name="iPhone", created_at="2024-01-01T00:00:00+00:00")
+        entry2 = _make_cred_entry(cred_id=b"second_key", name="YubiKey")
+        user.webauthn_credentials = [entry1, entry2]
+
+        result = webauthn_guard.webauthn_list_credentials(user)
+
+        assert len(result) == 2
+        for item in result:
+            assert "id" in item
+            assert "name" in item
+            assert "created_at" in item
+            assert "transports" in item
+            assert "public_key" not in item
+            assert "sign_count" not in item
+
+        assert result[0]["name"] == "iPhone"
+        assert result[1]["name"] == "YubiKey"
+
+    async def test_list_credentials_empty(self, webauthn_guard, mock_users):
+        """
+        webauthn_list_credentials returns an empty list when the user has no
+        registered credentials.
+        """
+        user = await mock_users("wauthn_list_empty")
+        assert webauthn_guard.webauthn_list_credentials(user) == []
+
+    async def test_list_credentials_backfills_missing_name_and_date(
+        self, webauthn_guard, mock_users
+    ):
+        """
+        Credentials created before the name/created_at fields were added (legacy
+        entries) are surfaced with empty strings rather than raising KeyError.
+        """
+        user = await mock_users("wauthn_list_legacy")
+        legacy_entry = {
+            "id": bytes_to_base64url(FAKE_CRED_ID),
+            "public_key": bytes_to_base64url(FAKE_PUBKEY),
+            "sign_count": 0,
+            "transports": ["usb"],
+        }
+        user.webauthn_credentials = [legacy_entry]
+
+        result = webauthn_guard.webauthn_list_credentials(user)
+
+        assert result[0]["name"] == ""
+        assert result[0]["created_at"] == ""
+        assert result[0]["transports"] == ["usb"]
+
+    # ------------------------------------------------------------------
+    # webauthn_remove_credential
+    # ------------------------------------------------------------------
+
+    async def test_remove_credential_success(self, webauthn_guard, mock_users):
+        """
+        webauthn_remove_credential removes the matching credential and returns
+        the user with the updated list.
+        """
+        user = await mock_users("wauthn_rm_ok")
+        entry1 = _make_cred_entry()
+        entry2 = _make_cred_entry(cred_id=b"keep_this_one")
+        user.webauthn_credentials = [entry1, entry2]
+
+        result = await webauthn_guard.webauthn_remove_credential(user, entry1["id"])
+
+        assert result is user
+        assert len(user.webauthn_credentials) == 1
+        assert user.webauthn_credentials[0]["id"] == entry2["id"]
+
+    async def test_remove_credential_not_found_raises(self, webauthn_guard, mock_users):
+        """
+        webauthn_remove_credential raises PasskeyError when the credential ID is
+        not registered to the user.
+        """
+        user = await mock_users("wauthn_rm_miss")
+        user.webauthn_credentials = [_make_cred_entry()]
+
+        with pytest.raises(PasskeyError, match="No registered Passkey"):
+            await webauthn_guard.webauthn_remove_credential(user, "nonexistent_id")
+
+    async def test_remove_last_credential_allowed(self, webauthn_guard, mock_users):
+        """
+        Removing the final credential is permitted — the library does not enforce
+        a minimum; that constraint belongs to the application layer.
+        """
+        user = await mock_users("wauthn_rm_last")
+        entry = _make_cred_entry()
+        user.webauthn_credentials = [entry]
+
+        result = await webauthn_guard.webauthn_remove_credential(user, entry["id"])
+
+        assert user.webauthn_credentials == []
+        assert result is user
+
+    # ------------------------------------------------------------------
+    # BeanieUserMixin.remove_webauthn_credential
+    # ------------------------------------------------------------------
+
+    async def test_beanie_mixin_remove_credential_found(self, mock_users):
+        """
+        BeanieUserMixin.remove_webauthn_credential removes the entry and returns True.
+        """
+        user = await mock_users("wauthn_mixin_rm_ok")
+        entry = _make_cred_entry()
+        user.webauthn_credentials = [entry, _make_cred_entry(cred_id=b"keep")]
+
+        removed = user.remove_webauthn_credential(entry["id"])
+
+        assert removed is True
+        assert len(user.webauthn_credentials) == 1
+
+    async def test_beanie_mixin_remove_credential_not_found(self, mock_users):
+        """
+        BeanieUserMixin.remove_webauthn_credential returns False when the ID is
+        not present.
+        """
+        user = await mock_users("wauthn_mixin_rm_miss")
+        user.webauthn_credentials = [_make_cred_entry()]
+
+        removed = user.remove_webauthn_credential("no_such_id")
+
+        assert removed is False
+        assert len(user.webauthn_credentials) == 1
