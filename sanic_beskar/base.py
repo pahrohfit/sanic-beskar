@@ -4,7 +4,6 @@ import textwrap
 import uuid
 import warnings
 from collections.abc import Callable
-from importlib import import_module
 from importlib.util import find_spec
 from typing import TYPE_CHECKING, Any, cast
 
@@ -2062,7 +2061,7 @@ class Beskar:
                 to=[notification["email"]],
                 from_address=action_sender,
                 html=notification["message"],
-                reply_to=action_sender
+                reply_to=action_sender,
             )
 
         return notification

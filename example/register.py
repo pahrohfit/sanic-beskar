@@ -244,7 +244,9 @@ def create_app() -> Sanic:
             roles="operator",
         )
 
-        await _guard.send_registration_email(email, user=new_user, confirmation_sender="you@whatever.com")
+        await _guard.send_registration_email(
+            email, user=new_user, confirmation_sender="you@whatever.com"
+        )
         ret = {"message": f"successfully sent registration email to user {new_user.username}"}
         return JSONResponse(ret, 201)
 
